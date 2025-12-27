@@ -14,6 +14,8 @@ import jwtConfig from './core/config/jwt.config';
 import { SuppliersModule } from './domain/suppliers/suppliers.module';
 import { ContractorsModule } from './domain/contractors/contractors.module';
 import { ContractsModule } from './domain/contracts/contracts.module';
+import { EngagementsModule } from './domain/engagements/engagements.module';
+import { TimesheetsModule } from './domain/timesheets/timesheets.module';
 
 @Module({
   imports: [
@@ -35,6 +37,8 @@ import { ContractsModule } from './domain/contracts/contracts.module';
     SuppliersModule,
     ContractorsModule,
     ContractsModule,
+    EngagementsModule,
+    TimesheetsModule,
 
     // Health checks
     TerminusModule,
