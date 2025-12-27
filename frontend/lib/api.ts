@@ -122,6 +122,10 @@ class ApiClient {
     return response.data;
   }
 
+  async deleteContract(id: string) {
+    await this.client.delete(`/contracts/${id}`);
+  }
+
   // Engagements
   async getEngagements(params?: any) {
     const response = await this.client.get('/engagements', { params });
