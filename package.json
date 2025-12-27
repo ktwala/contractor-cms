@@ -25,6 +25,9 @@
   "keywords": ["contractor", "cms", "nestjs", "prisma", "saas"],
   "author": "",
   "license": "ISC",
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
+  },
   "dependencies": {
     "@nestjs/common": "^11.1.10",
     "@nestjs/config": "^4.0.2",
@@ -41,7 +44,9 @@
     "helmet": "^8.1.0",
     "nats": "^2.29.3",
     "passport": "^0.7.0",
+    "passport-custom": "^1.1.1",
     "passport-jwt": "^4.0.1",
+    "passport-local": "^1.0.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
     "uuid": "^13.0.0"
@@ -53,8 +58,10 @@
     "@types/express": "^5.0.6",
     "@types/node": "^25.0.3",
     "@types/passport-jwt": "^4.0.1",
+    "@types/passport-local": "^1.0.38",
     "@types/uuid": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "^8.50.1",
+    "ts-node": "^10.9.2",
     "@typescript-eslint/parser": "^8.50.1",
     "prisma": "^7.2.0",
     "typescript": "^5.9.3"
