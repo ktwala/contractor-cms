@@ -1,0 +1,733 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// ENUMS
+// ============================================================================
+
+enum UserType {
+  INTERNAL          // CMS employee (admin, finance, AP)
+  FEDERATED         // HCM user (external)
+  CONTRACTOR        // Contractor self-service
+  API_INTEGRATION   // Service account
+}
+
+enum SupplierType {
+  COMPANY
+  INDIVIDUAL
+}
+
+enum SupplierStatus {
+  PENDING_APPROVAL
+  ACTIVE
+  SUSPENDED
+  TERMINATED
+}
+
+enum WorkerClassification {
+  INDEPENDENT_CONTRACTOR
+}
+
+enum EngagementModel {
+  DIRECT
+  AGENCY
+}
+
+enum TaxClassification {
+  TRUE_INDEPENDENT
+  DEEMED_EMPLOYEE
+}
+
+enum ClassificationBasis {
+  STATUTORY_TEST
+  COMMON_LAW
+  CONSERVATIVE
+}
+
+enum ContractType {
+  TIME_AND_MATERIALS
+  FIXED_PRICE
+  RETAINER
+  MILESTONE
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SUBMITTED
+  APPROVED
+  REJECTED
+  PAID
+  CANCELLED
+}
+
+enum SyncStatus {
+  PENDING
+  IN_PROGRESS
+  SYNCED
+  FAILED
+  CANCELLED
+}
+
+// ============================================================================
+// AUTHENTICATION & AUTHORIZATION
+// ============================================================================
+
+model User {
+  id                String         @id @default(uuid())
+  email             String         @unique
+  passwordHash      String?        // Null for federated users
+
+  // Identity
+  firstName         String
+  lastName          String
+
+  // Type
+  userType          UserType       @default(INTERNAL)
+
+  // Federation
+  externalId        String?        // HCM user ID
+  externalProvider  String?        // "HCM", null for internal
+
+  // Multi-tenancy
+  organizationId    String?        // Null for CMS admins
+  organization      Organization?  @relation(fields: [organizationId], references: [id])
+
+  // Status
+  isActive          Boolean        @default(true)
+  emailVerified     Boolean        @default(false)
+  emailVerifiedAt   DateTime?
+
+  // Contractor link
+  contractorId      String?        @unique
+  contractor        Contractor?    @relation(fields: [contractorId], references: [id])
+
+  // Relations
+  sessions          UserSession[]
+  roles             UserRole[]
+
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  @@index([email])
+  @@index([externalId, externalProvider])
+  @@index([organizationId])
+}
+
+model UserSession {
+  id                String         @id @default(uuid())
+  userId            String
+  user              User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  token             String         @unique  // JWT ID or session token
+  expiresAt         DateTime
+
+  ipAddress         String?
+  userAgent         String?
+
+  createdAt         DateTime       @default(now())
+
+  @@index([userId])
+  @@index([token])
+  @@index([expiresAt])
+}
+
+model Role {
+  id                String         @id @default(uuid())
+  name              String         @unique  // CMS_ADMIN, FINANCE_USER, CONTRACTOR, etc.
+  description       String?
+  permissions       String[]       // ["suppliers:create", "invoices:approve"]
+
+  isSystemRole      Boolean        @default(false)  // Cannot be deleted
+
+  users             UserRole[]
+
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+}
+
+model UserRole {
+  id                String         @id @default(uuid())
+  userId            String
+  user              User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  roleId            String
+  role              Role           @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  organizationId    String?        // Role scoped to org
+
+  assignedBy        String
+  assignedAt        DateTime       @default(now())
+
+  @@unique([userId, roleId, organizationId])
+  @@index([userId])
+  @@index([roleId])
+}
+
+model ApiKey {
+  id                String         @id @default(uuid())
+  name              String         // "HCM Integration", "Withholding Bridge"
+  keyHash           String         @unique
+  keyPrefix         String         // "cms_live_" for easy identification
+
+  scopes            String[]       // ["suppliers:read", "invoices:write"]
+
+  organizationId    String?        // Scoped to specific org
+
+  isActive          Boolean        @default(true)
+  expiresAt         DateTime?
+
+  lastUsedAt        DateTime?
+
+  createdBy         String
+  createdAt         DateTime       @default(now())
+
+  @@index([keyHash])
+  @@index([organizationId])
+}
+
+// ============================================================================
+// ORGANIZATIONS (Multi-tenancy)
+// ============================================================================
+
+model Organization {
+  id                String         @id @default(uuid())
+  name              String
+  code              String         @unique
+
+  // Configuration
+  country           String         @default("ZA")  // Country code
+  currency          String         @default("ZAR")
+  timezone          String         @default("Africa/Johannesburg")
+
+  // HCM Integration
+  hcmType           String?        // ORACLE_HCM, SAP_SF, WORKDAY, CUSTOM_NATS
+  hcmConfig         Json?          // Adapter-specific config
+
+  // Status
+  isActive          Boolean        @default(true)
+
+  // Relations
+  users             User[]
+  suppliers         Supplier[]
+  contracts         SupplierContract[]
+  invoices          Invoice[]
+  projects          Project[]
+  withholdingInstructions WithholdingInstruction[]
+
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  @@index([code])
+}
+
+// ============================================================================
+// SUPPLIERS
+// ============================================================================
+
+model Supplier {
+  id                String         @id @default(uuid())
+  organizationId    String
+  organization      Organization   @relation(fields: [organizationId], references: [id])
+
+  type              SupplierType
+  status            SupplierStatus @default(PENDING_APPROVAL)
+
+  // Company details (if type = COMPANY)
+  companyName       String?
+  registrationNumber String?
+  vatNumber         String?
+
+  // Individual details (if type = INDIVIDUAL)
+  firstName         String?
+  lastName          String?
+  idNumber          String?
+
+  // Common fields
+  tradingName       String?
+  email             String
+  phone             String?
+
+  // Address
+  addressLine1      String?
+  addressLine2      String?
+  city              String?
+  postalCode        String?
+  country           String
+
+  // Banking
+  bankName          String?
+  bankAccountNumber String?
+  bankBranchCode    String?
+  bankAccountType   String?
+
+  // Tax
+  taxNumber         String?
+  taxClearanceExpiry DateTime?
+  bbbeeLevel        String?        // ZA specific
+  bbbeeExpiry       DateTime?
+
+  // Documents
+  documents         SupplierDocument[]
+
+  // Relations
+  contractors       Contractor[]
+  contracts         SupplierContract[]
+  invoices          Invoice[]
+
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  @@index([organizationId])
+  @@index([email])
+  @@index([status])
+}
+
+model SupplierDocument {
+  id                String         @id @default(uuid())
+  supplierId        String
+  supplier          Supplier       @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+
+  type              String         // TAX_CLEARANCE, BBBEE, ID_DOCUMENT, etc.
+  fileName          String
+  filePath          String
+  fileSize          Int
+  mimeType          String
+
+  expiryDate        DateTime?
+
+  uploadedBy        String
+  uploadedAt        DateTime       @default(now())
+
+  @@index([supplierId])
+  @@index([type])
+}
+
+// ============================================================================
+// CONTRACTORS
+// ============================================================================
+
+model Contractor {
+  id                  String              @id @default(uuid())
+  supplierId          String
+  supplier            Supplier            @relation(fields: [supplierId], references: [id])
+
+  // Identity
+  firstName           String
+  lastName            String
+  email               String
+  phone               String?
+  idNumber            String?
+  passportNumber      String?
+
+  // Classification
+  workerClassification WorkerClassification @default(INDEPENDENT_CONTRACTOR)
+  engagementModel     EngagementModel
+
+  // Tax profile
+  taxNumber           String?
+  taxResidency        String              // Country code
+  dateOfBirth         DateTime?
+
+  // Skills
+  skills              String[]
+
+  // Access
+  user                User?
+  isActive            Boolean             @default(true)
+  accessExpiresAt     DateTime?
+
+  // Relations
+  engagements         ContractorEngagement[]
+  timesheets          Timesheet[]
+  taxClassifications  ContractorTaxClassification[]
+  withholdingInstructions WithholdingInstruction[]
+
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  @@index([supplierId])
+  @@index([email])
+}
+
+// ============================================================================
+// CONTRACTS
+// ============================================================================
+
+model SupplierContract {
+  id                String         @id @default(uuid())
+  supplierId        String
+  supplier          Supplier       @relation(fields: [supplierId], references: [id])
+  organizationId    String
+  organization      Organization   @relation(fields: [organizationId], references: [id])
+
+  contractNumber    String
+  contractType      ContractType
+  title             String
+  description       String?
+
+  startDate         DateTime
+  endDate           DateTime?
+
+  // Financials
+  currency          String         @default("ZAR")
+  totalValue        Decimal?       @db.Decimal(15, 2)
+  rateCard          Json?          // { "role": rate }
+
+  // Terms
+  paymentTermsDays  Int            @default(30)
+  noticePeriodDays  Int?
+
+  // SLA
+  slaTerms          Json?
+
+  // Status
+  status            String         @default("DRAFT")
+  signedAt          DateTime?
+  signedBy          String?
+
+  // Relations
+  engagements       ContractorEngagement[]
+
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  @@unique([organizationId, contractNumber])
+  @@index([supplierId])
+  @@index([status])
+}
+
+// ============================================================================
+// ENGAGEMENTS (Contractor + Project assignment)
+// ============================================================================
+
+model ContractorEngagement {
+  id                String         @id @default(uuid())
+  contractorId      String
+  contractor        Contractor     @relation(fields: [contractorId], references: [id])
+  contractId        String
+  contract          SupplierContract @relation(fields: [contractId], references: [id])
+
+  projectId         String?
+  project           Project?       @relation(fields: [projectId], references: [id])
+  costCenterId      String?
+
+  role              String
+  startDate         DateTime
+  endDate           DateTime?
+
+  // Rate for this engagement
+  rateType          String         // HOURLY, DAILY, FIXED
+  rateAmount        Decimal        @db.Decimal(15, 2)
+  currency          String         @default("ZAR")
+
+  // Current tax classification
+  currentClassificationId String?
+
+  isActive          Boolean        @default(true)
+
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  @@index([contractorId])
+  @@index([projectId])
+  @@index([contractId])
+}
+
+// ============================================================================
+// TAX CLASSIFICATION (SARS)
+// ============================================================================
+
+model ContractorTaxClassification {
+  id                String              @id @default(uuid())
+  contractorId      String
+  contractor        Contractor          @relation(fields: [contractorId], references: [id])
+  engagementId      String?
+
+  classification    TaxClassification
+  basis             ClassificationBasis
+
+  // Assessment details
+  assessmentPayload Json               // SARS test answers
+  dominantImpression String?           // EMPLOYEE_LIKE, CONTRACTOR_LIKE
+  riskScore         Int?               // 0-100
+
+  // Audit
+  assessedBy        String
+  assessedAt        DateTime           @default(now())
+  approvedBy        String?
+  approvedAt        DateTime?
+
+  // Effective dates
+  validFrom         DateTime
+  validTo           DateTime?
+
+  notes             String?
+
+  createdAt         DateTime           @default(now())
+
+  @@index([contractorId])
+  @@index([validFrom, validTo])
+}
+
+// ============================================================================
+// TIMESHEETS
+// ============================================================================
+
+model Timesheet {
+  id                String         @id @default(uuid())
+  contractorId      String
+  contractor        Contractor     @relation(fields: [contractorId], references: [id])
+
+  projectId         String?
+  project           Project?       @relation(fields: [projectId], references: [id])
+  taskId            String?
+
+  periodStart       DateTime
+  periodEnd         DateTime
+
+  entries           TimesheetEntry[]
+
+  totalHours        Decimal        @db.Decimal(10, 2)
+  totalAmount       Decimal?       @db.Decimal(15, 2)
+
+  status            String         @default("DRAFT") // DRAFT, SUBMITTED, APPROVED, REJECTED
+
+  submittedAt       DateTime?
+  approvedAt        DateTime?
+  approvedBy        String?
+  rejectionReason   String?
+
+  invoiceId         String?
+  invoice           Invoice?       @relation(fields: [invoiceId], references: [id])
+
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  @@index([contractorId])
+  @@index([projectId])
+  @@index([periodStart, periodEnd])
+  @@index([status])
+}
+
+model TimesheetEntry {
+  id                String         @id @default(uuid())
+  timesheetId       String
+  timesheet         Timesheet      @relation(fields: [timesheetId], references: [id], onDelete: Cascade)
+
+  date              DateTime
+  hours             Decimal        @db.Decimal(10, 2)
+  description       String?
+  taskId            String?
+
+  createdAt         DateTime       @default(now())
+
+  @@index([timesheetId])
+  @@index([date])
+}
+
+// ============================================================================
+// INVOICES
+// ============================================================================
+
+model Invoice {
+  id                String         @id @default(uuid())
+  supplierId        String
+  supplier          Supplier       @relation(fields: [supplierId], references: [id])
+  organizationId    String
+  organization      Organization   @relation(fields: [organizationId], references: [id])
+
+  invoiceNumber     String
+  invoiceDate       DateTime
+  dueDate           DateTime
+
+  // Period
+  periodStart       DateTime
+  periodEnd         DateTime
+
+  // Financials
+  currency          String         @default("ZAR")
+  subtotal          Decimal        @db.Decimal(15, 2)
+  vatAmount         Decimal        @default(0) @db.Decimal(15, 2)
+  totalAmount       Decimal        @db.Decimal(15, 2)
+
+  // Status
+  status            InvoiceStatus  @default(DRAFT)
+
+  // Line items
+  lineItems         InvoiceLineItem[]
+
+  // Linked timesheets
+  timesheets        Timesheet[]
+
+  // Approval
+  submittedAt       DateTime?
+  approvedAt        DateTime?
+  approvedBy        String?
+  rejectionReason   String?
+
+  // Payment
+  paidAt            DateTime?
+  paymentReference  String?
+
+  // Tax classification at time of invoice
+  taxClassificationId String?
+  taxClassification TaxClassification?
+
+  // Withholding (if DEEMED_EMPLOYEE)
+  withholdingInstructionId String?
+  withholdingInstruction WithholdingInstruction? @relation(fields: [withholdingInstructionId], references: [id])
+
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  @@unique([supplierId, invoiceNumber])
+  @@index([organizationId])
+  @@index([status])
+  @@index([invoiceDate])
+}
+
+model InvoiceLineItem {
+  id                String         @id @default(uuid())
+  invoiceId         String
+  invoice           Invoice        @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  description       String
+  quantity          Decimal        @db.Decimal(10, 2)
+  unitPrice         Decimal        @db.Decimal(15, 2)
+  amount            Decimal        @db.Decimal(15, 2)
+
+  projectId         String?
+  costCenterId      String?
+  glAccountCode     String?
+
+  createdAt         DateTime       @default(now())
+
+  @@index([invoiceId])
+}
+
+// ============================================================================
+// WITHHOLDING INSTRUCTIONS (Canonical Format)
+// ============================================================================
+
+model WithholdingInstruction {
+  id                    String         @id @default(uuid())
+  organizationId        String
+  organization          Organization   @relation(fields: [organizationId], references: [id])
+
+  // Link to source
+  invoices              Invoice[]
+  contractorId          String
+  contractor            Contractor     @relation(fields: [contractorId], references: [id])
+  taxClassificationId   String
+
+  // Instruction details
+  instructionNumber     String         // CMS-generated reference
+  effectiveDate         DateTime
+  endDate               DateTime?
+
+  // Worker details
+  workerExternalId      String?        // HCM worker ID (if known)
+  workerName            String
+  workerTaxNumber       String?
+
+  // Supplier details
+  supplierName          String
+  supplierTaxNumber     String?
+
+  // Withholding details
+  withholdingType       String         // PAYE, SDL, UIF (South Africa)
+  taxYear               Int
+  grossAmount           Decimal        @db.Decimal(15, 2)
+  withholdingAmount     Decimal        @db.Decimal(15, 2)
+  netAmount             Decimal        @db.Decimal(15, 2)
+  currency              String         @default("ZAR")
+
+  // Classification basis
+  classification        TaxClassification
+  riskScore             Int?
+  dominantImpression    String?
+
+  // Canonical payload (for adapters)
+  canonicalPayload      Json
+
+  // Adapter tracking
+  adapterType           String?        // ORACLE_HCM, SAP_SF, WORKDAY, CUSTOM_NATS
+  externalReference     String?        // HCM-generated ID after push
+  syncStatus            SyncStatus     @default(PENDING)
+  syncedAt              DateTime?
+  syncError             String?
+  retryCount            Int            @default(0)
+
+  // Audit
+  createdBy             String
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+
+  @@unique([organizationId, instructionNumber])
+  @@index([contractorId])
+  @@index([syncStatus])
+  @@index([effectiveDate])
+}
+
+// ============================================================================
+// PROJECTS (CMS-owned, synced to HCM)
+// ============================================================================
+
+model Project {
+  id                String         @id @default(uuid())
+  organizationId    String
+  organization      Organization   @relation(fields: [organizationId], references: [id])
+
+  code              String
+  name              String
+  description       String?
+
+  clientName        String?
+
+  startDate         DateTime?
+  endDate           DateTime?
+
+  budget            Decimal?       @db.Decimal(15, 2)
+  currency          String         @default("ZAR")
+
+  costCenterId      String?
+
+  status            String         @default("ACTIVE")
+
+  tasks             Task[]
+  engagements       ContractorEngagement[]
+  timesheets        Timesheet[]
+
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  @@unique([organizationId, code])
+  @@index([status])
+}
+
+model Task {
+  id                String         @id @default(uuid())
+  projectId         String
+  project           Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  code              String
+  name              String
+  description       String?
+
+  estimatedHours    Decimal?       @db.Decimal(10, 2)
+
+  status            String         @default("OPEN")
+
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  @@index([projectId])
+  @@index([status])
+}
