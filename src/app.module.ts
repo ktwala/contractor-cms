@@ -16,6 +16,8 @@ import { ContractorsModule } from './domain/contractors/contractors.module';
 import { ContractsModule } from './domain/contracts/contracts.module';
 import { EngagementsModule } from './domain/engagements/engagements.module';
 import { TimesheetsModule } from './domain/timesheets/timesheets.module';
+import { InvoicesModule } from './domain/invoices/invoices.module';
+import { TaxClassificationModule } from './domain/tax-classification/tax-classification.module';
 
 @Module({
   imports: [
@@ -39,6 +41,8 @@ import { TimesheetsModule } from './domain/timesheets/timesheets.module';
     ContractsModule,
     EngagementsModule,
     TimesheetsModule,
+    InvoicesModule,
+    TaxClassificationModule,
 
     // Health checks
     TerminusModule,
