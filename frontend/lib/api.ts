@@ -184,8 +184,30 @@ class ApiClient {
     return response.data;
   }
 
+  async submitInvoice(id: string) {
+    const response = await this.client.patch(`/invoices/${id}/submit`);
+    return response.data;
+  }
+
+  async approveInvoice(id: string) {
+    const response = await this.client.patch(`/invoices/${id}/approve`);
+    return response.data;
+  }
+
   async markInvoicePaid(id: string, data: any) {
     const response = await this.client.patch(`/invoices/${id}/mark-paid`, data);
+    return response.data;
+  }
+
+  async voidInvoice(id: string, reason: string) {
+    const response = await this.client.patch(`/invoices/${id}/void`, { reason });
+    return response.data;
+  }
+
+  async downloadInvoicePDF(id: string) {
+    const response = await this.client.get(`/invoices/${id}/pdf`, {
+      responseType: 'arraybuffer',
+    });
     return response.data;
   }
 
