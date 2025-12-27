@@ -11,6 +11,9 @@ import { validateEnvironment } from './core/config/env.validation';
 import appConfig from './core/config/app.config';
 import databaseConfig from './core/config/database.config';
 import jwtConfig from './core/config/jwt.config';
+import { SuppliersModule } from './domain/suppliers/suppliers.module';
+import { ContractorsModule } from './domain/contractors/contractors.module';
+import { ContractsModule } from './domain/contracts/contracts.module';
 
 @Module({
   imports: [
@@ -27,6 +30,11 @@ import jwtConfig from './core/config/jwt.config';
 
     // Authentication
     AuthModule,
+
+    // Domain modules
+    SuppliersModule,
+    ContractorsModule,
+    ContractsModule,
 
     // Health checks
     TerminusModule,
