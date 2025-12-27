@@ -3,11 +3,14 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import DashboardLayout from '@/components/dashboard-layout';
+import Modal from '@/components/ui/modal';
+import FormTextarea from '@/components/ui/form-textarea';
 import StatusBadge from '@/components/ui/status-badge';
 import { api } from '@/lib/api';
 import { useToast } from '@/lib/toast';
-import { Plus, Search, Clock, CheckCircle, XCircle, Eye } from 'lucide-react';
+import { Plus, Search, Clock, CheckCircle, XCircle, Eye, CheckSquare, Square, Download } from 'lucide-react';
 import { format } from 'date-fns';
+import { exportTimesheetsToCSV } from '@/lib/csv-export';
 
 interface Timesheet {
   id: string;
@@ -39,8 +42,19 @@ export default function TimesheetsPage() {
   const [statusFilter, setStatusFilter] = useState('');
   const { showToast } = useToast();
 
+  // Bulk operations state
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [bulkActionLoading, setBulkActionLoading] = useState(false);
+  const [showBulkRejectModal, setShowBulkRejectModal] = useState(false);
+  const [bulkRejectionReason, setBulkRejectionReason] = useState('');
+
   useEffect(() => {
     loadTimesheets();
+  }, [statusFilter]);
+
+  useEffect(() => {
+    // Clear selection when filter changes
+    setSelectedIds([]);
   }, [statusFilter]);
 
   const loadTimesheets = async () => {
@@ -54,6 +68,83 @@ export default function TimesheetsPage() {
       showToast('error', 'Failed to load timesheets');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const toggleSelection = (id: string) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((tsId) => tsId !== id) : [...prev, id]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.length === timesheets.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(timesheets.map((ts) => ts.id));
+    }
+  };
+
+  const handleBulkApprove = async () => {
+    if (selectedIds.length === 0) return;
+    if (!confirm(`Are you sure you want to approve ${selectedIds.length} timesheet(s)?`)) return;
+
+    setBulkActionLoading(true);
+    try {
+      const results = await Promise.allSettled(
+        selectedIds.map((id) => api.approveTimesheet(id))
+      );
+
+      const succeeded = results.filter((r) => r.status === 'fulfilled').length;
+      const failed = results.filter((r) => r.status === 'rejected').length;
+
+      if (succeeded > 0) {
+        showToast('success', `${succeeded} timesheet(s) approved successfully`);
+      }
+      if (failed > 0) {
+        showToast('error', `${failed} timesheet(s) failed to approve`);
+      }
+
+      setSelectedIds([]);
+      loadTimesheets();
+    } catch (err: any) {
+      showToast('error', 'Failed to approve timesheets');
+    } finally {
+      setBulkActionLoading(false);
+    }
+  };
+
+  const handleBulkReject = async () => {
+    if (selectedIds.length === 0) return;
+    if (!bulkRejectionReason.trim()) {
+      showToast('error', 'Please provide a rejection reason');
+      return;
+    }
+
+    setBulkActionLoading(true);
+    try {
+      const results = await Promise.allSettled(
+        selectedIds.map((id) => api.rejectTimesheet(id, bulkRejectionReason))
+      );
+
+      const succeeded = results.filter((r) => r.status === 'fulfilled').length;
+      const failed = results.filter((r) => r.status === 'rejected').length;
+
+      if (succeeded > 0) {
+        showToast('success', `${succeeded} timesheet(s) rejected successfully`);
+      }
+      if (failed > 0) {
+        showToast('error', `${failed} timesheet(s) failed to reject`);
+      }
+
+      setSelectedIds([]);
+      setBulkRejectionReason('');
+      setShowBulkRejectModal(false);
+      loadTimesheets();
+    } catch (err: any) {
+      showToast('error', 'Failed to reject timesheets');
+    } finally {
+      setBulkActionLoading(false);
     }
   };
 
@@ -107,6 +198,9 @@ export default function TimesheetsPage() {
     );
   }
 
+  const canBulkApprove = selectedIds.length > 0 && statusFilter === 'SUBMITTED';
+  const canBulkReject = selectedIds.length > 0 && statusFilter === 'SUBMITTED';
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -115,13 +209,23 @@ export default function TimesheetsPage() {
             <h1 className="text-2xl font-bold text-gray-900">Timesheets</h1>
             <p className="text-gray-600 mt-1">Track and approve contractor hours</p>
           </div>
-          <button
-            onClick={() => router.push('/timesheets/new')}
-            className="btn btn-primary flex items-center"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            New Timesheet
-          </button>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => exportTimesheetsToCSV(timesheets)}
+              className="btn btn-secondary flex items-center"
+              disabled={timesheets.length === 0}
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Export CSV
+            </button>
+            <button
+              onClick={() => router.push('/timesheets/new')}
+              className="btn btn-primary flex items-center"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              New Timesheet
+            </button>
+          </div>
         </div>
 
         <div className="card">
@@ -178,6 +282,33 @@ export default function TimesheetsPage() {
                 Rejected
               </button>
             </div>
+
+            {/* Bulk Actions */}
+            {selectedIds.length > 0 && (
+              <div className="flex items-center space-x-2">
+                <span className="text-sm text-gray-600">{selectedIds.length} selected</span>
+                {canBulkApprove && (
+                  <button
+                    onClick={handleBulkApprove}
+                    disabled={bulkActionLoading}
+                    className="btn btn-primary flex items-center text-sm"
+                  >
+                    <CheckCircle className="w-4 h-4 mr-1" />
+                    Approve All
+                  </button>
+                )}
+                {canBulkReject && (
+                  <button
+                    onClick={() => setShowBulkRejectModal(true)}
+                    disabled={bulkActionLoading}
+                    className="btn btn-danger flex items-center text-sm"
+                  >
+                    <XCircle className="w-4 h-4 mr-1" />
+                    Reject All
+                  </button>
+                )}
+              </div>
+            )}
           </div>
 
           {timesheets.length === 0 ? (
@@ -194,6 +325,18 @@ export default function TimesheetsPage() {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
+                    <th className="px-6 py-3 text-left">
+                      <button
+                        onClick={toggleSelectAll}
+                        className="text-gray-600 hover:text-gray-900"
+                      >
+                        {selectedIds.length === timesheets.length ? (
+                          <CheckSquare className="w-5 h-5" />
+                        ) : (
+                          <Square className="w-5 h-5" />
+                        )}
+                      </button>
+                    </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                       Period
                     </th>
@@ -217,6 +360,18 @@ export default function TimesheetsPage() {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {timesheets.map((timesheet) => (
                     <tr key={timesheet.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <button
+                          onClick={() => toggleSelection(timesheet.id)}
+                          className="text-gray-600 hover:text-gray-900"
+                        >
+                          {selectedIds.includes(timesheet.id) ? (
+                            <CheckSquare className="w-5 h-5 text-primary-600" />
+                          ) : (
+                            <Square className="w-5 h-5" />
+                          )}
+                        </button>
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">
                           {format(new Date(timesheet.periodStart), 'MMM dd')} -{' '}
@@ -293,6 +448,46 @@ export default function TimesheetsPage() {
 
         <div className="text-sm text-gray-500">Showing {timesheets.length} timesheets</div>
       </div>
+
+      {/* Bulk Reject Modal */}
+      <Modal
+        isOpen={showBulkRejectModal}
+        onClose={() => setShowBulkRejectModal(false)}
+        title={`Reject ${selectedIds.length} Timesheet(s)`}
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-gray-600">
+            Please provide a reason for rejecting these timesheets. This will be visible to the
+            contractors.
+          </p>
+
+          <FormTextarea
+            label="Rejection Reason"
+            value={bulkRejectionReason}
+            onChange={(e) => setBulkRejectionReason(e.target.value)}
+            placeholder="e.g., Hours don't match project records, missing descriptions..."
+            required
+          />
+
+          <div className="flex justify-end space-x-2 pt-4">
+            <button
+              type="button"
+              onClick={() => setShowBulkRejectModal(false)}
+              className="btn btn-secondary"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleBulkReject}
+              disabled={bulkActionLoading || !bulkRejectionReason.trim()}
+              className="btn btn-danger"
+            >
+              {bulkActionLoading ? 'Rejecting...' : 'Reject Timesheets'}
+            </button>
+          </div>
+        </div>
+      </Modal>
     </DashboardLayout>
   );
 }

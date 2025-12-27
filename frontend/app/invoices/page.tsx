@@ -6,8 +6,9 @@ import DashboardLayout from '@/components/dashboard-layout';
 import StatusBadge from '@/components/ui/status-badge';
 import { api } from '@/lib/api';
 import { useToast } from '@/lib/toast';
-import { Plus, Search, FileText, Eye, CheckCircle, XCircle } from 'lucide-react';
+import { Plus, Search, FileText, Eye, CheckCircle, XCircle, CheckSquare, Square, Download } from 'lucide-react';
 import { format } from 'date-fns';
+import { exportInvoicesToCSV } from '@/lib/csv-export';
 
 interface Invoice {
   id: string;
@@ -46,8 +47,17 @@ export default function InvoicesPage() {
   const [statusFilter, setStatusFilter] = useState('');
   const { showToast } = useToast();
 
+  // Bulk operations state
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [bulkActionLoading, setBulkActionLoading] = useState(false);
+
   useEffect(() => {
     loadInvoices();
+  }, [statusFilter]);
+
+  useEffect(() => {
+    // Clear selection when filter changes
+    setSelectedIds([]);
   }, [statusFilter]);
 
   const loadInvoices = async () => {
@@ -61,6 +71,50 @@ export default function InvoicesPage() {
       showToast('error', 'Failed to load invoices');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const toggleSelection = (id: string) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((invId) => invId !== id) : [...prev, id]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    const filtered = filteredInvoices;
+    if (selectedIds.length === filtered.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(filtered.map((inv) => inv.id));
+    }
+  };
+
+  const handleBulkApprove = async () => {
+    if (selectedIds.length === 0) return;
+    if (!confirm(`Are you sure you want to approve ${selectedIds.length} invoice(s)?`)) return;
+
+    setBulkActionLoading(true);
+    try {
+      const results = await Promise.allSettled(
+        selectedIds.map((id) => api.approveInvoice(id))
+      );
+
+      const succeeded = results.filter((r) => r.status === 'fulfilled').length;
+      const failed = results.filter((r) => r.status === 'rejected').length;
+
+      if (succeeded > 0) {
+        showToast('success', `${succeeded} invoice(s) approved successfully`);
+      }
+      if (failed > 0) {
+        showToast('error', `${failed} invoice(s) failed to approve`);
+      }
+
+      setSelectedIds([]);
+      loadInvoices();
+    } catch (err: any) {
+      showToast('error', 'Failed to approve invoices');
+    } finally {
+      setBulkActionLoading(false);
     }
   };
 
@@ -117,13 +171,23 @@ export default function InvoicesPage() {
             <h1 className="text-2xl font-bold text-gray-900">Invoices</h1>
             <p className="text-gray-600 mt-1">Manage contractor invoices and payments</p>
           </div>
-          <button
-            onClick={() => router.push('/invoices/new')}
-            className="btn btn-primary flex items-center"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            New Invoice
-          </button>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => exportInvoicesToCSV(filteredInvoices)}
+              className="btn btn-secondary flex items-center"
+              disabled={filteredInvoices.length === 0}
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Export CSV
+            </button>
+            <button
+              onClick={() => router.push('/invoices/new')}
+              className="btn btn-primary flex items-center"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              New Invoice
+            </button>
+          </div>
         </div>
 
         <div className="card">
@@ -201,6 +265,23 @@ export default function InvoicesPage() {
                 Void
               </button>
             </div>
+
+            {/* Bulk Actions */}
+            {selectedIds.length > 0 && (
+              <div className="flex items-center space-x-2">
+                <span className="text-sm text-gray-600">{selectedIds.length} selected</span>
+                {statusFilter === 'PENDING' && (
+                  <button
+                    onClick={handleBulkApprove}
+                    disabled={bulkActionLoading}
+                    className="btn btn-primary flex items-center text-sm"
+                  >
+                    <CheckCircle className="w-4 h-4 mr-1" />
+                    Approve All
+                  </button>
+                )}
+              </div>
+            )}
           </div>
 
           {filteredInvoices.length === 0 ? (
@@ -217,6 +298,18 @@ export default function InvoicesPage() {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
+                    <th className="px-6 py-3 text-left">
+                      <button
+                        onClick={toggleSelectAll}
+                        className="text-gray-600 hover:text-gray-900"
+                      >
+                        {selectedIds.length === filteredInvoices.length ? (
+                          <CheckSquare className="w-5 h-5" />
+                        ) : (
+                          <Square className="w-5 h-5" />
+                        )}
+                      </button>
+                    </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                       Invoice
                     </th>
@@ -243,6 +336,18 @@ export default function InvoicesPage() {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {filteredInvoices.map((invoice) => (
                     <tr key={invoice.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <button
+                          onClick={() => toggleSelection(invoice.id)}
+                          className="text-gray-600 hover:text-gray-900"
+                        >
+                          {selectedIds.includes(invoice.id) ? (
+                            <CheckSquare className="w-5 h-5 text-primary-600" />
+                          ) : (
+                            <Square className="w-5 h-5" />
+                          )}
+                        </button>
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">
                           {invoice.invoiceNumber}

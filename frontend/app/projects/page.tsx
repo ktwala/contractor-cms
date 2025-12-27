@@ -9,8 +9,9 @@ import FormTextarea from '@/components/ui/form-textarea';
 import StatusBadge from '@/components/ui/status-badge';
 import { api } from '@/lib/api';
 import { useToast } from '@/lib/toast';
-import { Plus, Edit, Search, FolderOpen, AlertTriangle } from 'lucide-react';
+import { Plus, Edit, Search, FolderOpen, AlertTriangle, Download } from 'lucide-react';
 import { format } from 'date-fns';
+import { exportProjectsToCSV } from '@/lib/csv-export';
 
 interface Project {
   id: string;
@@ -190,10 +191,20 @@ export default function ProjectsPage() {
             <h1 className="text-2xl font-bold text-gray-900">Projects</h1>
             <p className="text-gray-600 mt-1">Manage projects and track budgets</p>
           </div>
-          <button onClick={() => handleOpenModal()} className="btn btn-primary flex items-center">
-            <Plus className="w-4 h-4 mr-2" />
-            Add Project
-          </button>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => exportProjectsToCSV(filteredProjects)}
+              className="btn btn-secondary flex items-center"
+              disabled={filteredProjects.length === 0}
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Export CSV
+            </button>
+            <button onClick={() => handleOpenModal()} className="btn btn-primary flex items-center">
+              <Plus className="w-4 h-4 mr-2" />
+              Add Project
+            </button>
+          </div>
         </div>
 
         <div className="card">
