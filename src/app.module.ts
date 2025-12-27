@@ -18,6 +18,8 @@ import { EngagementsModule } from './domain/engagements/engagements.module';
 import { TimesheetsModule } from './domain/timesheets/timesheets.module';
 import { InvoicesModule } from './domain/invoices/invoices.module';
 import { TaxClassificationModule } from './domain/tax-classification/tax-classification.module';
+import { ProjectsModule } from './domain/projects/projects.module';
+import { WithholdingModule } from './domain/withholding/withholding.module';
 
 @Module({
   imports: [
@@ -43,6 +45,8 @@ import { TaxClassificationModule } from './domain/tax-classification/tax-classif
     TimesheetsModule,
     InvoicesModule,
     TaxClassificationModule,
+    ProjectsModule,
+    WithholdingModule,
 
     // Health checks
     TerminusModule,
