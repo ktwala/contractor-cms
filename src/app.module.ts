@@ -20,6 +20,8 @@ import { InvoicesModule } from './domain/invoices/invoices.module';
 import { TaxClassificationModule } from './domain/tax-classification/tax-classification.module';
 import { ProjectsModule } from './domain/projects/projects.module';
 import { WithholdingModule } from './domain/withholding/withholding.module';
+import { OrganizationsModule } from './domain/organizations/organizations.module';
+import { AnalyticsModule } from './domain/analytics/analytics.module';
 
 @Module({
   imports: [
@@ -47,6 +49,8 @@ import { WithholdingModule } from './domain/withholding/withholding.module';
     TaxClassificationModule,
     ProjectsModule,
     WithholdingModule,
+    OrganizationsModule,
+    AnalyticsModule,
 
     // Health checks
     TerminusModule,
