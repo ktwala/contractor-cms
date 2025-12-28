@@ -11,6 +11,9 @@ import { useToast } from '@/lib/toast';
 import { Plus, Search, Clock, CheckCircle, XCircle, Eye, CheckSquare, Square, Download } from 'lucide-react';
 import { format } from 'date-fns';
 import { exportTimesheetsToCSV } from '@/lib/csv-export';
+import { useDebounce } from '@/lib/hooks';
+import DateRangeFilter from '@/components/ui/date-range-filter';
+import { TableSkeleton } from '@/components/ui/skeleton';
 
 interface Timesheet {
   id: string;
@@ -40,7 +43,13 @@ export default function TimesheetsPage() {
   const [timesheets, setTimesheets] = useState<Timesheet[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   const { showToast } = useToast();
+
+  // Debounced search for better performance
+  const debouncedSearch = useDebounce(searchTerm, 500);
 
   // Bulk operations state
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -55,7 +64,7 @@ export default function TimesheetsPage() {
   useEffect(() => {
     // Clear selection when filter changes
     setSelectedIds([]);
-  }, [statusFilter]);
+  }, [statusFilter, debouncedSearch, startDate, endDate]);
 
   const loadTimesheets = async () => {
     try {
@@ -71,6 +80,39 @@ export default function TimesheetsPage() {
     }
   };
 
+  // Filter timesheets by search term and date range (client-side)
+  const filteredTimesheets = timesheets.filter((ts) => {
+    // Search filter
+    if (debouncedSearch) {
+      const searchLower = debouncedSearch.toLowerCase();
+      const contractorName = ts.engagement?.contract?.contractor
+        ? `${ts.engagement.contract.contractor.firstName} ${ts.engagement.contract.contractor.lastName}`.toLowerCase()
+        : '';
+      const engagement = ts.engagement?.title?.toLowerCase() || '';
+      const project = ts.project?.name?.toLowerCase() || '';
+
+      if (
+        !contractorName.includes(searchLower) &&
+        !engagement.includes(searchLower) &&
+        !project.includes(searchLower)
+      ) {
+        return false;
+      }
+    }
+
+    // Date range filter
+    if (startDate) {
+      const tsStart = new Date(ts.periodStart);
+      if (tsStart < new Date(startDate)) return false;
+    }
+    if (endDate) {
+      const tsEnd = new Date(ts.periodEnd);
+      if (tsEnd > new Date(endDate)) return false;
+    }
+
+    return true;
+  });
+
   const toggleSelection = (id: string) => {
     setSelectedIds((prev) =>
       prev.includes(id) ? prev.filter((tsId) => tsId !== id) : [...prev, id]
@@ -78,10 +120,10 @@ export default function TimesheetsPage() {
   };
 
   const toggleSelectAll = () => {
-    if (selectedIds.length === timesheets.length) {
+    if (selectedIds.length === filteredTimesheets.length) {
       setSelectedIds([]);
     } else {
-      setSelectedIds(timesheets.map((ts) => ts.id));
+      setSelectedIds(filteredTimesheets.map((ts) => ts.id));
     }
   };
 
@@ -188,11 +230,22 @@ export default function TimesheetsPage() {
     }
   };
 
+  const handleClearDateRange = () => {
+    setStartDate('');
+    setEndDate('');
+  };
+
   if (loading) {
     return (
       <DashboardLayout>
-        <div className="flex items-center justify-center h-64">
-          <div className="text-gray-600">Loading...</div>
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Timesheets</h1>
+              <p className="text-gray-600 mt-1">Track and approve contractor hours</p>
+            </div>
+          </div>
+          <TableSkeleton />
         </div>
       </DashboardLayout>
     );
@@ -204,19 +257,20 @@ export default function TimesheetsPage() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Timesheets</h1>
             <p className="text-gray-600 mt-1">Track and approve contractor hours</p>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={() => exportTimesheetsToCSV(timesheets)}
               className="btn btn-secondary flex items-center"
               disabled={timesheets.length === 0}
             >
               <Download className="w-4 h-4 mr-2" />
-              Export CSV
+              <span className="hidden sm:inline">Export CSV</span>
+              <span className="sm:hidden">Export</span>
             </button>
             <button
               onClick={() => router.push('/timesheets/new')}
@@ -229,8 +283,34 @@ export default function TimesheetsPage() {
         </div>
 
         <div className="card">
-          <div className="mb-4 flex items-center justify-between">
-            <div className="flex items-center space-x-2">
+          {/* Search and Date Range Filters */}
+          <div className="mb-4 space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+              <div className="flex-1 relative min-w-0">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search by contractor, engagement, or project..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                />
+              </div>
+              <div className="w-full sm:w-auto">
+                <DateRangeFilter
+                  startDate={startDate}
+                  endDate={endDate}
+                  onStartDateChange={setStartDate}
+                  onEndDateChange={setEndDate}
+                  onClear={handleClearDateRange}
+                  label="Period Range"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="flex flex-wrap items-center gap-2">
               <button
                 onClick={() => setStatusFilter('')}
                 className={`px-3 py-1 rounded-lg text-sm font-medium ${
@@ -253,7 +333,7 @@ export default function TimesheetsPage() {
               </button>
               <button
                 onClick={() => setStatusFilter('SUBMITTED')}
-                className={`px-3 py-1 rounded-lg text-sm font-medium ${
+                className={`px-3 py-1 rounded-lg text-sm font-medium whitespace-nowrap ${
                   statusFilter === 'SUBMITTED'
                     ? 'bg-yellow-100 text-yellow-700'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -285,7 +365,7 @@ export default function TimesheetsPage() {
 
             {/* Bulk Actions */}
             {selectedIds.length > 0 && (
-              <div className="flex items-center space-x-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <span className="text-sm text-gray-600">{selectedIds.length} selected</span>
                 {canBulkApprove && (
                   <button
@@ -311,12 +391,12 @@ export default function TimesheetsPage() {
             )}
           </div>
 
-          {timesheets.length === 0 ? (
+          {filteredTimesheets.length === 0 ? (
             <div className="text-center py-12">
               <Clock className="w-12 h-12 text-gray-400 mx-auto mb-4" />
               <p className="text-gray-500">
-                {statusFilter
-                  ? `No ${statusFilter.toLowerCase()} timesheets found`
+                {statusFilter || debouncedSearch || startDate || endDate
+                  ? 'No timesheets match your filters'
                   : 'No timesheets yet'}
               </p>
             </div>
@@ -330,7 +410,7 @@ export default function TimesheetsPage() {
                         onClick={toggleSelectAll}
                         className="text-gray-600 hover:text-gray-900"
                       >
-                        {selectedIds.length === timesheets.length ? (
+                        {selectedIds.length === filteredTimesheets.length && filteredTimesheets.length > 0 ? (
                           <CheckSquare className="w-5 h-5" />
                         ) : (
                           <Square className="w-5 h-5" />
@@ -358,7 +438,7 @@ export default function TimesheetsPage() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {timesheets.map((timesheet) => (
+                  {filteredTimesheets.map((timesheet) => (
                     <tr key={timesheet.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <button
@@ -446,7 +526,9 @@ export default function TimesheetsPage() {
           )}
         </div>
 
-        <div className="text-sm text-gray-500">Showing {timesheets.length} timesheets</div>
+        <div className="text-sm text-gray-500">
+          Showing {filteredTimesheets.length} of {timesheets.length} timesheets
+        </div>
       </div>
 
       {/* Bulk Reject Modal */}

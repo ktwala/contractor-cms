@@ -9,6 +9,9 @@ import { useToast } from '@/lib/toast';
 import { Plus, Search, FileText, Eye, CheckCircle, XCircle, CheckSquare, Square, Download } from 'lucide-react';
 import { format } from 'date-fns';
 import { exportInvoicesToCSV } from '@/lib/csv-export';
+import { useDebounce } from '@/lib/hooks';
+import DateRangeFilter from '@/components/ui/date-range-filter';
+import { TableSkeleton } from '@/components/ui/skeleton';
 
 interface Invoice {
   id: string;
@@ -45,7 +48,12 @@ export default function InvoicesPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   const { showToast } = useToast();
+
+  // Debounced search for better performance
+  const debouncedSearch = useDebounce(searchTerm, 500);
 
   // Bulk operations state
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -58,7 +66,7 @@ export default function InvoicesPage() {
   useEffect(() => {
     // Clear selection when filter changes
     setSelectedIds([]);
-  }, [statusFilter]);
+  }, [statusFilter, debouncedSearch, startDate, endDate]);
 
   const loadInvoices = async () => {
     try {
@@ -131,14 +139,31 @@ export default function InvoicesPage() {
   };
 
   const filteredInvoices = invoices.filter((invoice) => {
-    const searchLower = searchTerm.toLowerCase();
-    return (
-      invoice.invoiceNumber.toLowerCase().includes(searchLower) ||
-      (invoice.engagement?.contract?.contractor &&
+    // Search filter (using debounced value)
+    if (debouncedSearch) {
+      const searchLower = debouncedSearch.toLowerCase();
+      const matchesInvoiceNumber = invoice.invoiceNumber.toLowerCase().includes(searchLower);
+      const matchesContractor = invoice.engagement?.contract?.contractor &&
         `${invoice.engagement.contract.contractor.firstName} ${invoice.engagement.contract.contractor.lastName}`
           .toLowerCase()
-          .includes(searchLower))
-    );
+          .includes(searchLower);
+
+      if (!matchesInvoiceNumber && !matchesContractor) {
+        return false;
+      }
+    }
+
+    // Date range filter (based on issue date)
+    if (startDate) {
+      const invoiceDate = new Date(invoice.issueDate);
+      if (invoiceDate < new Date(startDate)) return false;
+    }
+    if (endDate) {
+      const invoiceDate = new Date(invoice.issueDate);
+      if (invoiceDate > new Date(endDate)) return false;
+    }
+
+    return true;
   });
 
   const formatCurrency = (amount: number, currency: string) => {
@@ -153,11 +178,22 @@ export default function InvoicesPage() {
     return timesheets.reduce((sum, ts) => sum + ts.totalHours, 0);
   };
 
+  const handleClearDateRange = () => {
+    setStartDate('');
+    setEndDate('');
+  };
+
   if (loading) {
     return (
       <DashboardLayout>
-        <div className="flex items-center justify-center h-64">
-          <div className="text-gray-600">Loading...</div>
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Invoices</h1>
+              <p className="text-gray-600 mt-1">Manage contractor invoices and payments</p>
+            </div>
+          </div>
+          <TableSkeleton />
         </div>
       </DashboardLayout>
     );
@@ -166,19 +202,20 @@ export default function InvoicesPage() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Invoices</h1>
             <p className="text-gray-600 mt-1">Manage contractor invoices and payments</p>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={() => exportInvoicesToCSV(filteredInvoices)}
               className="btn btn-secondary flex items-center"
               disabled={filteredInvoices.length === 0}
             >
               <Download className="w-4 h-4 mr-2" />
-              Export CSV
+              <span className="hidden sm:inline">Export CSV</span>
+              <span className="sm:hidden">Export</span>
             </button>
             <button
               onClick={() => router.push('/invoices/new')}
@@ -192,18 +229,30 @@ export default function InvoicesPage() {
 
         <div className="card">
           <div className="mb-4 space-y-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                type="text"
-                placeholder="Search by invoice number or contractor..."
-                className="input pl-10"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+              <div className="flex-1 relative min-w-0">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                  type="text"
+                  placeholder="Search by invoice number or contractor..."
+                  className="input pl-10 w-full"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+              <div className="w-full sm:w-auto">
+                <DateRangeFilter
+                  startDate={startDate}
+                  endDate={endDate}
+                  onStartDateChange={setStartDate}
+                  onEndDateChange={setEndDate}
+                  onClear={handleClearDateRange}
+                  label="Issue Date Range"
+                />
+              </div>
             </div>
 
-            <div className="flex items-center space-x-2">
+            <div className="flex flex-wrap items-center gap-2">
               <button
                 onClick={() => setStatusFilter('')}
                 className={`px-3 py-1 rounded-lg text-sm font-medium ${
@@ -226,7 +275,7 @@ export default function InvoicesPage() {
               </button>
               <button
                 onClick={() => setStatusFilter('PENDING')}
-                className={`px-3 py-1 rounded-lg text-sm font-medium ${
+                className={`px-3 py-1 rounded-lg text-sm font-medium whitespace-nowrap ${
                   statusFilter === 'PENDING'
                     ? 'bg-yellow-100 text-yellow-700'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -268,7 +317,7 @@ export default function InvoicesPage() {
 
             {/* Bulk Actions */}
             {selectedIds.length > 0 && (
-              <div className="flex items-center space-x-2">
+              <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-gray-200">
                 <span className="text-sm text-gray-600">{selectedIds.length} selected</span>
                 {statusFilter === 'PENDING' && (
                   <button
@@ -288,8 +337,8 @@ export default function InvoicesPage() {
             <div className="text-center py-12">
               <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
               <p className="text-gray-500">
-                {searchTerm || statusFilter
-                  ? 'No invoices found matching your criteria'
+                {debouncedSearch || statusFilter || startDate || endDate
+                  ? 'No invoices match your filters'
                   : 'No invoices yet'}
               </p>
             </div>
@@ -303,7 +352,7 @@ export default function InvoicesPage() {
                         onClick={toggleSelectAll}
                         className="text-gray-600 hover:text-gray-900"
                       >
-                        {selectedIds.length === filteredInvoices.length ? (
+                        {selectedIds.length === filteredInvoices.length && filteredInvoices.length > 0 ? (
                           <CheckSquare className="w-5 h-5" />
                         ) : (
                           <Square className="w-5 h-5" />
