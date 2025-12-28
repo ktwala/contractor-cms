@@ -1,42 +1,45 @@
 # Contractor CMS
 
-**Independent SaaS Platform for Contractor Management with South African Tax Compliance**
+**Full-Stack Contractor Management Platform with South African Tax Compliance**
 
-A comprehensive contractor management system built with NestJS and Prisma, featuring multi-tenant architecture, SARS tax classification, and event-driven integration with HCM systems.
+A comprehensive contractor management system built with NestJS, Prisma, PostgreSQL (backend) and Next.js 15, TypeScript, Tailwind CSS (frontend), featuring multi-tenant architecture, SARS tax classification, complete timesheet approval workflows, invoice management, and advanced analytics.
 
 ---
 
 ## 🎯 Overview
 
-Contractor CMS is a standalone SaaS platform designed to manage:
+Contractor CMS is a production-ready SaaS platform designed to manage:
 - **Suppliers** (Companies and Individuals)
 - **Contractors** (Worker profiles and engagements)
 - **Contracts** (MSA, SOW, rate cards)
 - **Tax Compliance** (SARS classification, BBBEE, withholding)
 - **Time & Invoicing** (Timesheets, approvals, invoice generation)
+- **Projects** (Budget tracking and utilization)
+- **Analytics** (Interactive charts and dashboards)
 - **HCM Integration** (Event-driven adapters for Oracle, SAP, Workday, etc.)
 
 ---
 
-## 🏗️ Architecture
+## ✨ Key Features
 
-### Hybrid Authentication Model
-```
-CMS-Native Users        Federated Users (HCM)     API Keys (M2M)
-├── CMS Admins          ├── External Managers      ├── Withholding Bridge
-├── Finance/AP          ├── HCM Staff              ├── Custom Integrations
-└── Contractors         └── OIDC/OAuth 2.0         └── Scoped Permissions
-```
+### 🎨 Frontend (Next.js 15)
+- **Authentication**: Login, registration with JWT token management
+- **Dashboard**: Interactive analytics with Recharts visualizations
+- **CRUD Operations**: Full management for contractors, contracts, engagements, timesheets, invoices, projects
+- **Workflow Management**: Multi-state approval workflows (Draft → Submitted → Approved/Rejected)
+- **Bulk Operations**: Process multiple timesheets/invoices simultaneously
+- **CSV Export**: Export data for all entities with proper formatting
+- **Budget Tracking**: Visual budget progress bars with color-coded warnings
+- **Responsive Design**: Mobile-friendly Tailwind CSS components
 
-### Multi-Tenant Architecture
-- Organization-scoped data isolation
-- Per-organization HCM configuration
-- Country-specific tax rules (South Africa, Lesotho)
-
-### Event-Driven Integration
-```
-CMS → WithholdingInstruction (Canonical) → NATS → Adapters → HCM Systems
-```
+### 🔧 Backend (NestJS)
+- **RESTful API**: Comprehensive endpoints with Swagger documentation
+- **Multi-Tenant**: Organization-scoped data isolation
+- **Authentication**: JWT-based auth with refresh tokens
+- **Tax Compliance**: SARS classification engine for South African tax
+- **Event-Driven**: NATS integration for HCM system adapters
+- **Database**: PostgreSQL with Prisma ORM
+- **E2E Testing**: 100+ test cases across all modules
 
 ---
 
@@ -55,33 +58,48 @@ CMS → WithholdingInstruction (Canonical) → NATS → Adapters → HCM Systems
 git clone <repository-url>
 cd contractor-cms
 
-# 2. Install dependencies
+# 2. Install backend dependencies
 npm install
 
-# 3. Copy environment file
-cp .env.example .env
+# 3. Install frontend dependencies
+cd frontend
+npm install
+cd ..
 
-# 4. Update .env with your configuration
+# 4. Copy environment files
+cp .env.example .env
+cd frontend && cp .env.example .env.local && cd ..
+
+# 5. Update .env files with your configuration
 # Edit DATABASE_URL, JWT_SECRET, etc.
 
-# 5. Start PostgreSQL with Docker
+# 6. Start PostgreSQL with Docker
 npm run docker:up
 
-# 6. Generate Prisma Client
+# 7. Generate Prisma Client
 npm run db:generate
 
-# 7. Run database migrations
+# 8. Run database migrations
 npm run db:migrate
 
-# 8. (Optional) Seed database with admin user
+# 9. (Optional) Seed database with test data
 npm run db:seed
+```
 
-# 9. Start development server
+### Running the Application
+
+```bash
+# Terminal 1: Start backend (from root)
 npm run start:dev
+
+# Terminal 2: Start frontend (from frontend/)
+cd frontend
+npm run dev
 ```
 
 The application will be available at:
-- **API:** http://localhost:3000
+- **Frontend UI:** http://localhost:3001
+- **Backend API:** http://localhost:3000
 - **Swagger Docs:** http://localhost:3000/api/docs
 - **Health Check:** http://localhost:3000/api/v1/health
 
@@ -89,37 +107,113 @@ The application will be available at:
 
 ## 📦 Available Scripts
 
-### Development
+### Backend (Root Directory)
+
 ```bash
+# Development
 npm run start:dev         # Start in watch mode
 npm run start:debug       # Start with debugger
 npm run build             # Build for production
 npm run start:prod        # Run production build
-```
 
-### Database
-```bash
+# Database
 npm run db:generate       # Generate Prisma Client
 npm run db:migrate        # Run migrations (dev)
 npm run db:migrate:prod   # Deploy migrations (production)
 npm run db:push           # Push schema changes (dev only)
 npm run db:seed           # Seed database
 npm run db:studio         # Open Prisma Studio
-```
 
-### Docker
-```bash
+# Docker
 npm run docker:up         # Start PostgreSQL container
 npm run docker:down       # Stop containers
 npm run docker:logs       # View container logs
-```
 
-### Code Quality
-```bash
+# Testing
+npm run test:e2e          # Run E2E tests
 npm run lint              # Lint and fix code
 npm run format            # Format with Prettier
-npm test                  # Run tests (TODO)
 ```
+
+### Frontend (frontend/ Directory)
+
+```bash
+# Development
+npm run dev               # Start development server
+npm run build             # Build for production
+npm run start             # Run production build
+npm run lint              # Lint code
+```
+
+---
+
+## 🎨 Frontend Features (Sprint 1-3)
+
+### Sprint 1: Core Workflows ✅
+
+**Reusable Components:**
+- Modal dialog with keyboard navigation
+- Form inputs (text, select, textarea) with validation
+- Status badges with auto-coloring
+- Toast notification system
+
+**Pages Implemented:**
+- **Contractors** (390 lines): Full CRUD with supplier linking
+- **Contracts** (420 lines): Rate configuration, date validation
+- **Engagements** (385 lines): Project assignments with auto-rate population
+- **Timesheets List** (280 lines): Status filtering and quick actions
+- **Timesheets Create** (295 lines): Multi-entry forms with real-time calculations
+- **Timesheets Detail** (340 lines): Approval workflow with payment estimates
+
+**Total**: 2,612 lines across 14 files
+
+### Sprint 2: Invoices & Projects ✅
+
+**Invoices Module:**
+- Create invoices from approved timesheets
+- Multi-timesheet selection with auto-calculation
+- Tax calculation (configurable VAT rate)
+- Complete workflow: Pending → Approved → Paid/Void
+- Payment tracking with multiple methods
+- PDF download functionality
+
+**Projects Module:**
+- Budget tracking with real-time utilization
+- Visual progress bars (Green/Yellow/Red based on %)
+- Budget warnings at 80% and 100%
+- Track associated timesheets and invoices
+
+**Components:**
+- BudgetProgress component for reusable visualizations
+- Enhanced API client with invoice operations
+
+**Total**: 1,610 lines across 6 files
+
+### Sprint 3: Advanced Features ✅
+
+**Enhanced Dashboard:**
+- 4 interactive Recharts visualizations:
+  - Financial Overview (Bar Chart)
+  - Timesheet Status Distribution (Pie Chart)
+  - Project Status (Pie Chart)
+  - Tax Withholding Breakdown (Horizontal Bar Chart)
+
+**Bulk Operations:**
+- **Timesheets**: Bulk approve/reject with success/failure reporting
+- **Invoices**: Bulk approve for pending invoices
+- Multi-select with checkboxes and select all
+- Promise.allSettled for parallel processing
+- Graceful error handling per item
+
+**CSV Export:**
+- Reusable export utility (260 lines)
+- Export buttons on all list pages
+- Proper CSV escaping (commas, quotes, newlines)
+- Date and currency formatting
+- Exports filtered/searched data
+- Entities: Timesheets, Invoices, Contractors, Contracts, Projects
+
+**Total**: +813 lines across 7 files
 
 ---
 
@@ -150,17 +244,58 @@ npm test                  # Run tests (TODO)
 - `WithholdingInstruction` - Canonical format for HCM
 
 **Work Management**
-- `Project`, `Task` - Project tracking
-- `Timesheet`, `TimesheetEntry` - Time tracking
+- `Project`, `Task` - Project tracking with budget
+- `Timesheet`, `TimesheetEntry` - Time tracking with approval workflow
 
 **Financial**
-- `Invoice`, `InvoiceLineItem` - Invoice management
+- `Invoice`, `InvoiceLineItem` - Invoice management with payment tracking
+
+---
+
+## 🏗️ Architecture
+
+### Tech Stack
+
+**Backend:**
+- NestJS (Node.js framework)
+- Prisma ORM
+- PostgreSQL 16
+- JWT Authentication
+- Swagger/OpenAPI
+- NATS (Event streaming)
+
+**Frontend:**
+- Next.js 15 (App Router)
+- React 19
+- TypeScript
+- Tailwind CSS
+- Recharts (Data visualization)
+- Axios (HTTP client)
+- date-fns (Date formatting)
+
+### Hybrid Authentication Model
+```
+CMS-Native Users        Federated Users (HCM)     API Keys (M2M)
+├── CMS Admins          ├── External Managers      ├── Withholding Bridge
+├── Finance/AP          ├── HCM Staff              ├── Custom Integrations
+└── Contractors         └── OIDC/OAuth 2.0         └── Scoped Permissions
+```
+
+### Multi-Tenant Architecture
+- Organization-scoped data isolation
+- Per-organization HCM configuration
+- Country-specific tax rules (South Africa, Lesotho)
+
+### Event-Driven Integration
+```
+CMS → WithholdingInstruction (Canonical) → NATS → Adapters → HCM Systems
+```
 
 ---
 
 ## 🔐 Environment Variables
 
-Create a `.env` file based on `.env.example`:
+### Backend (.env)
 
 ```bash
 # Application
@@ -183,56 +318,32 @@ API_KEY_SALT=your-api-key-salt-change-in-production
 CORS_ORIGIN=http://localhost:3001
 ```
 
----
-
-## 🧪 Testing
+### Frontend (frontend/.env.local)
 
 ```bash
-# Unit tests
-npm test
-
-# E2E tests
-npm run test:e2e
-
-# Test coverage
-npm run test:cov
+NEXT_PUBLIC_API_URL=http://localhost:3000
 ```
 
 ---
 
 ## 📚 API Documentation
 
-Once the application is running, visit:
+Once the backend is running, visit:
 
 **Swagger UI:** http://localhost:3000/api/docs
 
 API endpoints are organized by tags:
-- `auth` - Authentication
+- `auth` - Authentication (register, login, profile)
 - `users` - User management
 - `suppliers` - Supplier CRUD
 - `contractors` - Contractor management
 - `contracts` - Contract management
-- `projects` - Project & task management
-- `timesheets` - Time tracking
-- `invoices` - Invoice management
+- `engagements` - Engagement management
+- `projects` - Project & budget tracking
+- `timesheets` - Time tracking with approval workflow
+- `invoices` - Invoice management with payment tracking
+- `analytics` - Dashboard analytics and reporting
 - `health` - Health checks
-
----
-
-## 🌍 Multi-Tenancy
-
-Each organization is isolated by `organizationId`:
-
-```typescript
-// Example: Create a supplier scoped to organization
-POST /api/v1/suppliers
-{
-  "organizationId": "org-123",
-  "type": "COMPANY",
-  "companyName": "Acme Construction",
-  // ...
-}
-```
 
 ---
 
@@ -300,51 +411,96 @@ withholding.instruction.created
 
 ---
 
+## 🧪 Testing
+
+### E2E Tests (Backend)
+
+```bash
+# Run all E2E tests
+npm run test:e2e
+
+# Run specific test file
+npm run test:e2e -- auth.e2e-spec.ts
+```
+
+**Test Coverage:**
+- 100+ test cases across 6 test files
+- Authentication & Authorization
+- Core Domain (Suppliers, Contractors, Contracts)
+- Work Management (Timesheets, Approvals)
+- Financial Management (Invoices, Payments)
+- Integration Layer (Projects, Withholding)
+- Experience Layer (Organizations, Analytics)
+
+---
+
 ## 🛠️ Development
 
 ### Project Structure
 
 ```
 contractor-cms/
-├── src/
+├── src/                       # Backend source code
 │   ├── core/
-│   │   ├── auth/              # Authentication (TODO)
+│   │   ├── auth/              # Authentication
 │   │   ├── database/          # Prisma service
 │   │   └── health/            # Health checks
 │   │
-│   ├── modules/               # Business modules (TODO)
+│   ├── modules/               # Business modules
 │   │   ├── suppliers/
 │   │   ├── contractors/
 │   │   ├── contracts/
+│   │   ├── engagements/
 │   │   ├── classification/    # SARS engine
 │   │   ├── timesheets/
 │   │   ├── invoices/
-│   │   └── projects/
+│   │   ├── projects/
+│   │   └── analytics/
 │   │
-│   ├── country-packs/         # Country rules (TODO)
+│   ├── country-packs/         # Country rules
 │   │   ├── south-africa/
 │   │   └── lesotho/
 │   │
 │   ├── app.module.ts
 │   └── main.ts
 │
+├── frontend/                  # Frontend source code
+│   ├── app/                   # Next.js App Router pages
+│   │   ├── dashboard/         # Analytics dashboard
+│   │   ├── contractors/       # Contractors CRUD
+│   │   ├── contracts/         # Contracts CRUD
+│   │   ├── engagements/       # Engagements CRUD
+│   │   ├── timesheets/        # Timesheets with approval workflow
+│   │   ├── invoices/          # Invoices with payment tracking
+│   │   ├── projects/          # Projects with budget tracking
+│   │   ├── login/             # Authentication
+│   │   └── register/          # User registration
+│   │
+│   ├── components/            # React components
+│   │   ├── ui/                # Reusable UI components
+│   │   └── dashboard-layout.tsx
+│   │
+│   ├── lib/                   # Utilities
+│   │   ├── api.ts             # API client
+│   │   ├── auth-context.tsx   # Auth state management
+│   │   ├── toast.tsx          # Toast notifications
+│   │   └── csv-export.ts      # CSV export utilities
+│   │
+│   └── public/                # Static assets
+│
 ├── prisma/
 │   ├── schema.prisma          # Database schema
 │   ├── migrations/            # Migration history
-│   └── seed.ts                # Seed data (TODO)
+│   └── seed.ts                # Seed data
+│
+├── test/                      # E2E tests
+│   ├── utils/                 # Test utilities
+│   ├── fixtures/              # Test data factories
+│   └── *.e2e-spec.ts          # Test files
 │
 ├── docker-compose.yml
 ├── package.json
 └── README.md
-```
-
-### Adding a New Module
-
-```bash
-# Generate module, service, and controller
-nest g module modules/suppliers
-nest g service modules/suppliers
-nest g controller modules/suppliers
 ```
 
 ---
@@ -357,6 +513,8 @@ nest g controller modules/suppliers
 - **JWT** - Stateless authentication
 - **Validation** - class-validator + class-transformer
 - **API Keys** - System integration security
+- **XSS Protection** - Input sanitization
+- **SQL Injection Prevention** - Prisma parameterized queries
 
 ---
 
@@ -377,54 +535,35 @@ GET /api/v1/health/readiness
 
 ---
 
-## 🗺️ Roadmap
+## 🗺️ Implementation Status
 
-See [IMPLEMENTATION_PLAN.md](./IMPLEMENTATION_PLAN.md) for detailed phased roadmap.
+### ✅ Completed
 
-### Current Status: **Phase 1 - Foundation** ✅
+**Backend (Phases 1-6):**
+- ✅ Database schema and migrations
+- ✅ Core modules (Suppliers, Contractors, Contracts)
+- ✅ Work management (Timesheets, Approvals)
+- ✅ Financial management (Invoices, Payments)
+- ✅ Projects with budget tracking
+- ✅ Analytics and reporting
+- ✅ E2E test suite (100+ tests)
 
-**Next Up:** Phase 1B - Authentication Module
+**Frontend (Sprints 1-3):**
+- ✅ Sprint 1: Core Workflows (Contractors, Contracts, Timesheets)
+- ✅ Sprint 2: Invoices & Projects with Budget Tracking
+- ✅ Sprint 3: Advanced Features (Analytics, Bulk Operations, CSV Export)
 
----
+### 🚧 Roadmap
 
-## 🤝 Contributing
-
-(TODO: Add contribution guidelines)
-
----
-
-## 📝 License
-
-ISC
-
----
-
-## 📞 Support
-
-(TODO: Add support contact)
-
----
-
-## ⚙️ Configuration
-
-### Organization Setup
-
-Each organization requires:
-- `hcmType` - Integration adapter (ORACLE_HCM, SAP_SF, WORKDAY, CUSTOM_NATS)
-- `hcmConfig` - Adapter-specific configuration (API URLs, credentials)
-- `country` - Country code (ZA, LS)
-- `currency` - Default currency (ZAR)
-
-### Role-Based Access Control
-
-Predefined roles:
-- `CMS_ADMIN` - Full system access
-- `FINANCE_USER` - AP/Invoice management
-- `CONTRACTOR_MANAGER` - Contractor operations
-- `CONTRACTOR` - Self-service portal
-
-Permissions format: `resource:action`
-- Examples: `suppliers:create`, `invoices:approve`, `timesheets:view`
+**Potential Future Enhancements:**
+- Email notifications (approval reminders, status updates)
+- Advanced filtering (date ranges, multi-criteria)
+- User permissions & role management UI
+- Audit logs and activity tracking
+- PDF report generation
+- Mobile app (React Native)
+- Offline mode support
+- Real-time collaboration features
 
 ---
 
@@ -440,8 +579,6 @@ docker run -p 3000:3000 \
   -e JWT_SECRET="..." \
   contractor-cms:latest
 ```
-
-(TODO: Add docker-compose for production)
 
 ---
 
@@ -490,8 +627,36 @@ npm run db:generate
 ```bash
 # Change PORT in .env
 PORT=3001
+
+# For frontend, change in package.json
+"dev": "next dev -p 3002"
+```
+
+### Frontend API Connection Issues
+
+```bash
+# Verify NEXT_PUBLIC_API_URL in frontend/.env.local
+# Ensure backend is running on http://localhost:3000
 ```
 
 ---
 
-Built with ❤️ using NestJS, Prisma, and PostgreSQL
+## 🤝 Contributing
+
+(TODO: Add contribution guidelines)
+
+---
+
+## 📝 License
+
+ISC
+
+---
+
+## 📞 Support
+
+(TODO: Add support contact)
+
+---
+
+Built with ❤️ using NestJS, Prisma, PostgreSQL, Next.js, and TypeScript
