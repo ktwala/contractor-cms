@@ -126,6 +126,10 @@ export const PERMISSIONS = {
     DELETE: 'roles:delete',
     ASSIGN: 'roles:assign',
   },
+
+  AUDIT: {
+    READ: 'audit:read',
+  },
 } as const;
 
 // ---------------------------------------------------------------------------

@@ -88,10 +88,14 @@
       "UPDATE": "roles:update",
       "DELETE": "roles:delete",
       "ASSIGN": "roles:assign"
+    },
+    "AUDIT": {
+      "READ": "audit:read"
     }
   },
   "allPermissions": [
     "analytics:read",
+    "audit:read",
     "contractors:create",
     "contractors:delete",
     "contractors:read",
@@ -510,6 +514,17 @@
           "action": "ASSIGN",
           "value": "roles:assign",
           "label": "Assign"
+        }
+      ]
+    },
+    {
+      "resource": "AUDIT",
+      "label": "AUDIT",
+      "permissions": [
+        {
+          "action": "READ",
+          "value": "audit:read",
+          "label": "Read"
         }
       ]
     }

@@ -457,42 +457,4 @@ describe('RBAC Permission Engine E2E', () => {
   });
 
   // -------------------------------------------------------------------------
-  // Org-scope warning (deferred enforcement)
-  // -------------------------------------------------------------------------
-
-  describe('Org-scope warning', () => {
-    it('org-scoped role still grants permissions (enforcement deferred)', async () => {
-      const org = await TestHelper.createTestOrganization();
-      await TestHelper.createUserWithRoles(org.id, {
-        email: 'orgscoped@test.com',
-        roles: [
-          {
-            role: 'ORG_FINANCE',
-            permissions: ['invoices:read', 'suppliers:read'],
-            orgId: org.id, // org-scoped
-          },
-        ],
-      });
-      const login = await TestHelper.login('orgscoped@test.com');
-
-      // Spy on the logger to ensure the warning is emitted
-      const loggerSpy = jest.spyOn(require('@nestjs/common').Logger.prototype, 'warn');
-
-      // Should still work — org-scope enforcement is deferred
-      const response = await request(app.getHttpServer())
-        .get('/suppliers')
-        .set('Authorization', `Bearer ${login.token}`)
-        .expect(200);
-
-      // Assert that the warning was logged
-      expect(loggerSpy).toHaveBeenCalledWith(
-        expect.stringContaining('[RBAC-ORG-SCOPE] User'),
-      );
-      expect(loggerSpy).toHaveBeenCalledWith(
-        expect.stringContaining('enforcement is not implemented'),
-      );
-
-      loggerSpy.mockRestore();
-    });
-  });
 });

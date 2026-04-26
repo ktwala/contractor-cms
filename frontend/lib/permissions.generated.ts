@@ -98,6 +98,9 @@ export const PERMISSIONS = {
     "UPDATE": "roles:update",
     "DELETE": "roles:delete",
     "ASSIGN": "roles:assign"
+  },
+  "AUDIT": {
+    "READ": "audit:read"
   }
 } as const;
 
@@ -107,6 +110,7 @@ export const PERMISSIONS = {
 
 export const ALL_PERMISSIONS: ReadonlySet<string> = new Set([
   "analytics:read",
+  "audit:read",
   "contractors:create",
   "contractors:delete",
   "contractors:read",
@@ -530,6 +534,17 @@ export const PERMISSION_GROUPS = [
         "action": "ASSIGN",
         "value": "roles:assign",
         "label": "Assign"
+      }
+    ]
+  },
+  {
+    "resource": "AUDIT",
+    "label": "AUDIT",
+    "permissions": [
+      {
+        "action": "READ",
+        "value": "audit:read",
+        "label": "Read"
       }
     ]
   }
