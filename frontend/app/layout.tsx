@@ -1,0 +1,31 @@
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import './globals.css';
+import { AuthProvider } from '@/lib/auth-context';
+import { ToastProvider } from '@/lib/toast';
+import { ErrorBoundary } from '@/components/error-boundary';
+
+const inter = Inter({ subsets: ['latin'] });
+
+export const metadata: Metadata = {
+  title: 'Contractor CMS',
+  description: 'Contractor Management System',
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en">
+      <body className={inter.className}>
+        <ErrorBoundary>
+          <AuthProvider>
+            <ToastProvider>{children}</ToastProvider>
+          </AuthProvider>
+        </ErrorBoundary>
+      </body>
+    </html>
+  );
+}

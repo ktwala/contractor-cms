@@ -1,0 +1,25 @@
+{
+  "name": "contractor-cms",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Contractor Management System - Independent SaaS Platform",
+  "scripts": {
+    "backend:dev": "cd backend && npm run start:dev",
+    "backend:build": "cd backend && npm run build",
+    "backend:test": "cd backend && npm run test",
+    "backend:test:e2e": "cd backend && npm run test:e2e",
+    "frontend:dev": "cd frontend && npm run dev",
+    "frontend:build": "cd frontend && npm run build",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f",
+    "db:generate": "cd backend && npm run db:generate",
+    "db:push": "cd backend && npm run db:push",
+    "db:migrate": "cd backend && npm run db:migrate",
+    "db:seed": "cd backend && npm run db:seed",
+    "db:studio": "cd backend && npm run db:studio",
+    "rbac:generate": "cd backend && npx ts-node scripts/generate-permissions.ts",
+    "rbac:check": "cd backend && npm run test:unit",
+    "rbac:verify": "cd backend && npx ts-node scripts/generate-permissions.ts && git diff --exit-code frontend/lib/permissions.generated.ts backend/src/core/auth/permissions.catalog.json"
+  }
+}
