@@ -20,6 +20,6 @@
     "db:studio": "cd backend && npm run db:studio",
     "rbac:generate": "cd backend && npx ts-node scripts/generate-permissions.ts",
     "rbac:check": "cd backend && npm run test:unit",
-    "rbac:verify": "cd backend && npx ts-node scripts/generate-permissions.ts && git diff --exit-code frontend/lib/permissions.generated.ts backend/src/core/auth/permissions.catalog.json"
+    "rbac:verify": "cd backend && npx ts-node scripts/generate-permissions.ts && git diff --exit-code ../frontend/lib/permissions.generated.ts src/core/auth/permissions.catalog.json"
   }
 }
