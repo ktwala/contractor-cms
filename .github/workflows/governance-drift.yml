@@ -1,0 +1,33 @@
+name: Governance Drift Prevention
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  check-drift:
+    name: Enforce Governance Schema
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install backend dependencies
+        run: npm ci
+        working-directory: ./backend
+
+      - name: Run Governance Drift Check
+        run: npx --yes ts-node ../scripts/governance-drift-check.ts
+        working-directory: ./backend
+
+      - name: Run EXTID substrate drift check (PR-EXTID-SCHEMA-1D)
+        run: npx --yes ts-node ../scripts/extid-drift-check.ts
+        working-directory: ./backend
