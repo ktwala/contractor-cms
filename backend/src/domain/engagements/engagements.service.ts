@@ -130,6 +130,9 @@ export class EngagementsService {
         rateAmount: createEngagementDto.rateAmount,
         currency: createEngagementDto.currency || 'ZAR',
         isActive: true,
+        sponsorEmployeeId: createEngagementDto.sponsorEmployeeId,
+        sponsorDelegateEmployeeId: createEngagementDto.sponsorDelegateEmployeeId,
+        sponsorStatus: createEngagementDto.sponsorStatus,
       },
       include: {
         contractor: {

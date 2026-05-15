@@ -7,8 +7,10 @@ import {
   IsEnum,
   IsNumber,
   Min,
+  MaxLength,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { SponsorAccountabilityStatus } from '@prisma/client';
 
 export enum RateType {
   HOURLY = 'HOURLY',
@@ -62,4 +64,34 @@ export class CreateEngagementDto {
   @IsOptional()
   @IsString()
   currency?: string;
+
+  /** PR-SPONSOR-RUNTIME-1 — opaque substrate; not verified against HCM. */
+  @ApiPropertyOptional({
+    nullable: true,
+    description:
+      'Sponsor employee identifier (opaque; structural validation only until HCM bridge)',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(2048)
+  sponsorEmployeeId?: string | null;
+
+  @ApiPropertyOptional({
+    nullable: true,
+    description: 'Optional delegate sponsor employee identifier (opaque)',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(2048)
+  sponsorDelegateEmployeeId?: string | null;
+
+  @ApiPropertyOptional({
+    enum: SponsorAccountabilityStatus,
+    enumName: 'SponsorAccountabilityStatus',
+    nullable: true,
+    description: 'Sponsor accountability status (substrate only; no workflow enforcement yet)',
+  })
+  @IsOptional()
+  @IsEnum(SponsorAccountabilityStatus)
+  sponsorStatus?: SponsorAccountabilityStatus | null;
 }
