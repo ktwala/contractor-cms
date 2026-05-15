@@ -133,6 +133,13 @@ enum WorkerArchetypeKind {
   ARCHETYPE_INDEPENDENT
 }
 
+/// PR-IGA-OUTBOX-1 — durable outbound IGA-bound events; no dispatcher in this PR.
+enum IgaOutboxDeliveryStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
 // ============================================================================
 // AUTHENTICATION & AUTHORIZATION
 // ============================================================================
@@ -908,4 +915,19 @@ model PdpExceptionRequest {
   
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
+}
+
+/// PR-IGA-OUTBOX-1 — append-only outbox row for outbound external-workforce events (payload contract v1).
+model IgaOutboxEvent {
+  id                 String                   @id @default(uuid())
+  eventType          String
+  eventVersion       Int
+  source             String
+  externalPersonId   String?
+  payloadJson        Json
+  deliveryStatus     IgaOutboxDeliveryStatus  @default(PENDING)
+  createdAt          DateTime                 @default(now())
+  lastAttemptAt      DateTime?
+
+  @@index([deliveryStatus, createdAt])
 }
