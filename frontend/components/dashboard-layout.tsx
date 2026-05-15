@@ -3,7 +3,7 @@
 import { useAuth } from '@/lib/auth-context';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   LayoutDashboard,
   Users,
@@ -18,9 +18,16 @@ import {
   Menu,
   X,
   Shield,
-  Settings,
+  ScrollText,
+  ShieldCheck,
 } from 'lucide-react';
-import { PROTECTED_ROUTES } from '@/lib/protected-routes';
+import {
+  PROTECTED_ROUTES,
+  NAV_GROUP_ORDER,
+  NAV_GROUP_LABELS,
+  type NavGroup,
+} from '@/lib/protected-routes';
+import type { Permission } from '@/lib/permissions.generated';
 
 // Map icons to routes
 const ICON_MAP: Record<string, React.ElementType> = {
@@ -36,7 +43,98 @@ const ICON_MAP: Record<string, React.ElementType> = {
   '/organizations': Building2,
   '/settings/users': Users,
   '/settings/roles': Shield,
+  '/settings/audit-logs': ScrollText,
+  '/settings/pdp-activation': Shield,
+  '/settings/pdp-exceptions': ShieldCheck,
+  '/settings/audit-insights': ShieldCheck,
 };
+
+export type SidebarNavItem = {
+  path: string;
+  href: string;
+  name: string;
+  navGroup: NavGroup;
+  icon: React.ElementType;
+};
+
+export type SidebarNavSection = {
+  group: NavGroup;
+  label: string;
+  items: SidebarNavItem[];
+};
+
+function SidebarNavSections({
+  sections,
+  pathname,
+  onLinkClick,
+}: {
+  sections: SidebarNavSection[];
+  pathname: string;
+  onLinkClick?: () => void;
+}) {
+  return (
+    <>
+      {sections.map(({ group, label, items }, sectionIdx) => (
+        <div
+          key={group}
+          className={sectionIdx > 0 ? 'mt-4' : ''}
+          data-testid={`nav-section-${group}`}
+        >
+          <p
+            className="px-4 pb-2 text-xs font-semibold uppercase tracking-wide text-gray-400"
+            data-testid={`nav-section-label-${group}`}
+          >
+            {label}
+          </p>
+          <div className="space-y-1">
+            {items.map((item) => {
+              const isActive = pathname === item.href;
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.path}
+                  href={item.href}
+                  className={`flex items-center px-4 py-2 text-sm font-medium rounded-lg ${
+                    isActive
+                      ? 'bg-primary-100 text-primary-700'
+                      : 'text-gray-700 hover:bg-gray-100'
+                  }`}
+                  onClick={onLinkClick}
+                >
+                  <Icon className="w-5 h-5 mr-3" />
+                  {item.name}
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+    </>
+  );
+}
+
+/** PR-NAV-IA-1 — build grouped nav from route table + permission filter (pure; testable). */
+export function buildSidebarNavSections(
+  can: (permission: Permission) => boolean,
+): SidebarNavSection[] {
+  const items: SidebarNavItem[] = PROTECTED_ROUTES.filter((route) => {
+    if (route.showInSidebar === false) return false;
+    if (!route.permission) return true;
+    return can(route.permission);
+  }).map((route) => ({
+    path: route.path,
+    href: route.path,
+    name: route.name,
+    navGroup: route.navGroup,
+    icon: ICON_MAP[route.path] || FileText,
+  }));
+
+  return NAV_GROUP_ORDER.map((group) => ({
+    group,
+    label: NAV_GROUP_LABELS[group],
+    items: items.filter((i) => i.navGroup === group),
+  })).filter((s) => s.items.length > 0);
+}
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, loading, logout, can } = useAuth();
@@ -50,6 +148,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }
   }, [user, loading, router]);
 
+  const groupedSections = useMemo(() => buildSidebarNavSections(can), [user, can]);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -62,17 +162,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     return null;
   }
 
-  // Filter navigation items based on user permissions
-  const authorizedNavigation = PROTECTED_ROUTES.filter((route) => {
-    if (route.showInSidebar === false) return false;
-    if (!route.permission) return true; // Accessible to all authenticated users
-    return can(route.permission);
-  }).map(route => ({
-    ...route,
-    href: route.path,
-    icon: ICON_MAP[route.path] || FileText,
-  }));
-
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Mobile sidebar */}
@@ -82,29 +171,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <div className="fixed inset-y-0 left-0 flex flex-col w-64 bg-white">
             <div className="flex items-center justify-between h-16 px-4 border-b">
               <span className="text-xl font-bold text-primary-600">Contractor CMS</span>
-              <button onClick={() => setSidebarOpen(false)} className="text-gray-500">
+              <button type="button" onClick={() => setSidebarOpen(false)} className="text-gray-500">
                 <X className="w-6 h-6" />
               </button>
             </div>
-            <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
-              {authorizedNavigation.map((item) => {
-                const isActive = pathname === item.href;
-                return (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    className={`flex items-center px-4 py-2 text-sm font-medium rounded-lg ${
-                      isActive
-                        ? 'bg-primary-100 text-primary-700'
-                        : 'text-gray-700 hover:bg-gray-100'
-                    }`}
-                    onClick={() => setSidebarOpen(false)}
-                  >
-                    <item.icon className="w-5 h-5 mr-3" />
-                    {item.name}
-                  </Link>
-                );
-              })}
+            <nav className="flex-1 px-4 py-4 overflow-y-auto">
+              <SidebarNavSections
+                sections={groupedSections}
+                pathname={pathname}
+                onLinkClick={() => setSidebarOpen(false)}
+              />
             </nav>
           </div>
         </div>
@@ -116,24 +192,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <div className="flex items-center h-16 px-4 border-b">
             <span className="text-xl font-bold text-primary-600">Contractor CMS</span>
           </div>
-          <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
-            {authorizedNavigation.map((item) => {
-              const isActive = pathname === item.href;
-              return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className={`flex items-center px-4 py-2 text-sm font-medium rounded-lg ${
-                    isActive
-                      ? 'bg-primary-100 text-primary-700'
-                      : 'text-gray-700 hover:bg-gray-100'
-                  }`}
-                >
-                  <item.icon className="w-5 h-5 mr-3" />
-                  {item.name}
-                </Link>
-              );
-            })}
+          <nav className="flex-1 px-4 py-4 overflow-y-auto">
+            <SidebarNavSections sections={groupedSections} pathname={pathname} />
           </nav>
         </div>
       </div>
@@ -156,6 +216,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 {user.firstName} {user.lastName}
               </div>
               <button
+                type="button"
                 onClick={logout}
                 className="text-gray-500 hover:text-gray-700"
                 title="Logout"

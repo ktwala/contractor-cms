@@ -1,6 +1,8 @@
 # Role Transition Matrix v1
 
-**Status:** `DRAFT` — supports **V1.0 ratification** and **STREAM B** / **PR-RBAC-REALIGN-1** (RBAC realignment), sequenced **after** [`PR-EXTID-SCHEMA-1_DESIGN.md`](./PR-EXTID-SCHEMA-1_DESIGN.md) per [`EXTID_IMPLEMENTATION_ALIGNMENT_PLAN_V1.md`](./EXTID_IMPLEMENTATION_ALIGNMENT_PLAN_V1.md) **§4**.
+**Status:** `DRAFT` — supports **V1.0 ratification** and **STREAM B** (RBAC realignment), sequenced **after** [`PR-EXTID-SCHEMA-1_DESIGN.md`](./PR-EXTID-SCHEMA-1_DESIGN.md) per [`EXTID_IMPLEMENTATION_ALIGNMENT_PLAN_V1.md`](./EXTID_IMPLEMENTATION_ALIGNMENT_PLAN_V1.md) **§4**.
+
+**Closed (traceability):** **PR-DOCS-SUPPLIER-TERMINOLOGY-1** — CLOSED · **PR-RBAC-REALIGN-1** — CLOSED · **PR-NAV-IA-1** — CLOSED.
 
 **Purpose:** Map **current seeded / implied personas** to **target doctrine personas** and define **deprecate → restrict → replace** paths without destructive role removal.
 
@@ -79,6 +81,7 @@ Illustrative rows removed — exact strings live in seed + [`permissions.catalog
 
 ## References
 
+- [`SEED_ROLE_BUNDLES_PR_RBAC_REALIGN.md`](./SEED_ROLE_BUNDLES_PR_RBAC_REALIGN.md) — seed-only target bundles (aligned with **PR-RBAC-REALIGN-1**)
 - [`EXTID_IMPLEMENTATION_ALIGNMENT_PLAN_V1.md`](./EXTID_IMPLEMENTATION_ALIGNMENT_PLAN_V1.md)
 - [`PR-EXTID-SCHEMA-1_DESIGN.md`](./PR-EXTID-SCHEMA-1_DESIGN.md)
 - [`IMPLEMENTATION_DRIFT_GATES.md`](./IMPLEMENTATION_DRIFT_GATES.md)
@@ -91,5 +94,7 @@ Illustrative rows removed — exact strings live in seed + [`permissions.catalog
 
 | Version | Note |
 |---------|------|
+| 1.4 | **PR-NAV-IA-1** — **CLOSED:** sidebar grouped into Operations / Governance / Administration; permissions unchanged (`frontend/lib/protected-routes.ts` + `frontend/components/dashboard-layout.tsx`). |
+| 1.3 | PR-DOCS-SUPPLIER-TERMINOLOGY-1 + PR-RBAC-REALIGN-1 marked CLOSED; reference link to [`SEED_ROLE_BUNDLES_PR_RBAC_REALIGN.md`](./SEED_ROLE_BUNDLES_PR_RBAC_REALIGN.md) |
 | 1.2 | PR-RBAC-REALIGN-1: `CONTRACTOR` invoice restriction; seed bundles for SUPPLIER_ADMIN, SUPPLIER_MANAGER, SPONSOR |
 | 1.0 | Initial role transition matrix |
