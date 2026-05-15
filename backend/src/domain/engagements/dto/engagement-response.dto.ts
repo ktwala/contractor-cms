@@ -1,4 +1,13 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import {
+  ContractorPersonType,
+  ContractorAccessIntent,
+  IgaIntegrationPlaneStatus,
+  AccessEnablementPlaneStatus,
+  GovernanceRiskTier,
+  WorkerArchetypeKind,
+  SponsorAccountabilityStatus,
+} from '@prisma/client';
 import { RateType } from './create-engagement.dto';
 
 export class EngagementResponseDto {
@@ -41,6 +50,18 @@ export class EngagementResponseDto {
   @ApiProperty()
   isActive: boolean;
 
+  @ApiPropertyOptional()
+  sponsorEmployeeId?: string | null;
+
+  @ApiPropertyOptional()
+  sponsorDelegateEmployeeId?: string | null;
+
+  @ApiPropertyOptional({
+    enum: SponsorAccountabilityStatus,
+    enumName: 'SponsorAccountabilityStatus',
+  })
+  sponsorStatus?: SponsorAccountabilityStatus | null;
+
   @ApiProperty()
   createdAt: Date;
 
@@ -53,6 +74,24 @@ export class EngagementResponseDto {
     firstName: string;
     lastName: string;
     email: string;
+    externalPersonId?: string | null;
+    personType?: ContractorPersonType | null;
+    supplierResourceId?: string | null;
+    accessIntent?: ContractorAccessIntent | null;
+    identityRequired?: boolean;
+    physicalAccessRequired?: boolean;
+    logicalAccessRequired?: boolean;
+    igaIntegrationStatus?: IgaIntegrationPlaneStatus;
+    accessEnablementStatus?: AccessEnablementPlaneStatus;
+    igaLastSyncAt?: Date | null;
+    riskTier?: GovernanceRiskTier | null;
+    workerArchetype?: WorkerArchetypeKind | null;
+    supplier?: {
+      id: string;
+      companyName?: string | null;
+      firstName?: string | null;
+      lastName?: string | null;
+    };
   };
 
   @ApiProperty({ required: false })

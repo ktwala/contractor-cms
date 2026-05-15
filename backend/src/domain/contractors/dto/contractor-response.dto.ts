@@ -1,5 +1,15 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { WorkerClassification, EngagementModel } from '@prisma/client';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import {
+  WorkerClassification,
+  EngagementModel,
+  SupplierType,
+  ContractorPersonType,
+  ContractorAccessIntent,
+  IgaIntegrationPlaneStatus,
+  AccessEnablementPlaneStatus,
+  GovernanceRiskTier,
+  WorkerArchetypeKind,
+} from '@prisma/client';
 
 export class ContractorResponseDto {
   @ApiProperty()
@@ -50,6 +60,48 @@ export class ContractorResponseDto {
   @ApiProperty({ required: false })
   accessExpiresAt?: Date;
 
+  @ApiPropertyOptional()
+  externalPersonId?: string | null;
+
+  @ApiPropertyOptional({ enum: ContractorPersonType, enumName: 'ContractorPersonType' })
+  personType?: ContractorPersonType | null;
+
+  @ApiPropertyOptional()
+  supplierResourceId?: string | null;
+
+  @ApiPropertyOptional({ enum: ContractorAccessIntent, enumName: 'ContractorAccessIntent' })
+  accessIntent?: ContractorAccessIntent | null;
+
+  @ApiPropertyOptional()
+  identityRequired?: boolean;
+
+  @ApiPropertyOptional()
+  physicalAccessRequired?: boolean;
+
+  @ApiPropertyOptional()
+  logicalAccessRequired?: boolean;
+
+  @ApiPropertyOptional({
+    enum: IgaIntegrationPlaneStatus,
+    enumName: 'IgaIntegrationPlaneStatus',
+  })
+  igaIntegrationStatus?: IgaIntegrationPlaneStatus;
+
+  @ApiPropertyOptional({
+    enum: AccessEnablementPlaneStatus,
+    enumName: 'AccessEnablementPlaneStatus',
+  })
+  accessEnablementStatus?: AccessEnablementPlaneStatus;
+
+  @ApiPropertyOptional()
+  igaLastSyncAt?: Date | null;
+
+  @ApiPropertyOptional({ enum: GovernanceRiskTier, enumName: 'GovernanceRiskTier' })
+  riskTier?: GovernanceRiskTier | null;
+
+  @ApiPropertyOptional({ enum: WorkerArchetypeKind, enumName: 'WorkerArchetypeKind' })
+  workerArchetype?: WorkerArchetypeKind | null;
+
   @ApiProperty()
   createdAt: Date;
 
@@ -59,6 +111,7 @@ export class ContractorResponseDto {
   @ApiProperty({ required: false })
   supplier?: {
     id: string;
+    type: SupplierType;
     companyName?: string;
     firstName?: string;
     lastName?: string;
