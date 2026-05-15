@@ -8,6 +8,32 @@ export class OrgContextResolverService {
 
   constructor(private readonly prisma: PrismaService) {}
 
+  /** Resolve tenant organization id for a Prisma model + primary id (used by org-context decorator). */
+  private async organizationIdForLookup(
+    lookup: string,
+    id: string,
+  ): Promise<string | null> {
+    if (lookup === 'Contractor') {
+      const row = await this.prisma.contractor.findUnique({
+        where: { id },
+        select: { supplier: { select: { organizationId: true } } },
+      });
+      return row?.supplier?.organizationId ?? null;
+    }
+
+    const modelName = lookup.toLowerCase();
+    if (!(this.prisma as any)[modelName]) {
+      this.logger.error(`Lookup model ${lookup} not found on PrismaService`);
+      return null;
+    }
+
+    const record = await (this.prisma as any)[modelName].findUnique({
+      where: { id },
+      select: { organizationId: true },
+    });
+    return record?.organizationId ?? null;
+  }
+
   async resolveTargetOrgId(
     request: any,
     options: OrgContextOptions,
@@ -20,7 +46,14 @@ export class OrgContextResolverService {
       }
 
       if (type === 'body') {
-        return request.body?.[key!] || null;
+        const raw = request.body?.[key!];
+        if (raw == null || raw === '') {
+          return null;
+        }
+        if (lookup) {
+          return this.organizationIdForLookup(lookup, String(raw));
+        }
+        return typeof raw === 'string' ? raw : null;
       }
 
       if (type === 'query') {
@@ -29,30 +62,16 @@ export class OrgContextResolverService {
 
       if (type === 'param') {
         const paramValue = request.params?.[key!];
-        
+
         if (!paramValue) {
           return null;
         }
 
-        // If lookup is required, we query the DB
         if (lookup) {
-          // E.g. prisma.supplier.findUnique({ where: { id: paramValue }, select: { organizationId: true } })
-          const modelName = lookup.toLowerCase();
-          
-          if (!this.prisma[modelName]) {
-            this.logger.error(`Model ${modelName} not found in Prisma Client`);
-            return null;
-          }
-
-          const record = await this.prisma[modelName].findUnique({
-            where: { id: paramValue },
-            select: { organizationId: true },
-          });
-
-          return record?.organizationId || null;
+          return this.organizationIdForLookup(lookup, String(paramValue));
         }
 
-        return paramValue; // If the param itself is the org ID
+        return paramValue;
       }
     } catch (error) {
       this.logger.error('Failed to resolve org context', error);
