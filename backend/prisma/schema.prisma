@@ -7,6 +7,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 // ============================================================================
@@ -74,6 +75,61 @@ enum SyncStatus {
   SYNCED
   FAILED
   CANCELLED
+}
+
+enum AuditResult {
+  success
+  failed
+}
+
+// EXTID / governance (PR-EXTID-SCHEMA-1A) — additive; nullable-first; no CMS lifecycle conflation
+enum ContractorPersonType {
+  PERSON_SUPPLIED_WORKER
+  PERSON_INDEPENDENT
+}
+
+enum ContractorAccessIntent {
+  ACCESS_NONE
+  ACCESS_LOGICAL
+  ACCESS_PHYSICAL
+  ACCESS_BOTH
+  ACCESS_PRIVILEGED
+}
+
+enum IgaIntegrationPlaneStatus {
+  IGA_UNKNOWN
+  IGA_NOT_CONNECTED
+  IGA_PENDING
+  IGA_SYNCED
+  IGA_FAILED
+}
+
+enum AccessEnablementPlaneStatus {
+  ENABLEMENT_NOT_REQUIRED
+  ENABLEMENT_PENDING_IGA
+  ENABLEMENT_PARTIAL
+  ENABLEMENT_ENABLED
+  ENABLEMENT_BLOCKED
+  ENABLEMENT_REVOKED
+}
+
+enum SponsorAccountabilityStatus {
+  SPONSOR_ACTIVE
+  SPONSOR_TRANSFER_PENDING
+  SPONSOR_REVOKED
+}
+
+enum GovernanceRiskTier {
+  RISK_UNKNOWN
+  RISK_LOW
+  RISK_MEDIUM
+  RISK_HIGH
+}
+
+enum WorkerArchetypeKind {
+  ARCHETYPE_UNKNOWN
+  ARCHETYPE_SUPPLIED
+  ARCHETYPE_INDEPENDENT
 }
 
 // ============================================================================
@@ -343,6 +399,23 @@ model Contractor {
   isActive            Boolean             @default(true)
   accessExpiresAt     DateTime?
 
+  // EXTID — canonical identity / access intent / IGA boundary (substrate only; not enforcement)
+  externalPersonId           String?
+  personType                 ContractorPersonType?
+  supplierResourceId         String?
+
+  accessIntent                 ContractorAccessIntent?
+  identityRequired             Boolean  @default(false)
+  physicalAccessRequired       Boolean  @default(false)
+  logicalAccessRequired        Boolean  @default(false)
+
+  igaIntegrationStatus         IgaIntegrationPlaneStatus    @default(IGA_UNKNOWN)
+  accessEnablementStatus       AccessEnablementPlaneStatus @default(ENABLEMENT_NOT_REQUIRED)
+  igaLastSyncAt                DateTime?
+
+  riskTier                     GovernanceRiskTier?
+  workerArchetype              WorkerArchetypeKind?
+
   // Relations
   engagements         ContractorEngagement[]
   timesheets          Timesheet[]
@@ -431,6 +504,11 @@ model ContractorEngagement {
   currentClassificationId String?
 
   isActive          Boolean        @default(true)
+
+  // Sponsor accountability (placement-level; substrate only)
+  sponsorEmployeeId         String?
+  sponsorDelegateEmployeeId String?
+  sponsorStatus             SponsorAccountabilityStatus?
 
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
@@ -745,8 +823,18 @@ model AuditLog {
   targetType        String         // "User", "Role", "UserRole"
   targetId          String         // ID of the affected resource
 
+  organizationId    String?        // Null if global system action
+  severity          String         @default("INFO") // INFO, WARNING, CRITICAL
+  tags              String[]       // ["SPOOF_ATTEMPT", "ANOMALY"]
+
+  result            AuditResult    @default(success)
+
   before            Json?          // State before action
   after             Json?          // State after action
+  metadata          Json?          // Additional context (e.g. request details)
+
+  ipAddress         String?        // Client IP address
+  userAgent         String?        // Client user-agent string
 
   createdAt         DateTime       @default(now())
 
@@ -754,5 +842,69 @@ model AuditLog {
   @@index([actorUserId])
   @@index([action])
   @@index([createdAt])
+  @@index([createdAt, actorUserId])
+  @@index([organizationId])
+  @@index([severity])
 }
 
+// ============================================================================
+// PDP ACTIVATION CONTROL PLANE
+// ============================================================================
+
+model PdpActivationRule {
+  id                String    @id @default(uuid())
+  
+  // Dimensions
+  reasonCode        String?
+  action            String?
+  domain            String?
+  organizationId    String?
+  environment       String    @default("production")
+  
+  // Control State
+  enforcementLevel  String    // SHADOW, WARN, APPROVAL_REQUIRED, SOFT_BLOCK, HARD_BLOCK
+  isActive          Boolean   @default(true)
+  rolloutPercent    Int       @default(100)
+  priority          Int       @default(0)
+
+  // Advanced Routing
+  requiresDualApproval Boolean @default(false)
+
+  // Audit Context
+  expiresAt         DateTime?
+  notes             String?
+  updatedBy         String
+  approvedBy        String?
+
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([organizationId])
+  @@index([reasonCode])
+  @@index([environment])
+}
+
+model PdpExceptionRequest {
+  id                String    @id @default(uuid())
+  evaluationId      String    // the initial AuditLog or reference ID that caused the block
+  
+  // Context
+  reasonCode        String
+  action            String
+  contextTargetId   String?   // supplierId, poId, etc.
+  
+  // Workflow state
+  status            String    // PENDING, APPROVED, REJECTED, EXPIRED
+  
+  // Actor info
+  requestedBy       String
+  justification     String
+  
+  // Approval info
+  approverId        String?
+  approvalNotes     String?
+  expiresAt         DateTime?
+  
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+}

@@ -12,6 +12,37 @@ import {
   EngagementResponseDto,
 } from './dto/engagement-response.dto';
 
+const ENGAGEMENT_CONTRACTOR_SELECT_CORE = {
+  id: true,
+  firstName: true,
+  lastName: true,
+  email: true,
+  externalPersonId: true,
+  personType: true,
+  supplierResourceId: true,
+  accessIntent: true,
+  identityRequired: true,
+  physicalAccessRequired: true,
+  logicalAccessRequired: true,
+  igaIntegrationStatus: true,
+  accessEnablementStatus: true,
+  igaLastSyncAt: true,
+  riskTier: true,
+  workerArchetype: true,
+} as const;
+
+const ENGAGEMENT_CONTRACTOR_SELECT_WITH_SUPPLIER = {
+  ...ENGAGEMENT_CONTRACTOR_SELECT_CORE,
+  supplier: {
+    select: {
+      id: true,
+      companyName: true,
+      firstName: true,
+      lastName: true,
+    },
+  },
+} as const;
+
 @Injectable()
 export class EngagementsService {
   constructor(private readonly prisma: PrismaService) {}
@@ -102,12 +133,7 @@ export class EngagementsService {
       },
       include: {
         contractor: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-          },
+          select: ENGAGEMENT_CONTRACTOR_SELECT_CORE,
         },
         contract: {
           select: {
@@ -200,12 +226,7 @@ export class EngagementsService {
         orderBy: { createdAt: 'desc' },
         include: {
           contractor: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              email: true,
-            },
+            select: ENGAGEMENT_CONTRACTOR_SELECT_CORE,
           },
           contract: {
             select: {
@@ -250,20 +271,7 @@ export class EngagementsService {
       },
       include: {
         contractor: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-            supplier: {
-              select: {
-                id: true,
-                companyName: true,
-                firstName: true,
-                lastName: true,
-              },
-            },
-          },
+          select: ENGAGEMENT_CONTRACTOR_SELECT_WITH_SUPPLIER,
         },
         contract: {
           select: {
@@ -396,12 +404,7 @@ export class EngagementsService {
       },
       include: {
         contractor: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-          },
+          select: ENGAGEMENT_CONTRACTOR_SELECT_CORE,
         },
         contract: {
           select: {
@@ -476,12 +479,7 @@ export class EngagementsService {
       data: { isActive: false },
       include: {
         contractor: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-          },
+          select: ENGAGEMENT_CONTRACTOR_SELECT_CORE,
         },
         contract: {
           select: {
