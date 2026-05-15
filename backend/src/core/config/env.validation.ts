@@ -1,5 +1,5 @@
 import { plainToInstance } from 'class-transformer';
-import { IsEnum, IsInt, IsString, Min, Max, validateSync } from 'class-validator';
+import { IsEnum, IsInt, IsString, Min, Max, validateSync, IsOptional } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export enum Environment {
@@ -38,6 +38,16 @@ export class EnvironmentVariables {
 
   @IsString()
   CORS_ORIGIN: string = 'http://localhost:3001';
+
+  /** PR-HCM-SPONSOR-BRIDGE-1 — when `true`, engagements enforce sponsor reference format (and stub existence). */
+  @IsOptional()
+  @IsString()
+  HCM_SPONSOR_VALIDATION_ENABLED?: string;
+
+  /** Optional regex (string) for `sponsorEmployeeId` / `sponsorDelegateEmployeeId` when validation enabled. */
+  @IsOptional()
+  @IsString()
+  HCM_SPONSOR_REFERENCE_PATTERN?: string;
 }
 
 export function validateEnvironment(config: Record<string, unknown>) {

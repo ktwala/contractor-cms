@@ -25,6 +25,7 @@ import { ProjectsModule } from './domain/projects/projects.module';
 import { WithholdingModule } from './domain/withholding/withholding.module';
 import { OrganizationsModule } from './domain/organizations/organizations.module';
 import { AnalyticsModule } from './domain/analytics/analytics.module';
+import { HcmModule } from './core/hcm/hcm.module';
 
 @Module({
   imports: [
@@ -38,6 +39,9 @@ import { AnalyticsModule } from './domain/analytics/analytics.module';
 
     // Database
     DatabaseModule,
+
+    // HCM bridge (sponsor reference validation — disabled by default)
+    HcmModule,
 
     // Core
     AuditModule,

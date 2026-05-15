@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { SponsorAccountabilityStatus } from '@prisma/client';
 import { PrismaService } from '../../core/database/prisma.service';
+import { HcmSponsorLookupService } from '../../core/hcm/hcm-sponsor-lookup.service';
 import { CreateEngagementDto } from './dto/create-engagement.dto';
 import { UpdateEngagementDto } from './dto/update-engagement.dto';
 import { QueryEngagementDto } from './dto/query-engagement.dto';
@@ -46,7 +47,10 @@ const ENGAGEMENT_CONTRACTOR_SELECT_WITH_SUPPLIER = {
 
 @Injectable()
 export class EngagementsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly hcmSponsorLookup: HcmSponsorLookupService,
+  ) {}
 
   /**
    * PR-SPONSOR-GOVERNANCE-1 — structural sponsor accountability baseline (no HCM / attestation).
@@ -193,6 +197,11 @@ export class EngagementsService {
       },
       null,
     );
+
+    await this.hcmSponsorLookup.assertSponsorReferencesAllowed(organizationId, {
+      sponsorEmployeeId: sponsor.sponsorEmployeeId,
+      sponsorDelegateEmployeeId: sponsor.sponsorDelegateEmployeeId,
+    });
 
     const engagement = await this.prisma.contractorEngagement.create({
       data: {
@@ -495,6 +504,13 @@ export class EngagementsService {
           },
         )
       : null;
+
+    if (sponsorData) {
+      await this.hcmSponsorLookup.assertSponsorReferencesAllowed(organizationId, {
+        sponsorEmployeeId: sponsorData.sponsorEmployeeId,
+        sponsorDelegateEmployeeId: sponsorData.sponsorDelegateEmployeeId,
+      });
+    }
 
     const engagement = await this.prisma.contractorEngagement.update({
       where: { id },
