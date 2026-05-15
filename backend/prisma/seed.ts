@@ -12,6 +12,7 @@ import {
   isKnownPermission,
   isValidPermissionFormat,
 } from '../src/core/auth/permissions.constants';
+import { SEED_TARGET_ROLE_PERMISSIONS } from '../src/core/auth/seed-system-role-bundles';
 
 const prisma = new PrismaClient();
 
@@ -110,27 +111,21 @@ async function main() {
     },
   });
 
-  // PR-RBAC-REALIGN-1 — target persona bundles (no default users; portal/HCM not wired)
+  // PR-RBAC-REALIGN-1 / PR-RBAC-REALIGN-2 — target persona bundles (canonical arrays in seed-system-role-bundles.ts)
+  const supplierAdminPerms = [...SEED_TARGET_ROLE_PERMISSIONS.SUPPLIER_ADMIN];
+  const supplierManagerPerms = [...SEED_TARGET_ROLE_PERMISSIONS.SUPPLIER_MANAGER];
+  const sponsorPerms = [...SEED_TARGET_ROLE_PERMISSIONS.SPONSOR];
+
   const supplierAdminRole = await prisma.role.upsert({
     where: { name: 'SUPPLIER_ADMIN' },
     update: {
       description: 'Target: supplier-side org admin (scoped auth TBD)',
-      permissions: [
-        'suppliers:create',
-        'suppliers:read',
-        'suppliers:update',
-        'suppliers:delete',
-      ],
+      permissions: supplierAdminPerms,
     },
     create: {
       name: 'SUPPLIER_ADMIN',
       description: 'Target: supplier-side org admin (scoped auth TBD)',
-      permissions: [
-        'suppliers:create',
-        'suppliers:read',
-        'suppliers:update',
-        'suppliers:delete',
-      ],
+      permissions: supplierAdminPerms,
       isSystemRole: true,
     },
   });
@@ -139,22 +134,12 @@ async function main() {
     where: { name: 'SUPPLIER_MANAGER' },
     update: {
       description: 'Target: supplier operations manager (timesheet oversight)',
-      permissions: [
-        'suppliers:read',
-        'suppliers:update',
-        'timesheets:read',
-        'timesheets:approve',
-      ],
+      permissions: supplierManagerPerms,
     },
     create: {
       name: 'SUPPLIER_MANAGER',
       description: 'Target: supplier operations manager (timesheet oversight)',
-      permissions: [
-        'suppliers:read',
-        'suppliers:update',
-        'timesheets:read',
-        'timesheets:approve',
-      ],
+      permissions: supplierManagerPerms,
       isSystemRole: true,
     },
   });
@@ -163,12 +148,12 @@ async function main() {
     where: { name: 'SPONSOR' },
     update: {
       description: 'Target: workforce sponsor / hiring manager (HCM link TBD)',
-      permissions: ['contractors:read', 'engagements:read', 'engagements:update'],
+      permissions: sponsorPerms,
     },
     create: {
       name: 'SPONSOR',
       description: 'Target: workforce sponsor / hiring manager (HCM link TBD)',
-      permissions: ['contractors:read', 'engagements:read', 'engagements:update'],
+      permissions: sponsorPerms,
       isSystemRole: true,
     },
   });

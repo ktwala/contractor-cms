@@ -2,7 +2,7 @@
 
 **Status:** `DRAFT` — supports **V1.0 ratification** and **STREAM B** (RBAC realignment), sequenced **after** [`PR-EXTID-SCHEMA-1_DESIGN.md`](./PR-EXTID-SCHEMA-1_DESIGN.md) per [`EXTID_IMPLEMENTATION_ALIGNMENT_PLAN_V1.md`](./EXTID_IMPLEMENTATION_ALIGNMENT_PLAN_V1.md) **§4**.
 
-**Closed (traceability):** **PR-DOCS-SUPPLIER-TERMINOLOGY-1** — CLOSED · **PR-RBAC-REALIGN-1** — CLOSED · **PR-NAV-IA-1** — CLOSED.
+**Closed (traceability):** **PR-DOCS-SUPPLIER-TERMINOLOGY-1** — CLOSED · **PR-RBAC-REALIGN-1** — CLOSED · **PR-NAV-IA-1** — CLOSED · **PR-RBAC-REALIGN-2** — CLOSED.
 
 **Purpose:** Map **current seeded / implied personas** to **target doctrine personas** and define **deprecate → restrict → replace** paths without destructive role removal.
 
@@ -47,9 +47,9 @@
 
 ---
 
-## 4. Target role bundles (seed candidates — PR-RBAC-REALIGN-1)
+## 4. Target role bundles (seed candidates — PR-RBAC-REALIGN-1 / PR-RBAC-REALIGN-2)
 
-These roles are **upserted in** [`backend/prisma/seed.ts`](../../backend/prisma/seed.ts) as **system roles with no default users** (portal / sponsor runtime enforcement is out of scope for this PR).
+These roles are **upserted in** [`backend/prisma/seed.ts`](../../backend/prisma/seed.ts) as **system roles with no default users** (portal / sponsor runtime enforcement is out of scope). **PR-RBAC-REALIGN-2** centralizes the three target bundles in [`seed-system-role-bundles.ts`](../../backend/src/core/auth/seed-system-role-bundles.ts) with unit tests — **must** stay aligned with the seed upserts.
 
 | Role | Seed permissions (v1 candidate) | Notes |
 |------|-----------------------------------|--------|
@@ -57,7 +57,7 @@ These roles are **upserted in** [`backend/prisma/seed.ts`](../../backend/prisma/
 | **SUPPLIER_MANAGER** | `suppliers:read`, `suppliers:update`, `timesheets:read`, `timesheets:approve` | Operations manager; not the wildcard-only test persona. |
 | **SPONSOR** | `contractors:read`, `engagements:read`, `engagements:update` | Sponsor attest flows TBD; placeholder bundle only. |
 
-Illustrative rows removed — exact strings live in seed + [`permissions.catalog.json`](../../backend/src/core/auth/permissions.catalog.json).
+Exact strings: [`seed-system-role-bundles.ts`](../../backend/src/core/auth/seed-system-role-bundles.ts) and [`permissions.catalog.json`](../../backend/src/core/auth/permissions.catalog.json).
 
 ---
 
@@ -94,6 +94,7 @@ Illustrative rows removed — exact strings live in seed + [`permissions.catalog
 
 | Version | Note |
 |---------|------|
+| 1.5 | **PR-RBAC-REALIGN-2** — **CLOSED:** `seed-system-role-bundles.ts` + unit tests lock `SUPPLIER_ADMIN` / `SUPPLIER_MANAGER` / `SPONSOR` bundles (non-runtime). |
 | 1.4 | **PR-NAV-IA-1** — **CLOSED:** sidebar grouped into Operations / Governance / Administration; permissions unchanged (`frontend/lib/protected-routes.ts` + `frontend/components/dashboard-layout.tsx`). |
 | 1.3 | PR-DOCS-SUPPLIER-TERMINOLOGY-1 + PR-RBAC-REALIGN-1 marked CLOSED; reference link to [`SEED_ROLE_BUNDLES_PR_RBAC_REALIGN.md`](./SEED_ROLE_BUNDLES_PR_RBAC_REALIGN.md) |
 | 1.2 | PR-RBAC-REALIGN-1: `CONTRACTOR` invoice restriction; seed bundles for SUPPLIER_ADMIN, SUPPLIER_MANAGER, SPONSOR |
