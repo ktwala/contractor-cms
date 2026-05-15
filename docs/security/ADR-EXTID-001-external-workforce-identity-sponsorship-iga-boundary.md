@@ -96,19 +96,24 @@ access_enablement_status
 
 ---
 
-## 6. Event doctrine (CMS outbound — illustrative)
+## 6. Event doctrine (CMS outbound — contract substrate)
 
-Canonical names must eventually align with the integration bus catalog (see root [`README.md`](../../README.md) published events) and be deduplicated in a future ADR revision.
+**Implemented (v1 contract only, no transport):** [`backend/src/core/iga/`](../../backend/src/core/iga/) — **PR-IGA-EVENT-CONTRACT-1** (`IgaEventBuilder`, `IgaOutboundExternalWorkforceEventV1`). This is the **authoritative catalog** for canonical event names and JSON-serializable payload shape until a dedicated integration ADR supersedes it. **Outbox, message bus, webhooks, and connectors are explicitly out of scope** for that PR.
+
+Canonical names (v1):
 
 ```text
 EXTERNAL_PERSON_CREATED
-EXTERNAL_PERSON_APPROVED        # or APPROVED at bus layer — align on rename
-SPONSOR_ASSIGNED
+EXTERNAL_PERSON_UPDATED
+EXTERNAL_PERSON_SPONSOR_ASSIGNED
+EXTERNAL_PERSON_SPONSOR_REMOVED
 EXTERNAL_PERSON_SUSPENDED
 EXTERNAL_PERSON_TERMINATED
 ```
 
-Additional events (e.g. `CONTRACT_EXTENDED`, `SPONSOR_CHANGED`) remain as in the operating model **§24.2** until consolidated here.
+**Supersedes (illustrative only):** earlier draft names in this section such as `SPONSOR_ASSIGNED` / `EXTERNAL_PERSON_APPROVED` — align outbound integrations on the v1 catalog above.
+
+Additional lifecycle or commercial events (e.g. contract extension) remain documented in the operating model **§24.2** until folded into a bus catalog ADR.
 
 ---
 
@@ -180,6 +185,7 @@ Before advancing this ADR to **PROPOSED** (see **§11**) and treating **EXTID sc
 | [`EXTID_MIGRATION_SAFETY_CHECKLIST.md`](../business/EXTID_MIGRATION_SAFETY_CHECKLIST.md) | Schema PR migration safety |
 | [`SCHEMA_DIFF_REVIEW.md`](../business/SCHEMA_DIFF_REVIEW.md) | **1A** merge gate — what changed / not / deferred |
 | [`EXTID_IMPLEMENTATION_ALIGNMENT_PLAN_V1.md`](../business/EXTID_IMPLEMENTATION_ALIGNMENT_PLAN_V1.md) | Implementation sequencing and gates |
+| [`backend/src/core/iga/`](../../backend/src/core/iga/) | **PR-IGA-EVENT-CONTRACT-1** — outbound event **payload contract** (v1); no transport or IGA execution |
 
 ---
 
@@ -210,6 +216,8 @@ PR-EXTID-SCHEMA-1D (Drift encode)
 PR-RBAC-REALIGN-1
 PR-HCM-SPONSOR-BRIDGE-1
 PR-IGA-EVENT-CONTRACT-1
+PR-IGA-OUTBOX-1
+PR-IGA-CONNECTOR-1
 PR-NAV-IA-1
 ```
 

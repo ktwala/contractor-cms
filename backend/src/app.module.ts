@@ -26,6 +26,7 @@ import { WithholdingModule } from './domain/withholding/withholding.module';
 import { OrganizationsModule } from './domain/organizations/organizations.module';
 import { AnalyticsModule } from './domain/analytics/analytics.module';
 import { HcmModule } from './core/hcm/hcm.module';
+import { IgaModule } from './core/iga/iga.module';
 
 @Module({
   imports: [
@@ -42,6 +43,9 @@ import { HcmModule } from './core/hcm/hcm.module';
 
     // HCM bridge (sponsor reference validation — disabled by default)
     HcmModule,
+
+    // IGA event contract (outbound payload shape only — no bus / connector)
+    IgaModule,
 
     // Core
     AuditModule,
