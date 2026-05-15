@@ -1,4 +1,4 @@
-import { INestApplication } from '@nestjs/common';
+import { INestApplication, HttpStatus } from '@nestjs/common';
 import request from 'supertest';
 import { TestHelper } from './utils/test-helper';
 import { ALL_PERMISSIONS } from '../src/core/auth/permissions.constants';
@@ -36,9 +36,11 @@ describe('RBAC Permission Engine E2E', () => {
 
   describe('Wildcard: *:*', () => {
     let token: string;
+    let organizationId: string;
 
     beforeEach(async () => {
       const org = await TestHelper.createTestOrganization();
+      organizationId = org.id;
       await TestHelper.createUserWithRoles(org.id, {
         email: 'admin@test.com',
         roles: [
@@ -65,7 +67,7 @@ describe('RBAC Permission Engine E2E', () => {
 
     it('CMS_ADMIN can access organizations (organizations:read)', async () => {
       await request(app.getHttpServer())
-        .get('/organizations')
+        .get(`/organizations/${organizationId}`)
         .set('Authorization', `Bearer ${token}`)
         .expect(200);
     });
@@ -77,9 +79,11 @@ describe('RBAC Permission Engine E2E', () => {
 
   describe('Explicit permissions', () => {
     let financeToken: string;
+    let organizationId: string;
 
     beforeEach(async () => {
       const org = await TestHelper.createTestOrganization();
+      organizationId = org.id;
       await TestHelper.createUserWithRoles(org.id, {
         email: 'finance@test.com',
         roles: [
@@ -137,7 +141,7 @@ describe('RBAC Permission Engine E2E', () => {
 
     it('FINANCE_USER cannot access organizations (missing organizations:read)', async () => {
       await request(app.getHttpServer())
-        .get('/organizations')
+        .get(`/organizations/${organizationId}`)
         .set('Authorization', `Bearer ${financeToken}`)
         .expect(403);
     });
@@ -315,6 +319,99 @@ describe('RBAC Permission Engine E2E', () => {
         .get('/analytics/dashboard')
         .set('Authorization', `Bearer ${login.token}`)
         .expect(403);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // PR-RBAC-REALIGN-1 — external worker vs org-wide invoices
+  // -------------------------------------------------------------------------
+
+  describe('PR-RBAC-REALIGN-1: contractor invoice boundary', () => {
+    let contractorToken: string;
+    let financeToken: string;
+    let adminToken: string;
+
+    beforeEach(async () => {
+      const org = await TestHelper.createTestOrganization();
+      await TestHelper.createUserWithRoles(org.id, {
+        email: 'worker-invoice@test.com',
+        roles: [
+          {
+            role: 'CONTRACTOR',
+            isSystemRole: true,
+            permissions: [
+              'timesheets:create',
+              'timesheets:read',
+              'timesheets:update',
+              'profile:read',
+              'profile:update',
+            ],
+          },
+        ],
+      });
+      await TestHelper.createUserWithRoles(org.id, {
+        email: 'finance-invoice@test.com',
+        roles: [
+          {
+            role: 'FINANCE_USER',
+            permissions: [
+              'invoices:read',
+              'invoices:approve',
+              'suppliers:read',
+              'contractors:read',
+              'timesheets:read',
+              'timesheets:approve',
+            ],
+          },
+        ],
+      });
+      await TestHelper.createUserWithRoles(org.id, {
+        email: 'admin-invoice@test.com',
+        roles: [
+          { role: 'CMS_ADMIN', permissions: ['*:*'], isSystemRole: true },
+        ],
+      });
+
+      contractorToken = (await TestHelper.login('worker-invoice@test.com')).token;
+      financeToken = (await TestHelper.login('finance-invoice@test.com')).token;
+      adminToken = (await TestHelper.login('admin-invoice@test.com')).token;
+    });
+
+    it('CONTRACTOR cannot list org-wide invoices (GET /invoices → 403)', async () => {
+      await request(app.getHttpServer())
+        .get('/invoices')
+        .set('Authorization', `Bearer ${contractorToken}`)
+        .expect(HttpStatus.FORBIDDEN);
+    });
+
+    it('CONTRACTOR retains self-service timesheet list (GET /timesheets → 200)', async () => {
+      await request(app.getHttpServer())
+        .get('/timesheets')
+        .set('Authorization', `Bearer ${contractorToken}`)
+        .expect(HttpStatus.OK);
+    });
+
+    it('CONTRACTOR profile effectivePermissions omit invoices:read', async () => {
+      const res = await request(app.getHttpServer())
+        .get('/auth/profile')
+        .set('Authorization', `Bearer ${contractorToken}`)
+        .expect(HttpStatus.OK);
+
+      expect(res.body.effectivePermissions).not.toContain('invoices:read');
+    });
+
+    it('FINANCE_USER can list invoices', async () => {
+      await request(app.getHttpServer())
+        .get('/invoices')
+        .set('Authorization', `Bearer ${financeToken}`)
+        .expect(HttpStatus.OK);
+    });
+
+    it('CMS_ADMIN can list invoices', async () => {
+      await request(app.getHttpServer())
+        .get('/invoices')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .expect(HttpStatus.OK);
     });
   });
 

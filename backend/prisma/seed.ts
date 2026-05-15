@@ -86,18 +86,89 @@ async function main() {
 
   const contractorRole = await prisma.role.upsert({
     where: { name: 'CONTRACTOR' },
-    update: {},
-    create: {
-      name: 'CONTRACTOR',
-      description: 'Contractor self-service access',
+    update: {
+      description: 'External worker self-service (no org-wide financial reads)',
       permissions: [
         'timesheets:create',
         'timesheets:read',
         'timesheets:update',
-        'invoices:read',
         'profile:read',
         'profile:update',
       ],
+    },
+    create: {
+      name: 'CONTRACTOR',
+      description: 'External worker self-service (no org-wide financial reads)',
+      permissions: [
+        'timesheets:create',
+        'timesheets:read',
+        'timesheets:update',
+        'profile:read',
+        'profile:update',
+      ],
+      isSystemRole: true,
+    },
+  });
+
+  // PR-RBAC-REALIGN-1 — target persona bundles (no default users; portal/HCM not wired)
+  const supplierAdminRole = await prisma.role.upsert({
+    where: { name: 'SUPPLIER_ADMIN' },
+    update: {
+      description: 'Target: supplier-side org admin (scoped auth TBD)',
+      permissions: [
+        'suppliers:create',
+        'suppliers:read',
+        'suppliers:update',
+        'suppliers:delete',
+      ],
+    },
+    create: {
+      name: 'SUPPLIER_ADMIN',
+      description: 'Target: supplier-side org admin (scoped auth TBD)',
+      permissions: [
+        'suppliers:create',
+        'suppliers:read',
+        'suppliers:update',
+        'suppliers:delete',
+      ],
+      isSystemRole: true,
+    },
+  });
+
+  const supplierManagerRole = await prisma.role.upsert({
+    where: { name: 'SUPPLIER_MANAGER' },
+    update: {
+      description: 'Target: supplier operations manager (timesheet oversight)',
+      permissions: [
+        'suppliers:read',
+        'suppliers:update',
+        'timesheets:read',
+        'timesheets:approve',
+      ],
+    },
+    create: {
+      name: 'SUPPLIER_MANAGER',
+      description: 'Target: supplier operations manager (timesheet oversight)',
+      permissions: [
+        'suppliers:read',
+        'suppliers:update',
+        'timesheets:read',
+        'timesheets:approve',
+      ],
+      isSystemRole: true,
+    },
+  });
+
+  const sponsorRole = await prisma.role.upsert({
+    where: { name: 'SPONSOR' },
+    update: {
+      description: 'Target: workforce sponsor / hiring manager (HCM link TBD)',
+      permissions: ['contractors:read', 'engagements:read', 'engagements:update'],
+    },
+    create: {
+      name: 'SPONSOR',
+      description: 'Target: workforce sponsor / hiring manager (HCM link TBD)',
+      permissions: ['contractors:read', 'engagements:read', 'engagements:update'],
       isSystemRole: true,
     },
   });
@@ -108,6 +179,9 @@ async function main() {
     { name: 'FINANCE_USER', permissions: financeUserRole.permissions },
     { name: 'CONTRACTOR_MANAGER', permissions: contractorManagerRole.permissions },
     { name: 'CONTRACTOR', permissions: contractorRole.permissions },
+    { name: 'SUPPLIER_ADMIN', permissions: supplierAdminRole.permissions },
+    { name: 'SUPPLIER_MANAGER', permissions: supplierManagerRole.permissions },
+    { name: 'SPONSOR', permissions: sponsorRole.permissions },
   ];
 
   for (const role of seededRoles) {
@@ -127,7 +201,7 @@ async function main() {
     }
   }
 
-  console.log(`✅ Created ${4} default roles (all permissions validated against catalog)`);
+  console.log(`✅ Created ${seededRoles.length} system roles (all permissions validated against catalog)`);
 
   // Create demo organization
   console.log('Creating demo organization...');
@@ -298,7 +372,9 @@ async function main() {
 
   console.log('\n🎉 Seeding completed successfully!');
   console.log('\n📋 Summary:');
-  console.log('   - 4 roles created (CMS_ADMIN, FINANCE_USER, CONTRACTOR_MANAGER, CONTRACTOR)');
+  console.log(
+    '   - 7 system roles (CMS_ADMIN, FINANCE_USER, CONTRACTOR_MANAGER, CONTRACTOR, SUPPLIER_ADMIN, SUPPLIER_MANAGER, SPONSOR)',
+  );
   console.log('   - 1 organization created (Demo Organization)');
   console.log('   - 2 users created:');
   console.log('     • admin@contractor-cms.com (password: Admin123!)');
