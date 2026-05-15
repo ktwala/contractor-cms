@@ -49,7 +49,6 @@ Thumbs.db
 *.launch
 
 # Prisma
-backend/prisma/migrations/**/migration.sql
 backend/prisma/*.db
 backend/prisma/*.db-journal
 

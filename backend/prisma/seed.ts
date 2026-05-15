@@ -1,4 +1,12 @@
-import { PrismaClient, UserType, SupplierType } from '@prisma/client';
+import {
+  PrismaClient,
+  UserType,
+  SupplierType,
+  ContractorPersonType,
+  ContractorAccessIntent,
+  GovernanceRiskTier,
+  WorkerArchetypeKind,
+} from '@prisma/client';
 import * as argon2 from 'argon2';
 import {
   isKnownPermission,
@@ -163,20 +171,19 @@ async function main() {
     },
   });
 
-  // Assign admin role
+  // Assign admin role (global CMS admin: use empty-string org key for composite unique)
   await prisma.userRole.upsert({
     where: {
       userId_roleId_organizationId: {
         userId: adminUser.id,
         roleId: cmsAdminRole.id,
-        organizationId: null,
+        organizationId: '',
       },
     },
     update: {},
     create: {
       userId: adminUser.id,
       roleId: cmsAdminRole.id,
-      organizationId: null,
       assignedBy: 'system',
     },
   });
@@ -227,15 +234,12 @@ async function main() {
   // Create demo supplier
   console.log('Creating demo supplier...');
 
-  const demoSupplier = await prisma.supplier.upsert({
-    where: {
-      organizationId_email: {
-        organizationId: demoOrg.id,
-        email: 'supplier@demo.com',
-      },
-    },
-    update: {},
-    create: {
+  const existingSupplier = await prisma.supplier.findFirst({
+    where: { organizationId: demoOrg.id, email: 'supplier@demo.com' },
+  });
+
+  const demoSupplier = existingSupplier ?? (await prisma.supplier.create({
+    data: {
       organizationId: demoOrg.id,
       type: SupplierType.COMPANY,
       status: 'ACTIVE',
@@ -255,9 +259,42 @@ async function main() {
       taxNumber: '9876543210',
       bbbeeLevel: 'Level 1',
     },
-  });
+  }));
 
   console.log(`✅ Created supplier: ${demoSupplier.companyName}`);
+
+  // PR-EXTID-SCHEMA-1C — idempotent demo contractor with explicit substrate defaults (not HCM identity)
+  console.log('Ensuring demo contractor (substrate defaults)...');
+  const demoContractorEmail = 'seed-demo-contractor@demo.local';
+  const demoContractorSubstrate = {
+    externalPersonId: 'cms:demo:person:seed-demo-contractor@demo.local',
+    personType: ContractorPersonType.PERSON_INDEPENDENT,
+    accessIntent: ContractorAccessIntent.ACCESS_NONE,
+    riskTier: GovernanceRiskTier.RISK_UNKNOWN,
+    workerArchetype: WorkerArchetypeKind.ARCHETYPE_INDEPENDENT,
+  };
+  const demoContractor =
+    (await prisma.contractor.findFirst({
+      where: { supplierId: demoSupplier.id, email: demoContractorEmail },
+    })) ??
+    (await prisma.contractor.create({
+      data: {
+        supplierId: demoSupplier.id,
+        firstName: 'Seed',
+        lastName: 'Contractor',
+        email: demoContractorEmail,
+        workerClassification: 'INDEPENDENT_CONTRACTOR',
+        engagementModel: 'DIRECT',
+        taxResidency: 'ZA',
+        skills: [],
+        ...demoContractorSubstrate,
+      },
+    }));
+  await prisma.contractor.update({
+    where: { id: demoContractor.id },
+    data: demoContractorSubstrate,
+  });
+  console.log(`✅ Demo contractor substrate: ${demoContractor.email}`);
 
   console.log('\n🎉 Seeding completed successfully!');
   console.log('\n📋 Summary:');
@@ -267,6 +304,7 @@ async function main() {
   console.log('     • admin@contractor-cms.com (password: Admin123!)');
   console.log('     • finance@contractor-cms.com (password: Finance123!)');
   console.log('   - 1 supplier created (Demo Supplier Ltd)');
+  console.log('   - 1 demo contractor row (EXTID substrate defaults applied idempotently)');
   console.log('\n🚀 You can now login at http://localhost:3000/api/v1/auth/login');
 }
 
