@@ -114,6 +114,7 @@ enum AccessEnablementPlaneStatus {
 }
 
 enum SponsorAccountabilityStatus {
+  SPONSOR_ASSIGNED
   SPONSOR_ACTIVE
   SPONSOR_TRANSFER_PENDING
   SPONSOR_REVOKED

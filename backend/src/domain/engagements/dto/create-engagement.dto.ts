@@ -89,7 +89,8 @@ export class CreateEngagementDto {
     enum: SponsorAccountabilityStatus,
     enumName: 'SponsorAccountabilityStatus',
     nullable: true,
-    description: 'Sponsor accountability status (substrate only; no workflow enforcement yet)',
+    description:
+      'Sponsor accountability status. When `sponsorEmployeeId` is set and this is omitted or null, the API defaults to SPONSOR_ASSIGNED (PR-SPONSOR-GOVERNANCE-1). Setting a status without a primary `sponsorEmployeeId` is rejected.',
   })
   @IsOptional()
   @IsEnum(SponsorAccountabilityStatus)

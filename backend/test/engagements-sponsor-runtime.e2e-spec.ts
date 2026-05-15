@@ -4,8 +4,8 @@ import { TestHelper } from './utils/test-helper';
 import { DataFactory } from './fixtures/data-factory';
 
 /**
- * PR-SPONSOR-RUNTIME-1 — sponsor assignment substrate on engagements (API only;
- * no HCM verification, governance workflow, or IGA coupling).
+ * PR-SPONSOR-RUNTIME-1 — sponsor substrate on engagements (API read/write).
+ * PR-SPONSOR-GOVERNANCE-1 — structural accountability baseline (default status, no HCM).
  */
 describe('Engagements sponsor substrate (e2e)', () => {
   let app: INestApplication;
@@ -116,6 +116,31 @@ describe('Engagements sponsor substrate (e2e)', () => {
     expect(res.body.sponsorStatus).toBe('SPONSOR_ACTIVE');
   });
 
+  it('POST /engagements sponsorEmployeeId only => sponsorStatus defaults to SPONSOR_ASSIGNED', async () => {
+    const res = await request(app.getHttpServer())
+      .post('/engagements')
+      .set('Authorization', `Bearer ${managerToken}`)
+      .send({
+        ...baseCreateBody(),
+        sponsorEmployeeId: 'emp-only',
+      })
+      .expect(HttpStatus.CREATED);
+
+    expect(res.body.sponsorEmployeeId).toBe('emp-only');
+    expect(res.body.sponsorStatus).toBe('SPONSOR_ASSIGNED');
+  });
+
+  it('POST /engagements sponsorStatus without sponsorEmployeeId => 400', async () => {
+    await request(app.getHttpServer())
+      .post('/engagements')
+      .set('Authorization', `Bearer ${managerToken}`)
+      .send({
+        ...baseCreateBody(),
+        sponsorStatus: 'SPONSOR_ACTIVE',
+      })
+      .expect(HttpStatus.BAD_REQUEST);
+  });
+
   it('POST /engagements without sponsor fields => 201 (nulls / omitted)', async () => {
     const res = await request(app.getHttpServer())
       .post('/engagements')
@@ -156,6 +181,8 @@ describe('Engagements sponsor substrate (e2e)', () => {
       })
       .expect(HttpStatus.CREATED);
 
+    expect(created.body.sponsorStatus).toBe('SPONSOR_ACTIVE');
+
     const res = await request(app.getHttpServer())
       .patch(`/engagements/${created.body.id}`)
       .set('Authorization', `Bearer ${managerToken}`)
@@ -169,6 +196,37 @@ describe('Engagements sponsor substrate (e2e)', () => {
     expect(res.body.sponsorEmployeeId).toBe('cms:sponsor:emp:updated');
     expect(res.body.sponsorDelegateEmployeeId).toBe('cms:sponsor:delegate:updated');
     expect(res.body.sponsorStatus).toBe('SPONSOR_TRANSFER_PENDING');
+  });
+
+  it('PATCH /engagements/:id sponsorEmployeeId only on unsponsored row => SPONSOR_ASSIGNED', async () => {
+    const created = await request(app.getHttpServer())
+      .post('/engagements')
+      .set('Authorization', `Bearer ${managerToken}`)
+      .send(baseCreateBody())
+      .expect(HttpStatus.CREATED);
+
+    const res = await request(app.getHttpServer())
+      .patch(`/engagements/${created.body.id}`)
+      .set('Authorization', `Bearer ${managerToken}`)
+      .send({ sponsorEmployeeId: 'patch-emp-only' })
+      .expect(HttpStatus.OK);
+
+    expect(res.body.sponsorEmployeeId).toBe('patch-emp-only');
+    expect(res.body.sponsorStatus).toBe('SPONSOR_ASSIGNED');
+  });
+
+  it('PATCH /engagements/:id sponsorStatus without primary sponsor => 400', async () => {
+    const created = await request(app.getHttpServer())
+      .post('/engagements')
+      .set('Authorization', `Bearer ${managerToken}`)
+      .send(baseCreateBody())
+      .expect(HttpStatus.CREATED);
+
+    await request(app.getHttpServer())
+      .patch(`/engagements/${created.body.id}`)
+      .set('Authorization', `Bearer ${managerToken}`)
+      .send({ sponsorStatus: 'SPONSOR_ACTIVE' })
+      .expect(HttpStatus.BAD_REQUEST);
   });
 
   it('CONTRACTOR cannot create engagements (no sponsor powers via substrate)', async () => {
@@ -210,6 +268,8 @@ describe('Engagements sponsor substrate (e2e)', () => {
         sponsorEmployeeId: 'mgr-owned',
       })
       .expect(HttpStatus.CREATED);
+
+    expect(created.body.sponsorStatus).toBe('SPONSOR_ASSIGNED');
 
     await TestHelper.createUserWithRoles(org.id, {
       email: 'worker-patch@test.com',

@@ -3,6 +3,7 @@ import {
   NotFoundException,
   BadRequestException,
 } from '@nestjs/common';
+import { SponsorAccountabilityStatus } from '@prisma/client';
 import { PrismaService } from '../../core/database/prisma.service';
 import { CreateEngagementDto } from './dto/create-engagement.dto';
 import { UpdateEngagementDto } from './dto/update-engagement.dto';
@@ -46,6 +47,73 @@ const ENGAGEMENT_CONTRACTOR_SELECT_WITH_SUPPLIER = {
 @Injectable()
 export class EngagementsService {
   constructor(private readonly prisma: PrismaService) {}
+
+  /**
+   * PR-SPONSOR-GOVERNANCE-1 — structural sponsor accountability baseline (no HCM / attestation).
+   * - Primary sponsor id cleared ⇒ clear delegate + status.
+   * - `sponsorStatus` without primary sponsor id ⇒ 400.
+   * - Primary sponsor id present with null/omitted status ⇒ default `SPONSOR_ASSIGNED`.
+   */
+  private normalizeSponsorAccountability(
+    dto: {
+      sponsorEmployeeId?: string | null;
+      sponsorDelegateEmployeeId?: string | null;
+      sponsorStatus?: SponsorAccountabilityStatus | null;
+    },
+    existing: {
+      sponsorEmployeeId: string | null;
+      sponsorDelegateEmployeeId: string | null;
+      sponsorStatus: SponsorAccountabilityStatus | null;
+    } | null,
+  ): {
+    sponsorEmployeeId: string | null;
+    sponsorDelegateEmployeeId: string | null;
+    sponsorStatus: SponsorAccountabilityStatus | null;
+  } {
+    const trimId = (v: string | null | undefined): string | null => {
+      if (v === undefined || v === null) return null;
+      const t = String(v).trim();
+      return t === '' ? null : t;
+    };
+
+    const finalEmp =
+      dto.sponsorEmployeeId !== undefined
+        ? trimId(dto.sponsorEmployeeId)
+        : existing?.sponsorEmployeeId ?? null;
+    const finalDel =
+      dto.sponsorDelegateEmployeeId !== undefined
+        ? trimId(dto.sponsorDelegateEmployeeId)
+        : existing?.sponsorDelegateEmployeeId ?? null;
+
+    if (dto.sponsorEmployeeId !== undefined && finalEmp === null) {
+      return {
+        sponsorEmployeeId: null,
+        sponsorDelegateEmployeeId: null,
+        sponsorStatus: null,
+      };
+    }
+
+    let finalStat: SponsorAccountabilityStatus | null =
+      dto.sponsorStatus !== undefined
+        ? dto.sponsorStatus
+        : existing?.sponsorStatus ?? null;
+
+    if (finalStat != null && finalEmp == null) {
+      throw new BadRequestException(
+        'sponsorStatus requires sponsorEmployeeId (primary sponsor accountability)',
+      );
+    }
+
+    if (finalEmp != null && finalStat == null) {
+      finalStat = SponsorAccountabilityStatus.SPONSOR_ASSIGNED;
+    }
+
+    return {
+      sponsorEmployeeId: finalEmp,
+      sponsorDelegateEmployeeId: finalDel,
+      sponsorStatus: finalStat,
+    };
+  }
 
   async create(
     organizationId: string,
@@ -117,6 +185,15 @@ export class EngagementsService {
       );
     }
 
+    const sponsor = this.normalizeSponsorAccountability(
+      {
+        sponsorEmployeeId: createEngagementDto.sponsorEmployeeId,
+        sponsorDelegateEmployeeId: createEngagementDto.sponsorDelegateEmployeeId,
+        sponsorStatus: createEngagementDto.sponsorStatus,
+      },
+      null,
+    );
+
     const engagement = await this.prisma.contractorEngagement.create({
       data: {
         contractorId: createEngagementDto.contractorId,
@@ -130,9 +207,9 @@ export class EngagementsService {
         rateAmount: createEngagementDto.rateAmount,
         currency: createEngagementDto.currency || 'ZAR',
         isActive: true,
-        sponsorEmployeeId: createEngagementDto.sponsorEmployeeId,
-        sponsorDelegateEmployeeId: createEngagementDto.sponsorDelegateEmployeeId,
-        sponsorStatus: createEngagementDto.sponsorStatus,
+        sponsorEmployeeId: sponsor.sponsorEmployeeId,
+        sponsorDelegateEmployeeId: sponsor.sponsorDelegateEmployeeId,
+        sponsorStatus: sponsor.sponsorStatus,
       },
       include: {
         contractor: {
@@ -394,16 +471,38 @@ export class EngagementsService {
       throw new BadRequestException('End date must be after start date');
     }
 
+    const {
+      sponsorEmployeeId,
+      sponsorDelegateEmployeeId,
+      sponsorStatus,
+      startDate: patchStart,
+      endDate: patchEnd,
+      ...restPatch
+    } = updateEngagementDto;
+
+    const sponsorTouched =
+      sponsorEmployeeId !== undefined ||
+      sponsorDelegateEmployeeId !== undefined ||
+      sponsorStatus !== undefined;
+
+    const sponsorData = sponsorTouched
+      ? this.normalizeSponsorAccountability(
+          { sponsorEmployeeId, sponsorDelegateEmployeeId, sponsorStatus },
+          {
+            sponsorEmployeeId: existingEngagement.sponsorEmployeeId,
+            sponsorDelegateEmployeeId: existingEngagement.sponsorDelegateEmployeeId,
+            sponsorStatus: existingEngagement.sponsorStatus,
+          },
+        )
+      : null;
+
     const engagement = await this.prisma.contractorEngagement.update({
       where: { id },
       data: {
-        ...updateEngagementDto,
-        startDate: updateEngagementDto.startDate
-          ? new Date(updateEngagementDto.startDate)
-          : undefined,
-        endDate: updateEngagementDto.endDate
-          ? new Date(updateEngagementDto.endDate)
-          : undefined,
+        ...restPatch,
+        startDate: patchStart ? new Date(patchStart) : undefined,
+        endDate: patchEnd ? new Date(patchEnd) : undefined,
+        ...(sponsorData ?? {}),
       },
       include: {
         contractor: {

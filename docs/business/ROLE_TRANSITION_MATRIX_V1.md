@@ -2,7 +2,7 @@
 
 **Status:** `DRAFT` — supports **V1.0 ratification** and **STREAM B** (RBAC realignment), sequenced **after** [`PR-EXTID-SCHEMA-1_DESIGN.md`](./PR-EXTID-SCHEMA-1_DESIGN.md) per [`EXTID_IMPLEMENTATION_ALIGNMENT_PLAN_V1.md`](./EXTID_IMPLEMENTATION_ALIGNMENT_PLAN_V1.md) **§4**.
 
-**Closed (traceability):** **PR-DOCS-SUPPLIER-TERMINOLOGY-1** — CLOSED · **PR-RBAC-REALIGN-1** — CLOSED · **PR-NAV-IA-1** — CLOSED · **PR-RBAC-REALIGN-2** — CLOSED · **PR-SPONSOR-RUNTIME-1** — CLOSED.
+**Closed (traceability):** **PR-DOCS-SUPPLIER-TERMINOLOGY-1** — CLOSED · **PR-RBAC-REALIGN-1** — CLOSED · **PR-NAV-IA-1** — CLOSED · **PR-RBAC-REALIGN-2** — CLOSED · **PR-SPONSOR-RUNTIME-1** — CLOSED · **PR-SPONSOR-GOVERNANCE-1** — CLOSED.
 
 **Purpose:** Map **current seeded / implied personas** to **target doctrine personas** and define **deprecate → restrict → replace** paths without destructive role removal.
 
@@ -94,6 +94,7 @@ Exact strings: [`seed-system-role-bundles.ts`](../../backend/src/core/auth/seed-
 
 | Version | Note |
 |---------|------|
+| 1.7 | **PR-SPONSOR-GOVERNANCE-1** — **CLOSED:** engagement sponsor baseline — `SPONSOR_ASSIGNED` enum + auto-default when `sponsorEmployeeId` set; reject `sponsorStatus` without primary sponsor; clearing primary clears delegate + status. |
 | 1.6 | **PR-SPONSOR-RUNTIME-1** — **CLOSED:** engagement create/update accepts `sponsorEmployeeId`, `sponsorDelegateEmployeeId`, `sponsorStatus` (structural validation only; no HCM / governance / IGA enforcement). |
 | 1.5 | **PR-RBAC-REALIGN-2** — **CLOSED:** `seed-system-role-bundles.ts` + unit tests lock `SUPPLIER_ADMIN` / `SUPPLIER_MANAGER` / `SPONSOR` bundles (non-runtime). |
 | 1.4 | **PR-NAV-IA-1** — **CLOSED:** sidebar grouped into Operations / Governance / Administration; permissions unchanged (`frontend/lib/protected-routes.ts` + `frontend/components/dashboard-layout.tsx`). |
