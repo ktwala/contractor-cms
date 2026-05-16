@@ -502,6 +502,39 @@ async function main() {
 
   console.log(`✅ Created supplier: ${demoSupplier.companyName}`);
 
+  // PR-SUPPLIER-SCOPING-1 — bind supplier-portal demo users to demo supplier
+  await prisma.supplierMembership.upsert({
+    where: {
+      userId_supplierId: {
+        userId: supplierAdminUser.id,
+        supplierId: demoSupplier.id,
+      },
+    },
+    update: { isActive: true },
+    create: {
+      userId: supplierAdminUser.id,
+      supplierId: demoSupplier.id,
+      role: 'ADMIN',
+      assignedBy: adminUser.id,
+    },
+  });
+  await prisma.supplierMembership.upsert({
+    where: {
+      userId_supplierId: {
+        userId: supplierManagerUser.id,
+        supplierId: demoSupplier.id,
+      },
+    },
+    update: { isActive: true },
+    create: {
+      userId: supplierManagerUser.id,
+      supplierId: demoSupplier.id,
+      role: 'MANAGER',
+      assignedBy: adminUser.id,
+    },
+  });
+  console.log('✅ Supplier memberships linked (admin + manager → demo supplier)');
+
   // PR-EXTID-SCHEMA-1C — idempotent demo contractor with explicit substrate defaults (not HCM identity)
   console.log('Ensuring demo contractor (substrate defaults)...');
   const demoContractorEmail = 'seed-demo-contractor@demo.local';

@@ -19,6 +19,7 @@ describe('ContractorsService', () => {
     actorOrganizationId: null,
     targetOrganizationId: null,
     isGlobalAccess: true,
+    supplierScopeId: null,
   };
 
   beforeEach(async () => {

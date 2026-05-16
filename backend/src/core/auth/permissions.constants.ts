@@ -162,6 +162,29 @@ export const PERMISSIONS = {
     ACK: 'extid-events:ack',
     FAIL: 'extid-events:fail',
   },
+
+  /**
+   * PR-SUPPLIER-SCOPING-1 — supplier-portal scope (row-level via SupplierMembership).
+   * Client-side procurement uses `suppliers:*`; supplier users use `supplier-*` only.
+   */
+  SUPPLIER_PROFILE: {
+    READ: 'supplier-profile:read',
+    UPDATE: 'supplier-profile:update',
+  },
+  SUPPLIER_USERS: {
+    MANAGE: 'supplier-users:manage',
+  },
+  SUPPLIER_RESOURCES: {
+    READ: 'supplier-resources:read',
+    CREATE: 'supplier-resources:create',
+  },
+  SUPPLIER_TIMESHEETS: {
+    READ: 'supplier-timesheets:read',
+    SUBMIT: 'supplier-timesheets:submit',
+  },
+  SUPPLIER_INVOICES: {
+    SUBMIT: 'supplier-invoices:submit',
+  },
 } as const;
 
 // ---------------------------------------------------------------------------

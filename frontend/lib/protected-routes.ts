@@ -15,13 +15,27 @@ export const NAV_GROUP_LABELS: Record<NavGroup, string> = {
   administration: 'Administration',
 };
 
+export type RoutePermission = Permission | Permission[] | null;
+
 export interface ProtectedRoute {
   path: string;
   name: string;
-  permission: Permission | null; // null means authenticated but no specific permission required (e.g., Dashboard)
+  /** null = any authenticated user; array = any listed permission (OR). */
+  permission: RoutePermission;
   showInSidebar?: boolean; // Default true, set to false to hide
   /** Sidebar section heading (PR-NAV-IA-1); ignored when `showInSidebar === false`. */
   navGroup: NavGroup;
+}
+
+export function isRouteAllowed(
+  permission: RoutePermission,
+  can: (p: Permission) => boolean,
+): boolean {
+  if (!permission) return true;
+  if (Array.isArray(permission)) {
+    return permission.some((p) => can(p));
+  }
+  return can(permission);
 }
 
 export const PROTECTED_ROUTES: ProtectedRoute[] = [
@@ -34,7 +48,7 @@ export const PROTECTED_ROUTES: ProtectedRoute[] = [
   {
     path: '/suppliers',
     name: 'Suppliers',
-    permission: PERMISSIONS.SUPPLIERS.READ,
+    permission: [PERMISSIONS.SUPPLIERS.READ, PERMISSIONS.SUPPLIER_PROFILE.READ],
     navGroup: 'operations',
   },
   {
@@ -58,7 +72,7 @@ export const PROTECTED_ROUTES: ProtectedRoute[] = [
   {
     path: '/timesheets',
     name: 'Timesheets',
-    permission: PERMISSIONS.TIMESHEETS.READ,
+    permission: [PERMISSIONS.TIMESHEETS.READ, PERMISSIONS.SUPPLIER_TIMESHEETS.READ],
     navGroup: 'operations',
   },
   {

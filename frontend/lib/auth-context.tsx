@@ -12,6 +12,8 @@ export interface User {
   roles: string[] | Array<{ name: string; permissions: string[]; organizationId: string | null }>;
   effectivePermissions: string[];
   organizationId: string;
+  /** PR-SUPPLIER-SCOPING-1 — set when user has an active SupplierMembership */
+  supplierId?: string | null;
 }
 
 interface AuthContextType {

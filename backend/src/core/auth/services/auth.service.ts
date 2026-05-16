@@ -132,6 +132,11 @@ export class AuthService {
             role: true,
           },
         },
+        supplierMemberships: {
+          where: { isActive: true },
+          select: { supplierId: true, role: true, isActive: true },
+          orderBy: { assignedAt: 'asc' },
+        },
       },
     });
 
@@ -194,6 +199,12 @@ export class AuthService {
       ? this.resolveEffectivePermissions(userWithRoles)
       : [];
 
+    const supplierMembership = await this.prisma.supplierMembership.findFirst({
+      where: { userId: user.id, isActive: true },
+      select: { supplierId: true },
+      orderBy: { assignedAt: 'asc' },
+    });
+
     return {
       accessToken,
       refreshToken,
@@ -206,6 +217,7 @@ export class AuthService {
         lastName: user.lastName,
         userType: user.userType,
         organizationId: user.organizationId,
+        supplierId: supplierMembership?.supplierId ?? null,
         roles: roleNames,
         effectivePermissions,
       },

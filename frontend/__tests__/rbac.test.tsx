@@ -71,11 +71,13 @@ describe('Frontend RBAC Verification', () => {
     it('ensures all protected routes use valid generated permissions', () => {
       PROTECTED_ROUTES.forEach((route) => {
         if (route.permission) {
-          // Check that the permission string exists in the PERMISSIONS constant
           const flatPermissions = Object.values(PERMISSIONS).flatMap((group) =>
-            Object.values(group)
+            Object.values(group),
           );
-          expect(flatPermissions).toContain(route.permission);
+          const routePerms = Array.isArray(route.permission)
+            ? route.permission
+            : [route.permission];
+          routePerms.forEach((p) => expect(flatPermissions).toContain(p));
         }
       });
     });

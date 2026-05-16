@@ -73,6 +73,10 @@ export class AuthController {
     const effectivePermissions =
       this.authService.resolveEffectivePermissions(user);
 
+    const activeMembership = user.supplierMemberships?.find(
+      (m: { isActive: boolean }) => m.isActive,
+    );
+
     return {
       id: user.id,
       email: user.email,
@@ -80,6 +84,7 @@ export class AuthController {
       lastName: user.lastName,
       userType: user.userType,
       organizationId: user.organizationId,
+      supplierId: activeMembership?.supplierId ?? null,
       roles: Array.from(
         new Map(
           user.roles.map((ur: any) => [

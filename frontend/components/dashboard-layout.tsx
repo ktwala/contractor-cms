@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import {
   PROTECTED_ROUTES,
+  isRouteAllowed,
   NAV_GROUP_ORDER,
   NAV_GROUP_LABELS,
   type NavGroup,
@@ -119,8 +120,7 @@ export function buildSidebarNavSections(
 ): SidebarNavSection[] {
   const items: SidebarNavItem[] = PROTECTED_ROUTES.filter((route) => {
     if (route.showInSidebar === false) return false;
-    if (!route.permission) return true;
-    return can(route.permission);
+    return isRouteAllowed(route.permission, can);
   }).map((route) => ({
     path: route.path,
     href: route.path,

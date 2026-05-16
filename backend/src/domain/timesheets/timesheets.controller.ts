@@ -61,7 +61,7 @@ export class TimesheetsController {
   }
 
   @Get()
-  @Permissions('timesheets:read')
+  @Permissions('timesheets:read', 'supplier-timesheets:read')
   @RequiresOrgContext({ type: 'currentUser' })
   @ApiOperation({
     summary: 'Get all timesheets with pagination and filtering',

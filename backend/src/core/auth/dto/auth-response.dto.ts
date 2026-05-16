@@ -35,6 +35,8 @@ export class AuthResponseDto {
     lastName: string;
     userType: string;
     organizationId: string | null;
+    /** Active SupplierMembership supplier id (supplier-portal users). */
+    supplierId?: string | null;
     roles: string[];
     effectivePermissions: string[];
   };

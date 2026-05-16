@@ -14,6 +14,7 @@ import {
   SupplierResponseDto,
 } from './dto/supplier-response.dto';
 import { AccessContext } from '../../core/auth/interfaces/access-context.interface';
+import { applySupplierEntityScope } from '../../core/auth/utils/supplier-scope.helper';
 import { AuditService } from '../../core/audit/audit.service';
 
 @Injectable()
@@ -85,9 +86,11 @@ export class SuppliersService {
   ): Promise<PaginatedSupplierResponseDto> {
     const { search, type, status, country, page = 1, limit = 20 } = query;
 
-    const where: any = accessContext.isGlobalAccess 
-      ? {} 
+    const where: any = accessContext.isGlobalAccess
+      ? {}
       : { organizationId: accessContext.targetOrganizationId };
+
+    applySupplierEntityScope(where, accessContext);
 
     if (search) {
       where.OR = [
@@ -138,6 +141,7 @@ export class SuppliersService {
     if (!accessContext.isGlobalAccess) {
       where.organizationId = accessContext.targetOrganizationId;
     }
+    applySupplierEntityScope(where, accessContext);
 
     const supplier = await this.prisma.supplier.findFirst({
       where,
@@ -170,6 +174,7 @@ export class SuppliersService {
     if (!accessContext.isGlobalAccess) {
       where.organizationId = accessContext.targetOrganizationId;
     }
+    applySupplierEntityScope(where, accessContext);
 
     // Check if supplier exists and belongs to organization
     const existingSupplier = await this.prisma.supplier.findFirst({

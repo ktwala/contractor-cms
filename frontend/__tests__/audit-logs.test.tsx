@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { useAuth } from '@/lib/auth-context';
-import { PROTECTED_ROUTES } from '@/lib/protected-routes';
+import { PROTECTED_ROUTES, isRouteAllowed } from '@/lib/protected-routes';
 import { PERMISSIONS } from '@/lib/permissions.generated';
 import RequirePermission from '@/components/RequirePermission';
 
@@ -129,8 +129,7 @@ describe('PR7 — Audit Log UI', () => {
 
       const visibleRoutes = PROTECTED_ROUTES.filter((route) => {
         if (route.showInSidebar === false) return false;
-        if (!route.permission) return true;
-        return canMock(route.permission);
+        return isRouteAllowed(route.permission, canMock);
       });
 
       const auditRoute = visibleRoutes.find((r) => r.path === '/settings/audit-logs');
@@ -142,8 +141,7 @@ describe('PR7 — Audit Log UI', () => {
 
       const visibleRoutes = PROTECTED_ROUTES.filter((route) => {
         if (route.showInSidebar === false) return false;
-        if (!route.permission) return true;
-        return canMock(route.permission);
+        return isRouteAllowed(route.permission, canMock);
       });
 
       const auditRoute = visibleRoutes.find((r) => r.path === '/settings/audit-logs');

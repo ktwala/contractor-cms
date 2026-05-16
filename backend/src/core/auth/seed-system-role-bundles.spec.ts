@@ -15,29 +15,35 @@ describe('PR-RBAC-REALIGN-2: seed target role bundles', () => {
     }
   }
 
-  it('SUPPLIER_ADMIN matches expected suppliers-only bundle', () => {
+  it('SUPPLIER_ADMIN uses supplier-portal scoped permissions only', () => {
     expectCatalogAndNoDupes('SUPPLIER_ADMIN');
     expect(SEED_TARGET_ROLE_PERMISSIONS.SUPPLIER_ADMIN).toEqual([
-      'suppliers:create',
-      'suppliers:read',
-      'suppliers:update',
-      'suppliers:delete',
+      'supplier-profile:read',
+      'supplier-profile:update',
+      'supplier-users:manage',
+      'supplier-resources:read',
+      'supplier-resources:create',
+      'profile:read',
+      'profile:update',
     ]);
-    for (const forbidden of ORG_WIDE_FINANCIAL) {
+    for (const forbidden of [...ORG_WIDE_FINANCIAL, 'suppliers:read', 'contractors:read']) {
       expect(SEED_TARGET_ROLE_PERMISSIONS.SUPPLIER_ADMIN).not.toContain(forbidden);
     }
     expect(SEED_TARGET_ROLE_PERMISSIONS.SUPPLIER_ADMIN).not.toContain('engagements:read');
   });
 
-  it('SUPPLIER_MANAGER matches expected bundle (suppliers + timesheet oversight, no invoices)', () => {
+  it('SUPPLIER_MANAGER uses supplier-portal scoped permissions (no client-wide modules)', () => {
     expectCatalogAndNoDupes('SUPPLIER_MANAGER');
     expect(SEED_TARGET_ROLE_PERMISSIONS.SUPPLIER_MANAGER).toEqual([
-      'suppliers:read',
-      'suppliers:update',
-      'timesheets:read',
-      'timesheets:approve',
+      'supplier-profile:read',
+      'supplier-resources:read',
+      'supplier-resources:create',
+      'supplier-timesheets:read',
+      'supplier-timesheets:submit',
+      'profile:read',
+      'profile:update',
     ]);
-    for (const forbidden of ORG_WIDE_FINANCIAL) {
+    for (const forbidden of [...ORG_WIDE_FINANCIAL, 'suppliers:read', 'timesheets:read']) {
       expect(SEED_TARGET_ROLE_PERMISSIONS.SUPPLIER_MANAGER).not.toContain(forbidden);
     }
   });

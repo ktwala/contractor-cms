@@ -126,6 +126,24 @@ export const PERMISSIONS = {
     "READ": "extid-events:read",
     "ACK": "extid-events:ack",
     "FAIL": "extid-events:fail"
+  },
+  "SUPPLIER_PROFILE": {
+    "READ": "supplier-profile:read",
+    "UPDATE": "supplier-profile:update"
+  },
+  "SUPPLIER_USERS": {
+    "MANAGE": "supplier-users:manage"
+  },
+  "SUPPLIER_RESOURCES": {
+    "READ": "supplier-resources:read",
+    "CREATE": "supplier-resources:create"
+  },
+  "SUPPLIER_TIMESHEETS": {
+    "READ": "supplier-timesheets:read",
+    "SUBMIT": "supplier-timesheets:submit"
+  },
+  "SUPPLIER_INVOICES": {
+    "SUBMIT": "supplier-invoices:submit"
   }
 } as const;
 
@@ -181,6 +199,14 @@ export const ALL_PERMISSIONS: ReadonlySet<string> = new Set([
   "roles:delete",
   "roles:read",
   "roles:update",
+  "supplier-invoices:submit",
+  "supplier-profile:read",
+  "supplier-profile:update",
+  "supplier-resources:create",
+  "supplier-resources:read",
+  "supplier-timesheets:read",
+  "supplier-timesheets:submit",
+  "supplier-users:manage",
   "suppliers:create",
   "suppliers:delete",
   "suppliers:read",
@@ -684,6 +710,76 @@ export const PERMISSION_GROUPS = [
         "action": "FAIL",
         "value": "extid-events:fail",
         "label": "Fail"
+      }
+    ]
+  },
+  {
+    "resource": "SUPPLIER_PROFILE",
+    "label": "SUPPLIER PROFILE",
+    "permissions": [
+      {
+        "action": "READ",
+        "value": "supplier-profile:read",
+        "label": "Read"
+      },
+      {
+        "action": "UPDATE",
+        "value": "supplier-profile:update",
+        "label": "Update"
+      }
+    ]
+  },
+  {
+    "resource": "SUPPLIER_USERS",
+    "label": "SUPPLIER USERS",
+    "permissions": [
+      {
+        "action": "MANAGE",
+        "value": "supplier-users:manage",
+        "label": "Manage"
+      }
+    ]
+  },
+  {
+    "resource": "SUPPLIER_RESOURCES",
+    "label": "SUPPLIER RESOURCES",
+    "permissions": [
+      {
+        "action": "READ",
+        "value": "supplier-resources:read",
+        "label": "Read"
+      },
+      {
+        "action": "CREATE",
+        "value": "supplier-resources:create",
+        "label": "Create"
+      }
+    ]
+  },
+  {
+    "resource": "SUPPLIER_TIMESHEETS",
+    "label": "SUPPLIER TIMESHEETS",
+    "permissions": [
+      {
+        "action": "READ",
+        "value": "supplier-timesheets:read",
+        "label": "Read"
+      },
+      {
+        "action": "SUBMIT",
+        "value": "supplier-timesheets:submit",
+        "label": "Submit"
+      }
+    ]
+  },
+  {
+    "resource": "SUPPLIER_INVOICES",
+    "label": "SUPPLIER INVOICES",
+    "permissions": [
+      {
+        "action": "SUBMIT",
+        "value": "supplier-invoices:submit",
+        "label": "Submit"
       }
     ]
   }

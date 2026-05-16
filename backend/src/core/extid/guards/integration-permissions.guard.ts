@@ -69,6 +69,7 @@ export class IntegrationPermissionsGuard implements CanActivate {
         actorOrganizationId: user.organizationId ?? null,
         targetOrganizationId: user.organizationId ?? null,
         isGlobalAccess: user.organizationId == null,
+        supplierScopeId: null,
       };
 
       request.integrationActor = {

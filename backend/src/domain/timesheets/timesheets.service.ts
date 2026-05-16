@@ -15,6 +15,7 @@ import {
 import { Prisma } from '@prisma/client';
 
 import { AccessContext } from '../../core/auth/interfaces/access-context.interface';
+import { applySupplierContractorScope } from '../../core/auth/utils/supplier-scope.helper';
 
 import { AuditService } from '../../core/audit/audit.service';
 
@@ -143,13 +144,17 @@ export class TimesheetsService {
       limit = 20,
     } = query;
 
-    const where: any = accessContext.isGlobalAccess ? {} : {
-      contractor: {
-        supplier: {
-          organizationId: accessContext.targetOrganizationId,
-        },
-      },
-    };
+    const where: any = accessContext.isGlobalAccess
+      ? {}
+      : {
+          contractor: {
+            supplier: {
+              organizationId: accessContext.targetOrganizationId,
+            },
+          },
+        };
+
+    applySupplierContractorScope(where, accessContext);
 
     if (contractorId) {
       where.contractorId = contractorId;

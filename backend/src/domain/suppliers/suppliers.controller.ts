@@ -57,7 +57,7 @@ export class SuppliersController {
   }
 
   @Get()
-  @Permissions('suppliers:read')
+  @Permissions('suppliers:read', 'supplier-profile:read')
   @RequiresOrgContext({ type: 'currentUser' })
   @ApiOperation({ summary: 'Get all suppliers with pagination and filtering' })
   @ApiResponse({
@@ -73,7 +73,7 @@ export class SuppliersController {
   }
 
   @Get(':id')
-  @Permissions('suppliers:read')
+  @Permissions('suppliers:read', 'supplier-profile:read')
   @RequiresOrgContext({ type: 'param', key: 'id', lookup: 'Supplier' })
   @ApiOperation({ summary: 'Get supplier by ID' })
   @ApiResponse({
@@ -89,7 +89,7 @@ export class SuppliersController {
   }
 
   @Patch(':id')
-  @Permissions('suppliers:update')
+  @Permissions('suppliers:update', 'supplier-profile:update')
   @RequiresOrgContext({ type: 'param', key: 'id', lookup: 'Supplier' })
   @ApiOperation({ summary: 'Update supplier' })
   @ApiResponse({
@@ -119,7 +119,7 @@ export class SuppliersController {
   }
 
   @Patch(':id/status')
-  @Permissions('suppliers:update')
+  @Permissions('suppliers:update', 'supplier-profile:update')
   @RequiresOrgContext({ type: 'param', key: 'id', lookup: 'Supplier' })
   @ApiOperation({ summary: 'Update supplier status' })
   @ApiResponse({

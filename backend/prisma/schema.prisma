@@ -174,9 +174,10 @@ model User {
   contractor        Contractor?    @relation(fields: [contractorId], references: [id])
 
   // Relations
-  sessions          UserSession[]
-  roles             UserRole[]
-  auditLogs         AuditLog[]
+  sessions              UserSession[]
+  roles                 UserRole[]
+  auditLogs             AuditLog[]
+  supplierMemberships   SupplierMembership[]
 
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
@@ -344,6 +345,7 @@ model Supplier {
   contractors       Contractor[]
   contracts         SupplierContract[]
   invoices          Invoice[]
+  memberships       SupplierMembership[]
 
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
@@ -351,6 +353,28 @@ model Supplier {
   @@index([organizationId])
   @@index([email])
   @@index([status])
+}
+
+// PR-SUPPLIER-SCOPING-1 — binds supplier-portal users to exactly one supplier tenant slice
+enum SupplierMembershipRole {
+  ADMIN
+  MANAGER
+}
+
+model SupplierMembership {
+  id           String                 @id @default(uuid())
+  userId       String
+  user         User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  supplierId   String
+  supplier     Supplier               @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  role         SupplierMembershipRole @default(MANAGER)
+  isActive     Boolean                @default(true)
+  assignedBy   String
+  assignedAt   DateTime               @default(now())
+
+  @@unique([userId, supplierId])
+  @@index([userId])
+  @@index([supplierId])
 }
 
 model SupplierDocument {

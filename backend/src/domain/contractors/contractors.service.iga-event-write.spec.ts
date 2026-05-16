@@ -18,6 +18,7 @@ describe('ContractorsService IGA event writes (PR-IGA-EVENT-WRITE-1)', () => {
     actorOrganizationId: 'org-1',
     targetOrganizationId: 'org-1',
     isGlobalAccess: false,
+    supplierScopeId: null,
   };
 
   const contractorRow = {

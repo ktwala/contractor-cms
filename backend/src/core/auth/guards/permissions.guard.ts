@@ -78,8 +78,8 @@ export class PermissionsGuard implements CanActivate {
       ),
     );
 
-    // Check if user has ALL required permissions
-    const hasAccess = requiredPermissions.every((required) =>
+    // Any listed permission grants access (OR). Single-permission routes behave as before.
+    const hasAccess = requiredPermissions.some((required) =>
       this.hasPermission(userPermissions, required),
     );
 
@@ -131,10 +131,16 @@ export class PermissionsGuard implements CanActivate {
       globalRoles.flatMap((ur: any) => ur.role.permissions || [])
     );
     
-    // Check if the global roles ALONE satisfy the required permissions
-    isGlobalAccess = requiredPermissions.every((required) => 
-      this.hasPermission(globalPermissions, required)
+    // Global access when a global role satisfies at least one required permission
+    isGlobalAccess = requiredPermissions.some((required) =>
+      this.hasPermission(globalPermissions, required),
     );
+
+    const activeMembership = user.supplierMemberships?.find(
+      (m: { isActive: boolean }) => m.isActive,
+    );
+    const supplierScopeId =
+      !isGlobalAccess && activeMembership ? activeMembership.supplierId : null;
 
     // Populate AccessContext
     const accessContext: AccessContext = {
@@ -142,6 +148,7 @@ export class PermissionsGuard implements CanActivate {
       actorOrganizationId: user.organizationId || null,
       targetOrganizationId,
       isGlobalAccess,
+      supplierScopeId,
     };
     
     request.accessContext = accessContext;
