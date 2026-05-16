@@ -14,6 +14,8 @@ import { exportContractsToCSV } from '@/lib/csv-export';
 import RequirePermission from '@/components/RequirePermission';
 import { PERMISSIONS } from '@/lib/permissions.generated';
 import { useAuth } from '@/lib/auth-context';
+import ValidityBadge from '@/components/ui/validity-badge';
+import { getDaysUntilExpiry, getContractValidityState } from '@/lib/date-utils';
 
 interface Contract {
   id: string;
@@ -45,6 +47,7 @@ export default function ContractsPage() {
   const [suppliers, setSuppliers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [expiryFilter, setExpiryFilter] = useState('all');
   const [showModal, setShowModal] = useState(false);
   const [editingContract, setEditingContract] = useState<Contract | null>(null);
   const [formData, setFormData] = useState({
@@ -67,12 +70,17 @@ export default function ContractsPage() {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [expiryFilter]);
 
   const loadData = async () => {
     try {
+      const params: any = { page: 1, limit: 100 };
+      if (expiryFilter !== 'all') {
+        params.expiryState = expiryFilter;
+      }
+      
       const [contractsRes, contractorsRes, suppliersRes] = await Promise.all([
-        api.getContracts({ page: 1, limit: 100 }),
+        api.getContracts(params),
         api.getContractors({ page: 1, limit: 100 }),
         api.getSuppliers({ page: 1, limit: 100 }),
       ]);
@@ -246,8 +254,8 @@ export default function ContractsPage() {
         </div>
 
         <div className="card">
-          <div className="mb-4">
-            <div className="relative">
+          <div className="mb-4 flex flex-col sm:flex-row gap-4">
+            <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
                 type="text"
@@ -256,6 +264,18 @@ export default function ContractsPage() {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
+            </div>
+            <div className="flex-shrink-0">
+              <select
+                className="input"
+                value={expiryFilter}
+                onChange={(e) => setExpiryFilter(e.target.value)}
+              >
+                <option value="all">All Expiries</option>
+                <option value="expiring_soon">Expiring &lt; 60 days</option>
+                <option value="expired">Expired</option>
+                <option value="active">Active</option>
+              </select>
             </div>
           </div>
 
@@ -285,6 +305,9 @@ export default function ContractsPage() {
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                       Rate
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                      Validity
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                       Status
@@ -329,6 +352,12 @@ export default function ContractsPage() {
                           {formatCurrency(contract.rate, contract.currency)}
                         </div>
                         <div className="text-xs text-gray-500">{contract.rateType}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <ValidityBadge 
+                          state={getContractValidityState(contract.endDate)} 
+                          days={getDaysUntilExpiry(contract.endDate)} 
+                        />
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <StatusBadge status={contract.status} />

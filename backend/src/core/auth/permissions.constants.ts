@@ -130,6 +130,31 @@ export const PERMISSIONS = {
   AUDIT: {
     READ: 'audit:read',
   },
+
+  PDP_ACTIVATION: {
+    VIEW: 'pdp-activation:view',
+    MANAGE: 'pdp-activation:manage',
+  },
+
+  PDP_EXCEPTIONS: {
+    VIEW: 'pdp-exceptions:view',
+    REQUEST: 'pdp-exceptions:request',
+    MANAGE: 'pdp-exceptions:manage',
+  },
+
+  PDP_TELEMETRY: {
+    VIEW: 'pdp-telemetry:view',
+  },
+
+  GOVERNANCE_ANALYTICS: {
+    VIEW: 'governance-analytics:view',
+    EXPORT: 'governance-analytics:export',
+  },
+
+  GOVERNANCE_RISK: {
+    VIEW: 'governance-risk:view',
+    MANAGE: 'governance-risk:manage',
+  },
 } as const;
 
 // ---------------------------------------------------------------------------

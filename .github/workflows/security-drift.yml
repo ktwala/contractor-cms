@@ -1,0 +1,20 @@
+name: Security Drift Gates
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  security-drift-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Run Security Drift Gates
+      run: |
+        chmod +x scripts/security-drift-check.sh
+        ./scripts/security-drift-check.sh

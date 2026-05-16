@@ -30,7 +30,7 @@ export class AnalyticsController {
 
   @Get('dashboard')
   @Permissions('analytics:read')
-  @RequiresOrgContext({ type: 'query', key: 'organizationId' })
+  @RequiresOrgContext({ type: 'currentUser' })
   @ApiOperation({ summary: 'Get comprehensive dashboard analytics' })
   @ApiResponse({
     status: 200,
@@ -51,7 +51,7 @@ export class AnalyticsController {
 
   @Get('financial')
   @Permissions('analytics:read')
-  @RequiresOrgContext({ type: 'query', key: 'organizationId' })
+  @RequiresOrgContext({ type: 'currentUser' })
   @ApiOperation({ summary: 'Get financial summary' })
   @ApiResponse({
     status: 200,
@@ -72,7 +72,7 @@ export class AnalyticsController {
 
   @Get('contractors')
   @Permissions('analytics:read')
-  @RequiresOrgContext({ type: 'query', key: 'organizationId' })
+  @RequiresOrgContext({ type: 'currentUser' })
   @ApiOperation({ summary: 'Get contractor summary' })
   @ApiResponse({
     status: 200,
@@ -87,7 +87,7 @@ export class AnalyticsController {
 
   @Get('projects')
   @Permissions('analytics:read')
-  @RequiresOrgContext({ type: 'query', key: 'organizationId' })
+  @RequiresOrgContext({ type: 'currentUser' })
   @ApiOperation({ summary: 'Get project summary' })
   @ApiResponse({
     status: 200,
@@ -102,7 +102,7 @@ export class AnalyticsController {
 
   @Get('timesheets')
   @Permissions('analytics:read')
-  @RequiresOrgContext({ type: 'query', key: 'organizationId' })
+  @RequiresOrgContext({ type: 'currentUser' })
   @ApiOperation({ summary: 'Get timesheet summary' })
   @ApiResponse({
     status: 200,
@@ -123,7 +123,7 @@ export class AnalyticsController {
 
   @Get('tax')
   @Permissions('analytics:read')
-  @RequiresOrgContext({ type: 'query', key: 'organizationId' })
+  @RequiresOrgContext({ type: 'currentUser' })
   @ApiOperation({ summary: 'Get tax and withholding summary' })
   @ApiResponse({
     status: 200,

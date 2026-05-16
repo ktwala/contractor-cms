@@ -62,7 +62,7 @@ export class TimesheetsController {
 
   @Get()
   @Permissions('timesheets:read')
-  @RequiresOrgContext({ type: 'query', key: 'organizationId' })
+  @RequiresOrgContext({ type: 'currentUser' })
   @ApiOperation({
     summary: 'Get all timesheets with pagination and filtering',
   })

@@ -101,6 +101,26 @@ export const PERMISSIONS = {
   },
   "AUDIT": {
     "READ": "audit:read"
+  },
+  "PDP_ACTIVATION": {
+    "VIEW": "pdp-activation:view",
+    "MANAGE": "pdp-activation:manage"
+  },
+  "PDP_EXCEPTIONS": {
+    "VIEW": "pdp-exceptions:view",
+    "REQUEST": "pdp-exceptions:request",
+    "MANAGE": "pdp-exceptions:manage"
+  },
+  "PDP_TELEMETRY": {
+    "VIEW": "pdp-telemetry:view"
+  },
+  "GOVERNANCE_ANALYTICS": {
+    "VIEW": "governance-analytics:view",
+    "EXPORT": "governance-analytics:export"
+  },
+  "GOVERNANCE_RISK": {
+    "VIEW": "governance-risk:view",
+    "MANAGE": "governance-risk:manage"
   }
 } as const;
 
@@ -123,6 +143,10 @@ export const ALL_PERMISSIONS: ReadonlySet<string> = new Set([
   "engagements:delete",
   "engagements:read",
   "engagements:update",
+  "governance-analytics:export",
+  "governance-analytics:view",
+  "governance-risk:manage",
+  "governance-risk:view",
   "invoices:approve",
   "invoices:create",
   "invoices:delete",
@@ -132,6 +156,12 @@ export const ALL_PERMISSIONS: ReadonlySet<string> = new Set([
   "organizations:create",
   "organizations:read",
   "organizations:update",
+  "pdp-activation:manage",
+  "pdp-activation:view",
+  "pdp-exceptions:manage",
+  "pdp-exceptions:request",
+  "pdp-exceptions:view",
+  "pdp-telemetry:view",
   "profile:read",
   "profile:update",
   "projects:create",
@@ -545,6 +575,86 @@ export const PERMISSION_GROUPS = [
         "action": "READ",
         "value": "audit:read",
         "label": "Read"
+      }
+    ]
+  },
+  {
+    "resource": "PDP_ACTIVATION",
+    "label": "PDP ACTIVATION",
+    "permissions": [
+      {
+        "action": "VIEW",
+        "value": "pdp-activation:view",
+        "label": "View"
+      },
+      {
+        "action": "MANAGE",
+        "value": "pdp-activation:manage",
+        "label": "Manage"
+      }
+    ]
+  },
+  {
+    "resource": "PDP_EXCEPTIONS",
+    "label": "PDP EXCEPTIONS",
+    "permissions": [
+      {
+        "action": "VIEW",
+        "value": "pdp-exceptions:view",
+        "label": "View"
+      },
+      {
+        "action": "REQUEST",
+        "value": "pdp-exceptions:request",
+        "label": "Request"
+      },
+      {
+        "action": "MANAGE",
+        "value": "pdp-exceptions:manage",
+        "label": "Manage"
+      }
+    ]
+  },
+  {
+    "resource": "PDP_TELEMETRY",
+    "label": "PDP TELEMETRY",
+    "permissions": [
+      {
+        "action": "VIEW",
+        "value": "pdp-telemetry:view",
+        "label": "View"
+      }
+    ]
+  },
+  {
+    "resource": "GOVERNANCE_ANALYTICS",
+    "label": "GOVERNANCE ANALYTICS",
+    "permissions": [
+      {
+        "action": "VIEW",
+        "value": "governance-analytics:view",
+        "label": "View"
+      },
+      {
+        "action": "EXPORT",
+        "value": "governance-analytics:export",
+        "label": "Export"
+      }
+    ]
+  },
+  {
+    "resource": "GOVERNANCE_RISK",
+    "label": "GOVERNANCE RISK",
+    "permissions": [
+      {
+        "action": "VIEW",
+        "value": "governance-risk:view",
+        "label": "View"
+      },
+      {
+        "action": "MANAGE",
+        "value": "governance-risk:manage",
+        "label": "Manage"
       }
     ]
   }

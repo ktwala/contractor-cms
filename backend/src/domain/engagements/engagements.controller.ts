@@ -29,6 +29,7 @@ import { JwtAuthGuard } from '../../core/auth/guards/jwt-auth.guard';
 import { Permissions } from '../../core/auth/decorators/permissions.decorator';
 import { PermissionsGuard } from '../../core/auth/guards/permissions.guard';
 import { CurrentUser } from '../../core/auth/decorators/current-user.decorator';
+import { RequiresOrgContext } from '../../core/auth/decorators/org-context.decorator';
 
 @ApiTags('engagements')
 @Controller('engagements')
@@ -39,6 +40,7 @@ export class EngagementsController {
 
   @Post()
   @Permissions('engagements:create')
+  @RequiresOrgContext({ type: 'currentUser' })
   @ApiOperation({ summary: 'Create a new contractor engagement' })
   @ApiResponse({
     status: 201,
@@ -54,6 +56,7 @@ export class EngagementsController {
 
   @Get()
   @Permissions('engagements:read')
+  @RequiresOrgContext({ type: 'currentUser' })
   @ApiOperation({
     summary: 'Get all engagements with pagination and filtering',
   })
@@ -71,6 +74,7 @@ export class EngagementsController {
 
   @Get(':id')
   @Permissions('engagements:read')
+  @RequiresOrgContext({ type: 'currentUser' })
   @ApiOperation({ summary: 'Get engagement by ID' })
   @ApiResponse({
     status: 200,
@@ -86,6 +90,7 @@ export class EngagementsController {
 
   @Patch(':id')
   @Permissions('engagements:update')
+  @RequiresOrgContext({ type: 'currentUser' })
   @ApiOperation({ summary: 'Update engagement' })
   @ApiResponse({
     status: 200,
@@ -106,6 +111,7 @@ export class EngagementsController {
 
   @Delete(':id')
   @Permissions('engagements:delete')
+  @RequiresOrgContext({ type: 'currentUser' })
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete engagement (future engagements only)' })
   @ApiResponse({ status: 204, description: 'Engagement deleted successfully' })
@@ -118,6 +124,7 @@ export class EngagementsController {
 
   @Patch(':id/deactivate')
   @Permissions('engagements:update')
+  @RequiresOrgContext({ type: 'currentUser' })
   @ApiOperation({ summary: 'Deactivate engagement' })
   @ApiResponse({
     status: 200,

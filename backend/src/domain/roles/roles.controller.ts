@@ -27,7 +27,7 @@ export class RolesController {
 
   @Post()
   @Permissions(PERMISSIONS.ROLES.CREATE)
-  create(@Body() createRoleDto: CreateRoleDto, @Request() req) {
+  create(@Body() createRoleDto: CreateRoleDto, @Request() req: any) {
     return this.rolesService.create(createRoleDto, req.user.id);
   }
 
@@ -48,14 +48,14 @@ export class RolesController {
   update(
     @Param('id') id: string,
     @Body() updateRoleDto: UpdateRoleDto,
-    @Request() req,
+    @Request() req: any,
   ) {
     return this.rolesService.update(id, updateRoleDto, req.user.id);
   }
 
   @Delete(':id')
   @Permissions(PERMISSIONS.ROLES.DELETE)
-  remove(@Param('id') id: string, @Request() req) {
+  remove(@Param('id') id: string, @Request() req: any) {
     return this.rolesService.remove(id, req.user.id);
   }
 }

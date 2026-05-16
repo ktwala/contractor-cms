@@ -33,10 +33,9 @@ export class ApiKeyStrategy extends PassportStrategy(Strategy, 'api-key') {
       return Array.isArray(headerKey) ? headerKey[0] : headerKey;
     }
 
-    // Check query parameter (less secure, use sparingly)
     const queryKey = req.query.api_key;
     if (queryKey) {
-      return Array.isArray(queryKey) ? queryKey[0] : (queryKey as string);
+      return Array.isArray(queryKey) ? (queryKey[0] as string) : (queryKey as unknown as string);
     }
 
     return null;

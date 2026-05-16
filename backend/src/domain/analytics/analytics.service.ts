@@ -42,7 +42,7 @@ export class AnalyticsService {
     endDate?: Date,
   ): Promise<FinancialSummaryDto> {
     const where: any = accessContext.isGlobalAccess ? {} : {
-      organizationId: accessContext.targetOrganizationId,
+      organizationId: accessContext.targetOrganizationId as string,
     };
 
     if (startDate || endDate) {
@@ -69,7 +69,7 @@ export class AnalyticsService {
       .reduce((sum, inv) => sum + Number(inv.totalAmount), 0);
 
     const totalPending = invoices
-      .filter((inv) => inv.status === 'PENDING' || inv.status === 'APPROVED')
+      .filter((inv) => inv.status === 'SUBMITTED' || inv.status === 'APPROVED')
       .reduce((sum, inv) => sum + Number(inv.totalAmount), 0);
 
     const invoiceCount = invoices.length;
@@ -88,7 +88,7 @@ export class AnalyticsService {
     accessContext: AccessContext,
   ): Promise<ContractorSummaryDto> {
     const orgFilter = accessContext.isGlobalAccess ? {} : {
-      organizationId: accessContext.targetOrganizationId,
+      organizationId: accessContext.targetOrganizationId as string,
     };
     
     // Get all contractors for the organization
@@ -98,23 +98,29 @@ export class AnalyticsService {
       },
       select: {
         id: true,
-        status: true,
+        isActive: true,
       },
     });
 
     const totalContractors = contractors.length;
     const activeContractors = contractors.filter(
-      (c) => c.status === 'ACTIVE',
+      (c) => c.isActive,
     ).length;
     const inactiveContractors = contractors.filter(
-      (c) => c.status === 'INACTIVE',
+      (c) => !c.isActive,
     ).length;
 
     // Get active engagements
-    const activeEngagements = await this.prisma.engagement.count({
+    const activeEngagements = await this.prisma.contractorEngagement.count({
       where: {
-        ...orgFilter,
-        status: 'ACTIVE',
+        ...(accessContext.isGlobalAccess ? {} : {
+          contractor: {
+            supplier: {
+              organizationId: accessContext.targetOrganizationId as string,
+            },
+          },
+        }),
+        isActive: true,
       },
     });
 
@@ -134,7 +140,7 @@ export class AnalyticsService {
 
   async getProjectSummary(accessContext: AccessContext): Promise<ProjectSummaryDto> {
     const orgFilter = accessContext.isGlobalAccess ? {} : {
-      organizationId: accessContext.targetOrganizationId,
+      organizationId: accessContext.targetOrganizationId as string,
     };
 
     const projects = await this.prisma.project.findMany({
@@ -160,11 +166,10 @@ export class AnalyticsService {
     // Get total utilized from invoices linked to project timesheets
     const invoices = await this.prisma.invoice.findMany({
       where: accessContext.isGlobalAccess ? {} : {
-        organizationId: accessContext.targetOrganizationId,
         timesheets: {
           some: {
             project: {
-              organizationId: accessContext.targetOrganizationId,
+              organizationId: accessContext.targetOrganizationId as string as string,
             },
           },
         },
@@ -202,7 +207,7 @@ export class AnalyticsService {
     const where: any = accessContext.isGlobalAccess ? {} : {
       contractor: {
         supplier: {
-          organizationId: accessContext.targetOrganizationId,
+          organizationId: accessContext.targetOrganizationId as string,
         },
       },
     };
@@ -248,7 +253,7 @@ export class AnalyticsService {
     endDate?: Date,
   ): Promise<TaxSummaryDto> {
     const where: any = accessContext.isGlobalAccess ? {} : {
-      organizationId: accessContext.targetOrganizationId,
+      organizationId: accessContext.targetOrganizationId as string,
     };
 
     if (startDate || endDate) {

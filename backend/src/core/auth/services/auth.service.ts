@@ -12,6 +12,7 @@ import { LoginDto } from '../dto/login.dto';
 import { RegisterDto } from '../dto/register.dto';
 import { AuthResponseDto } from '../dto/auth-response.dto';
 import { UserType } from '@prisma/client';
+import * as crypto from 'crypto';
 import {
   ALL_PERMISSIONS,
   WILDCARD_ALL,
@@ -87,16 +88,17 @@ export class AuthService {
 
     // Verify password
     const isPasswordValid = await this.passwordService.verifyPassword(
-      user.passwordHash,
+      user.passwordHash || '',
       loginDto.password,
     );
 
     if (!isPasswordValid) {
+      this.logger.warn(`Failed login attempt for user: ${loginDto.email}`);
       throw new UnauthorizedException('Invalid credentials');
     }
 
     // Check if password needs rehashing
-    if (this.passwordService.needsRehash(user.passwordHash)) {
+    if (user.passwordHash && this.passwordService.needsRehash(user.passwordHash)) {
       const newHash = await this.passwordService.hashPassword(loginDto.password);
       await this.prisma.user.update({
         where: { id: user.id },
@@ -149,14 +151,15 @@ export class AuthService {
       email: user.email,
       type: user.userType,
       organizationId: user.organizationId,
+      jti: crypto.randomUUID(),
     };
 
-    const expiresIn = this.configService.get<string>('jwt.expiresIn');
+    const expiresIn = this.configService.get<any>('jwt.expiresIn');
 
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(payload, { expiresIn }),
       this.jwtService.signAsync(payload, {
-        expiresIn: this.configService.get<string>('jwt.refreshExpiresIn'),
+        expiresIn: this.configService.get<any>('jwt.refreshExpiresIn'),
       }),
     ]);
 
@@ -164,10 +167,12 @@ export class AuthService {
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 1); // 1 day
 
+    const tokenHash = crypto.createHash('sha256').update(accessToken).digest('hex');
+
     await this.prisma.userSession.create({
       data: {
         userId: user.id,
-        token: accessToken.substring(0, 50), // Store prefix for tracking
+        token: tokenHash, // Store hash for tracking
         expiresAt,
       },
     });
@@ -193,7 +198,7 @@ export class AuthService {
       accessToken,
       refreshToken,
       tokenType: 'Bearer',
-      expiresIn: this.parseExpiration(expiresIn),
+      expiresIn: this.parseExpiration(expiresIn!),
       user: {
         id: user.id,
         email: user.email,
@@ -230,12 +235,12 @@ export class AuthService {
    * Logout user (invalidate session)
    */
   async logout(userId: string, token: string): Promise<void> {
-    const tokenPrefix = token.substring(0, 50);
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
 
     await this.prisma.userSession.deleteMany({
       where: {
         userId,
-        token: tokenPrefix,
+        token: tokenHash,
       },
     });
 

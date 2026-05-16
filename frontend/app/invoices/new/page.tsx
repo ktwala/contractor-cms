@@ -46,7 +46,7 @@ export default function NewInvoicePage() {
   const [formData, setFormData] = useState({
     engagementId: '',
     invoiceNumber: `INV-${Date.now()}`,
-    issueDate: new Date().toISOString().split('T')[0],
+    invoiceDate: new Date().toISOString().split('T')[0],
     dueDate: '',
     notes: '',
     taxRate: '15', // Default VAT for ZA
@@ -140,9 +140,9 @@ export default function NewInvoicePage() {
     const errors: any = {};
     if (!formData.engagementId) errors.engagementId = 'Engagement is required';
     if (!formData.invoiceNumber) errors.invoiceNumber = 'Invoice number is required';
-    if (!formData.issueDate) errors.issueDate = 'Issue date is required';
+    if (!formData.invoiceDate) errors.invoiceDate = 'Invoice date is required';
     if (!formData.dueDate) errors.dueDate = 'Due date is required';
-    if (formData.dueDate && formData.dueDate <= formData.issueDate) {
+    if (formData.dueDate && formData.dueDate <= formData.invoiceDate) {
       errors.dueDate = 'Due date must be after issue date';
     }
     if (selectedTimesheets.length === 0) {
@@ -167,7 +167,7 @@ export default function NewInvoicePage() {
       const payload = {
         engagementId: formData.engagementId,
         invoiceNumber: formData.invoiceNumber,
-        issueDate: formData.issueDate,
+        invoiceDate: formData.invoiceDate,
         dueDate: formData.dueDate,
         amount: subtotal,
         taxAmount: taxAmount,
@@ -256,9 +256,9 @@ export default function NewInvoicePage() {
                   <FormInput
                     label="Issue Date"
                     type="date"
-                    value={formData.issueDate}
-                    onChange={(e) => setFormData({ ...formData, issueDate: e.target.value })}
-                    error={formErrors.issueDate}
+                    value={formData.invoiceDate}
+                    onChange={(e) => setFormData({ ...formData, invoiceDate: e.target.value })}
+                    error={formErrors.invoiceDate}
                     required
                   />
                   <FormInput

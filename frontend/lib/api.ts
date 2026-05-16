@@ -1,6 +1,7 @@
 import axios, { AxiosInstance } from 'axios';
+import { resolveApiScope } from './api-contract';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api/v1';
 
 class ApiClient {
   private client: AxiosInstance;
@@ -13,12 +14,28 @@ class ApiClient {
       },
     });
 
-    // Add token to requests
+    // Add token and org context to requests
     this.client.interceptors.request.use((config) => {
       if (typeof window !== 'undefined') {
         const token = localStorage.getItem('auth_token');
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
+        }
+        
+        const userStr = localStorage.getItem('user');
+        if (userStr) {
+          try {
+            const user = JSON.parse(userStr);
+            const scope = resolveApiScope(config.url);
+
+            // API Contract: 'org-scoped' endpoints derive context dynamically
+            // from the JWT token on the backend AccessContext.
+            // We DO NOT inject organizationId as a query parameter because
+            // the backend DTO validation pipe explicitly forbids it.
+            // Global endpoints inherently ignore org scoping.
+          } catch (e) {
+            // Ignore JSON parse errors
+          }
         }
       }
       return config;

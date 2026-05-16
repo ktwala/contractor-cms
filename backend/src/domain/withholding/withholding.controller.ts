@@ -59,7 +59,7 @@ export class WithholdingController {
 
   @Get()
   @Permissions('withholding:read')
-  @RequiresOrgContext({ type: 'query', key: 'organizationId' })
+  @RequiresOrgContext({ type: 'currentUser' })
   @ApiOperation({
     summary: 'Get all withholding instructions with pagination and filtering',
   })

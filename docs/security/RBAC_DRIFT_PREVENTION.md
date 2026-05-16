@@ -16,7 +16,7 @@
 | 7 | Every action button maps to the same permission as its backend endpoint | Manual review (to be codified in PR2) | ⏳ PR2 |
 | 8 | System roles cannot be edited/deleted through admin APIs | Runtime: (to be enforced in PR3) | ⏳ PR3 |
 | 9 | No role assignment can remove the last `CMS_ADMIN` | Runtime: (to be enforced in PR3) | ⏳ PR3 |
-| 10 | Org-scoped roles must either be enforced or explicitly blocked from production | Runtime: Warning log in `PermissionsGuard` + explicit E2E test documenting behavior | ⚠️ Deferred |
+| 10 | Org-scoped roles must be enforced per-organization | Runtime: `PermissionsGuard` + `@RequiresOrgContext()` + E2E `rbac-matrix` suite | ✅ Enforced |
 
 ---
 
@@ -95,20 +95,14 @@ backend/src/core/auth/permissions.constants.ts    ← CANONICAL SOURCE OF TRUTH
 
 ---
 
-## Org-Scope Enforcement (TODO)
+## Org-Scope Enforcement
 
-> [!CAUTION]
-> Org-scoped roles (`UserRole.organizationId != null`) are currently treated as **global**.
-> This means a user with a role scoped to Organization A gets those permissions across ALL organizations.
+Org-scoped RBAC is **fully enforced** as of PR5:
 
-**Current status:** Warning log in `PermissionsGuard` + explicit E2E test documenting behavior.
+- `PermissionsGuard` resolves `targetOrganizationId` via `@RequiresOrgContext()` decorator
+- Scoped roles (`UserRole.organizationId != null`) only apply when the target matches
+- Global roles (`UserRole.organizationId = null`) apply universally
+- Mutation endpoints resolve org ownership from the database before authorization
+- `AccessContext` propagates scope to service layer for row-level filtering
 
-**Resolution requires a design decision:**
-
-| Option | Approach | Complexity | Security |
-|---|---|---|---|
-| A | Check `request.user.organizationId` against `UserRole.organizationId` | Low | Medium — only works for user-owned resources |
-| B | Check route param `:organizationId` | Medium | Medium — requires consistent route design |
-| C | Resource-ownership lookup | High | High — verifies actual data ownership |
-
-**Ticket:** `RBAC-ORG-SCOPE`
+E2E validation: `test/rbac-matrix.e2e-spec.ts` (8 tests, all passing)

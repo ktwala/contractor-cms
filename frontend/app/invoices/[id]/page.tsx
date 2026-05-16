@@ -26,7 +26,7 @@ import { useAuth } from '@/lib/auth-context';
 interface Invoice {
   id: string;
   invoiceNumber: string;
-  issueDate: string;
+  invoiceDate: string;
   dueDate: string;
   amount: number;
   taxAmount: number;
@@ -234,7 +234,7 @@ export default function InvoiceDetailPage() {
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Invoice {invoice.invoiceNumber}</h1>
               <p className="text-gray-600 mt-1">
-                Issued {format(new Date(invoice.issueDate), 'MMM dd, yyyy')}
+                Issued {invoice.invoiceDate ? format(new Date(invoice.invoiceDate), 'MMM dd, yyyy') : 'N/A'}
               </p>
             </div>
           </div>
@@ -278,7 +278,7 @@ export default function InvoiceDetailPage() {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Issue Date</label>
               <p className="text-gray-900">
-                {format(new Date(invoice.issueDate), 'MMM dd, yyyy')}
+                {invoice.invoiceDate ? format(new Date(invoice.invoiceDate), 'MMM dd, yyyy') : 'N/A'}
               </p>
             </div>
             <div>

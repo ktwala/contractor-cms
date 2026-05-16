@@ -45,14 +45,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (email: string, password: string) => {
     const response = await api.login(email, password);
-    localStorage.setItem('auth_token', response.access_token);
+    localStorage.setItem('auth_token', response.accessToken);
     localStorage.setItem('user', JSON.stringify(response.user));
     setUser(response.user);
   };
 
   const register = async (data: any) => {
     const response = await api.register(data);
-    localStorage.setItem('auth_token', response.access_token);
+    localStorage.setItem('auth_token', response.accessToken);
     localStorage.setItem('user', JSON.stringify(response.user));
     setUser(response.user);
   };

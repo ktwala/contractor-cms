@@ -13,6 +13,7 @@ import { exportContractorsToCSV } from '@/lib/csv-export';
 import RequirePermission from '@/components/RequirePermission';
 import { PERMISSIONS } from '@/lib/permissions.generated';
 import { useAuth } from '@/lib/auth-context';
+import { formatSupplierDisplayName } from '@/lib/supplier-display';
 
 interface Contractor {
   id: string;
@@ -28,6 +29,7 @@ interface Contractor {
   supplierId: string;
   supplier?: {
     id: string;
+    type?: string;
     firstName?: string;
     lastName?: string;
     companyName?: string;
@@ -36,7 +38,7 @@ interface Contractor {
 
 interface Supplier {
   id: string;
-  type: string;
+  type?: string;
   firstName?: string;
   lastName?: string;
   companyName?: string;
@@ -46,6 +48,7 @@ export default function ContractorsPage() {
   const [contractors, setContractors] = useState<Contractor[]>([]);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingContractor, setEditingContractor] = useState<Contractor | null>(null);
@@ -78,8 +81,12 @@ export default function ContractorsPage() {
       ]);
       setContractors(contractorsRes.data);
       setSuppliers(suppliersRes.data);
+      setError('');
     } catch (err: any) {
-      showToast('error', 'Failed to load data');
+      console.error(err);
+      setError('Failed to load contractors');
+      setContractors([]);
+      setSuppliers([]);
     } finally {
       setLoading(false);
     }
@@ -183,11 +190,6 @@ export default function ContractorsPage() {
     );
   });
 
-  const getSupplierName = (supplier: Supplier) => {
-    if (supplier.type === 'COMPANY') return supplier.companyName;
-    return `${supplier.firstName} ${supplier.lastName}`;
-  };
-
   if (loading) {
     return (
       <DashboardLayout>
@@ -224,6 +226,12 @@ export default function ContractorsPage() {
             )}
           </div>
         </div>
+
+        {error && (
+          <div className="bg-red-50 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+            <span className="block sm:inline">{error}</span>
+          </div>
+        )}
 
         <div className="card">
           <div className="mb-4">
@@ -283,7 +291,7 @@ export default function ContractorsPage() {
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {contractor.supplier && getSupplierName(contractor.supplier)}
+                        {formatSupplierDisplayName(contractor.supplier)}
                       </td>
                       <td className="px-6 py-4">
                         <div className="text-sm text-gray-900">{contractor.email}</div>
@@ -341,7 +349,7 @@ export default function ContractorsPage() {
             onChange={(e) => setFormData({ ...formData, supplierId: e.target.value })}
             options={suppliers.map((s) => ({
               value: s.id,
-              label: getSupplierName(s),
+              label: formatSupplierDisplayName(s),
             }))}
             error={formErrors.supplierId}
             required

@@ -16,13 +16,18 @@ import {
   GenerateInvoiceFromTimesheetsDto,
   MarkInvoicePaidDto,
 } from './dto/generate-invoice.dto';
-import { Decimal } from '@prisma/client/runtime/library';
+import { Prisma } from '@prisma/client';
 
 import { AccessContext } from '../../core/auth/interfaces/access-context.interface';
 
+import { AuditService } from '../../core/audit/audit.service';
+
 @Injectable()
 export class InvoicesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly auditService: AuditService,
+  ) {}
 
   async create(
     accessContext: AccessContext,
@@ -34,7 +39,7 @@ export class InvoicesService {
     const supplier = await this.prisma.supplier.findFirst({
       where: {
         id: createInvoiceDto.supplierId,
-        organizationId: targetOrgId,
+        organizationId: targetOrgId as string,
       },
     });
 
@@ -45,7 +50,7 @@ export class InvoicesService {
     // Check for duplicate invoice number within organization
     const existingInvoice = await this.prisma.invoice.findFirst({
       where: {
-        organizationId: targetOrgId,
+        organizationId: targetOrgId as string,
         invoiceNumber: createInvoiceDto.invoiceNumber,
       },
     });
@@ -75,15 +80,15 @@ export class InvoicesService {
       const amount = item.quantity * item.unitPrice;
       return {
         ...item,
-        quantity: new Decimal(item.quantity),
-        unitPrice: new Decimal(item.unitPrice),
-        amount: new Decimal(amount),
+        quantity: new Prisma.Decimal(item.quantity),
+        unitPrice: new Prisma.Decimal(item.unitPrice),
+        amount: new Prisma.Decimal(amount),
       };
     });
 
     const subtotal = lineItems.reduce(
       (sum, item) => sum.add(item.amount),
-      new Decimal(0),
+      new Prisma.Decimal(0),
     );
 
     // Calculate VAT (15% for South Africa)
@@ -94,7 +99,7 @@ export class InvoicesService {
     // Create invoice with line items
     const invoice = await this.prisma.invoice.create({
       data: {
-        organizationId: targetOrgId,
+        organizationId: targetOrgId as string,
         supplierId: createInvoiceDto.supplierId,
         invoiceNumber: createInvoiceDto.invoiceNumber,
         invoiceDate,
@@ -153,7 +158,7 @@ export class InvoicesService {
         id: { in: dto.timesheetIds },
         contractor: {
           supplier: {
-            organizationId: targetOrgId,
+            organizationId: targetOrgId as string,
           },
         },
       },
@@ -471,15 +476,15 @@ export class InvoicesService {
         const amount = item.quantity * item.unitPrice;
         return {
           ...item,
-          quantity: new Decimal(item.quantity),
-          unitPrice: new Decimal(item.unitPrice),
-          amount: new Decimal(amount),
+          quantity: new Prisma.Decimal(item.quantity),
+          unitPrice: new Prisma.Decimal(item.unitPrice),
+          amount: new Prisma.Decimal(amount),
         };
       });
 
       subtotal = lineItems.reduce(
         (sum, item) => sum.add(item.amount),
-        new Decimal(0),
+        new Prisma.Decimal(0),
       );
 
       const vatRate = 0.15;
@@ -511,9 +516,9 @@ export class InvoicesService {
           ? {
               create: updateInvoiceDto.lineItems.map((item) => ({
                 description: item.description,
-                quantity: new Decimal(item.quantity),
-                unitPrice: new Decimal(item.unitPrice),
-                amount: new Decimal(item.quantity * item.unitPrice),
+                quantity: new Prisma.Decimal(item.quantity),
+                unitPrice: new Prisma.Decimal(item.unitPrice),
+                amount: new Prisma.Decimal(item.quantity * item.unitPrice),
                 projectId: item.projectId,
                 costCenterId: item.costCenterId,
                 glAccountCode: item.glAccountCode,
@@ -597,7 +602,7 @@ export class InvoicesService {
       throw new BadRequestException('Cannot submit invoice with no line items');
     }
 
-    return this.prisma.invoice.update({
+    const updatedInvoice = await this.prisma.invoice.update({
       where: { id },
       data: {
         status: 'SUBMITTED',
@@ -623,7 +628,19 @@ export class InvoicesService {
           },
         },
       },
-    }) as any;
+    });
+
+    await this.auditService.logAction(
+      accessContext.actorUserId,
+      'INVOICE_SUBMITTED',
+      'Invoice',
+      id,
+      invoice,
+      updatedInvoice,
+      { organizationId: invoice.organizationId }
+    );
+
+    return updatedInvoice as any;
   }
 
   async approve(
@@ -648,7 +665,7 @@ export class InvoicesService {
       throw new BadRequestException('Only submitted invoices can be approved');
     }
 
-    return this.prisma.invoice.update({
+    const updatedInvoice = await this.prisma.invoice.update({
       where: { id },
       data: {
         status: 'APPROVED',
@@ -676,7 +693,19 @@ export class InvoicesService {
           },
         },
       },
-    }) as any;
+    });
+
+    await this.auditService.logAction(
+      accessContext.actorUserId,
+      'INVOICE_APPROVED',
+      'Invoice',
+      id,
+      invoice,
+      updatedInvoice,
+      { organizationId: invoice.organizationId }
+    );
+
+    return updatedInvoice as any;
   }
 
   async reject(
@@ -701,7 +730,7 @@ export class InvoicesService {
       throw new BadRequestException('Only submitted invoices can be rejected');
     }
 
-    return this.prisma.invoice.update({
+    const updatedInvoice = await this.prisma.invoice.update({
       where: { id },
       data: {
         status: 'REJECTED',
@@ -729,7 +758,19 @@ export class InvoicesService {
           },
         },
       },
-    }) as any;
+    });
+
+    await this.auditService.logAction(
+      accessContext.actorUserId,
+      'INVOICE_REJECTED',
+      'Invoice',
+      id,
+      invoice,
+      updatedInvoice,
+      { organizationId: invoice.organizationId }
+    );
+
+    return updatedInvoice as any;
   }
 
   async markPaid(
@@ -754,7 +795,7 @@ export class InvoicesService {
       throw new BadRequestException('Only approved invoices can be marked as paid');
     }
 
-    return this.prisma.invoice.update({
+    const updatedInvoice = await this.prisma.invoice.update({
       where: { id },
       data: {
         status: 'PAID',
@@ -781,7 +822,19 @@ export class InvoicesService {
           },
         },
       },
-    }) as any;
+    });
+
+    await this.auditService.logAction(
+      accessContext.actorUserId,
+      'INVOICE_PAID',
+      'Invoice',
+      id,
+      invoice,
+      updatedInvoice,
+      { organizationId: invoice.organizationId }
+    );
+
+    return updatedInvoice as any;
   }
 
   async cancel(accessContext: AccessContext, id: string): Promise<InvoiceResponseDto> {

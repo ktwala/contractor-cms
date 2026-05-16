@@ -14,10 +14,14 @@ import {
   SupplierResponseDto,
 } from './dto/supplier-response.dto';
 import { AccessContext } from '../../core/auth/interfaces/access-context.interface';
+import { AuditService } from '../../core/audit/audit.service';
 
 @Injectable()
 export class SuppliersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly auditService: AuditService,
+  ) {}
 
   async create(
     accessContext: AccessContext,
@@ -60,7 +64,19 @@ export class SuppliersService {
       },
     });
 
-    return supplier;
+    await this.auditService.logAction(
+      accessContext.actorUserId,
+      'SUPPLIER_CREATED',
+      'Supplier',
+      supplier.id,
+      null,
+      supplier,
+      {
+        organizationId: supplier.organizationId,
+      }
+    );
+
+    return supplier as any;
   }
 
   async findAll(
@@ -106,7 +122,7 @@ export class SuppliersService {
     ]);
 
     return {
-      data: suppliers,
+      data: suppliers as any,
       total,
       page,
       limit,
@@ -117,7 +133,7 @@ export class SuppliersService {
   async findOne(
     accessContext: AccessContext,
     id: string,
-  ): Promise<SupplierResponseDto> {
+  ): Promise<any> {
     const where: any = { id };
     if (!accessContext.isGlobalAccess) {
       where.organizationId = accessContext.targetOrganizationId;
@@ -149,7 +165,7 @@ export class SuppliersService {
     accessContext: AccessContext,
     id: string,
     updateSupplierDto: UpdateSupplierDto,
-  ): Promise<SupplierResponseDto> {
+  ): Promise<any> {
     const where: any = { id };
     if (!accessContext.isGlobalAccess) {
       where.organizationId = accessContext.targetOrganizationId;
@@ -176,7 +192,7 @@ export class SuppliersService {
     if (updateSupplierDto.email && updateSupplierDto.email !== existingSupplier.email) {
       const emailConflict = await this.prisma.supplier.findFirst({
         where: {
-          organizationId,
+          organizationId: existingSupplier.organizationId,
           email: updateSupplierDto.email,
           id: { not: id },
         },
@@ -201,6 +217,16 @@ export class SuppliersService {
           : undefined,
       },
     });
+
+    await this.auditService.logAction(
+      accessContext.actorUserId,
+      'SUPPLIER_UPDATED',
+      'Supplier',
+      supplier.id,
+      existingSupplier,
+      supplier,
+      { organizationId: supplier.organizationId }
+    );
 
     return supplier;
   }
@@ -244,13 +270,23 @@ export class SuppliersService {
     await this.prisma.supplier.delete({
       where: { id },
     });
+
+    await this.auditService.logAction(
+      accessContext.actorUserId,
+      'SUPPLIER_DELETED',
+      'Supplier',
+      id,
+      supplier,
+      null,
+      { organizationId: supplier.organizationId }
+    );
   }
 
   async updateStatus(
     accessContext: AccessContext,
     id: string,
     status: SupplierStatus,
-  ): Promise<SupplierResponseDto> {
+  ): Promise<any> {
     const where: any = { id };
     if (!accessContext.isGlobalAccess) {
       where.organizationId = accessContext.targetOrganizationId;

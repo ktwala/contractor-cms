@@ -45,6 +45,7 @@ export default function TimesheetsPage() {
   const router = useRouter();
   const [timesheets, setTimesheets] = useState<Timesheet[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [startDate, setStartDate] = useState('');
@@ -77,8 +78,11 @@ export default function TimesheetsPage() {
 
       const response = await api.getTimesheets(params);
       setTimesheets(response.data);
+      setError('');
     } catch (err: any) {
-      showToast('error', 'Failed to load timesheets');
+      console.error(err);
+      setError('Failed to load timesheets');
+      setTimesheets([]);
     } finally {
       setLoading(false);
     }
@@ -288,6 +292,12 @@ export default function TimesheetsPage() {
             )}
           </div>
         </div>
+
+        {error && (
+          <div className="bg-red-50 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+            <span className="block sm:inline">{error}</span>
+          </div>
+        )}
 
         <div className="card">
           {/* Search and Date Range Filters */}

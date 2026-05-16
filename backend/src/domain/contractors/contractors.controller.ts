@@ -57,7 +57,7 @@ export class ContractorsController {
 
   @Get()
   @Permissions('contractors:read')
-  @RequiresOrgContext({ type: 'query', key: 'organizationId' })
+  @RequiresOrgContext({ type: 'currentUser' })
   @ApiOperation({ summary: 'Get all contractors with pagination and filtering' })
   @ApiResponse({
     status: 200,

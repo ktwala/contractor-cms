@@ -17,14 +17,21 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     private configService: ConfigService,
     private authService: AuthService,
   ) {
+    const secret = configService.get<string>('jwt.secret') || 'default_secret';
+    console.log('JwtStrategy initialized with secret:', secret);
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      jwtFromRequest: (req) => {
+        const token = ExtractJwt.fromAuthHeaderAsBearerToken()(req);
+        console.log('Extracted token:', token ? `${token.substring(0, 15)}... length=${token.length}` : token);
+        return token;
+      },
       ignoreExpiration: false,
-      secretOrKey: configService.get<string>('jwt.secret'),
+      secretOrKey: secret,
     });
   }
 
   async validate(payload: JwtPayload) {
+    console.log('Validating payload:', payload);
     const user = await this.authService.validateUser(payload.sub);
 
     if (!user) {

@@ -19,7 +19,7 @@ import { useAuth } from '@/lib/auth-context';
 interface Invoice {
   id: string;
   invoiceNumber: string;
-  issueDate: string;
+  invoiceDate: string;
   dueDate: string;
   amount: number;
   taxAmount: number;
@@ -49,6 +49,7 @@ export default function InvoicesPage() {
   const router = useRouter();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [startDate, setStartDate] = useState('');
@@ -79,8 +80,11 @@ export default function InvoicesPage() {
 
       const response = await api.getInvoices(params);
       setInvoices(response.data);
+      setError('');
     } catch (err: any) {
-      showToast('error', 'Failed to load invoices');
+      console.error(err);
+      setError('Failed to load invoices');
+      setInvoices([]);
     } finally {
       setLoading(false);
     }
@@ -157,13 +161,13 @@ export default function InvoicesPage() {
       }
     }
 
-    // Date range filter (based on issue date)
+    // Date range filter (based on invoice date)
     if (startDate) {
-      const invoiceDate = new Date(invoice.issueDate);
+      const invoiceDate = new Date(invoice.invoiceDate);
       if (invoiceDate < new Date(startDate)) return false;
     }
     if (endDate) {
-      const invoiceDate = new Date(invoice.issueDate);
+      const invoiceDate = new Date(invoice.invoiceDate);
       if (invoiceDate > new Date(endDate)) return false;
     }
 
@@ -180,6 +184,12 @@ export default function InvoicesPage() {
   const getTotalHours = (timesheets: any[]) => {
     if (!timesheets) return 0;
     return timesheets.reduce((sum, ts) => sum + ts.totalHours, 0);
+  };
+
+  const safeFormatDate = (dateString?: string) => {
+    if (!dateString) return 'N/A';
+    const d = new Date(dateString);
+    return isNaN(d.getTime()) ? 'Invalid Date' : format(d, 'MMM dd, yyyy');
   };
 
   const handleClearDateRange = () => {
@@ -234,6 +244,12 @@ export default function InvoicesPage() {
           </div>
         </div>
 
+        {error && (
+          <div className="bg-red-50 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+            <span className="block sm:inline">{error}</span>
+          </div>
+        )}
+
         <div className="card">
           <div className="mb-4 space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center gap-3">
@@ -281,9 +297,9 @@ export default function InvoicesPage() {
                 Draft
               </button>
               <button
-                onClick={() => setStatusFilter('PENDING')}
+                onClick={() => setStatusFilter('SUBMITTED')}
                 className={`px-3 py-1 rounded-lg text-sm font-medium whitespace-nowrap ${
-                  statusFilter === 'PENDING'
+                  statusFilter === 'SUBMITTED'
                     ? 'bg-yellow-100 text-yellow-700'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
@@ -326,7 +342,7 @@ export default function InvoicesPage() {
             {selectedIds.length > 0 && (
               <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-gray-200">
                 <span className="text-sm text-gray-600">{selectedIds.length} selected</span>
-                {statusFilter === 'PENDING' && (
+                {statusFilter === 'SUBMITTED' && (
                   <button
                     onClick={handleBulkApprove}
                     disabled={bulkActionLoading || !can(PERMISSIONS.INVOICES.APPROVE)}
@@ -420,9 +436,9 @@ export default function InvoicesPage() {
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <div>Issued: {format(new Date(invoice.issueDate), 'MMM dd, yyyy')}</div>
+                        <div>Issued: {safeFormatDate(invoice.invoiceDate)}</div>
                         <div className="text-xs text-gray-400">
-                          Due: {format(new Date(invoice.dueDate), 'MMM dd, yyyy')}
+                          Due: {safeFormatDate(invoice.dueDate)}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -459,7 +475,7 @@ export default function InvoicesPage() {
                         >
                           <Eye className="w-4 h-4 inline" />
                         </button>
-                        {invoice.status === 'PENDING' && (
+                        {invoice.status === 'SUBMITTED' && (
                           <button
                             onClick={() => handleQuickApprove(invoice.id)}
                             className="text-green-600 hover:text-green-900 disabled:opacity-50 disabled:cursor-not-allowed"

@@ -105,6 +105,10 @@ export class ContractsService {
       contractType,
       status,
       currency,
+      expiresBefore,
+      expiresAfter,
+      expiresWithinDays,
+      expiryState,
       page = 1,
       limit = 20,
     } = query;
@@ -135,6 +139,43 @@ export class ContractsService {
 
     if (currency) {
       where.currency = currency;
+    }
+
+    if (expiresBefore || expiresAfter || expiresWithinDays !== undefined || expiryState) {
+      where.endDate = {};
+    }
+
+    if (expiresBefore) {
+      where.endDate = { ...where.endDate, lte: new Date(expiresBefore) };
+    }
+    if (expiresAfter) {
+      where.endDate = { ...where.endDate, gte: new Date(expiresAfter) };
+    }
+    if (expiresWithinDays !== undefined) {
+      const now = new Date();
+      const future = new Date();
+      future.setDate(future.getDate() + expiresWithinDays);
+      where.endDate = { ...where.endDate, gte: now, lte: future };
+    }
+    if (expiryState) {
+      const now = new Date();
+      const soonThreshold = new Date();
+      soonThreshold.setDate(soonThreshold.getDate() + 60);
+
+      switch (expiryState) {
+        case 'expired':
+          where.endDate = { ...where.endDate, lt: now };
+          break;
+        case 'expiring_soon':
+          where.endDate = { ...where.endDate, gte: now, lte: soonThreshold };
+          break;
+        case 'active':
+          where.endDate = { ...where.endDate, gt: soonThreshold };
+          break;
+        case 'missing_end_date':
+          where.endDate = null;
+          break;
+      }
     }
 
     const [contracts, total] = await Promise.all([
@@ -168,13 +209,14 @@ export class ContractsService {
   }
 
   async findOne(
-    organizationId: string,
+    accessContext: AccessContext,
     id: string,
-  ): Promise<ContractResponseDto> {
+  ): Promise<any> {
+    const targetOrgId = accessContext.isGlobalAccess ? undefined : accessContext.targetOrganizationId;
     const contract = await this.prisma.supplierContract.findFirst({
       where: {
         id,
-        organizationId: targetOrgId,
+        organizationId: targetOrgId || undefined,
       },
       include: {
         supplier: {
@@ -197,7 +239,7 @@ export class ContractsService {
                 email: true,
               },
             },
-            status: true,
+            isActive: true,
             startDate: true,
             endDate: true,
           },
@@ -213,15 +255,16 @@ export class ContractsService {
   }
 
   async update(
-    organizationId: string,
+    accessContext: AccessContext,
     id: string,
     updateContractDto: UpdateContractDto,
-  ): Promise<ContractResponseDto> {
+  ): Promise<any> {
+    const targetOrgId = accessContext.isGlobalAccess ? undefined : accessContext.targetOrganizationId;
     // Check if contract exists and belongs to organization
     const existingContract = await this.prisma.supplierContract.findFirst({
       where: {
         id,
-        organizationId: targetOrgId,
+        organizationId: targetOrgId || undefined,
       },
     });
 
@@ -237,7 +280,7 @@ export class ContractsService {
       const newSupplier = await this.prisma.supplier.findFirst({
         where: {
           id: updateContractDto.supplierId,
-          organizationId: targetOrgId,
+          organizationId: targetOrgId || undefined,
         },
       });
 
@@ -253,7 +296,7 @@ export class ContractsService {
     ) {
       const numberConflict = await this.prisma.supplierContract.findFirst({
         where: {
-          organizationId: targetOrgId,
+          organizationId: targetOrgId || undefined,
           contractNumber: updateContractDto.contractNumber,
           id: { not: id },
         },
@@ -308,11 +351,12 @@ export class ContractsService {
     return contract as any;
   }
 
-  async remove(organizationId: string, id: string): Promise<void> {
+  async remove(accessContext: AccessContext, id: string): Promise<void> {
+    const targetOrgId = accessContext.isGlobalAccess ? undefined : accessContext.targetOrganizationId;
     const contract = await this.prisma.supplierContract.findFirst({
       where: {
         id,
-        organizationId: targetOrgId,
+        organizationId: targetOrgId || undefined,
       },
       include: {
         engagements: true,
@@ -343,14 +387,15 @@ export class ContractsService {
   }
 
   async signContract(
-    organizationId: string,
+    accessContext: AccessContext,
     id: string,
     signedBy: string,
-  ): Promise<ContractResponseDto> {
+  ): Promise<any> {
+    const targetOrgId = accessContext.isGlobalAccess ? undefined : accessContext.targetOrganizationId;
     const contract = await this.prisma.supplierContract.findFirst({
       where: {
         id,
-        organizationId: targetOrgId,
+        organizationId: targetOrgId || undefined,
       },
     });
 
@@ -384,13 +429,14 @@ export class ContractsService {
   }
 
   async terminateContract(
-    organizationId: string,
+    accessContext: AccessContext,
     id: string,
-  ): Promise<ContractResponseDto> {
+  ): Promise<any> {
+    const targetOrgId = accessContext.isGlobalAccess ? undefined : accessContext.targetOrganizationId;
     const contract = await this.prisma.supplierContract.findFirst({
       where: {
         id,
-        organizationId: targetOrgId,
+        organizationId: targetOrgId || undefined,
       },
     });
 

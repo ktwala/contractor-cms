@@ -29,7 +29,7 @@ export class UsersController {
 
   @Post()
   @Permissions(PERMISSIONS.USERS.CREATE)
-  create(@Body() createUserDto: CreateUserDto, @Request() req) {
+  create(@Body() createUserDto: CreateUserDto, @Request() req: any) {
     return this.usersService.create(createUserDto, req.user.id);
   }
 
@@ -50,7 +50,7 @@ export class UsersController {
   update(
     @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
-    @Request() req,
+    @Request() req: any,
   ) {
     // Note: DEACTIVATE permission might be checked separately if we get more granular,
     // but the task requested USERS.UPDATE for general profile changes.
@@ -70,7 +70,7 @@ export class UsersController {
   assignRoles(
     @Param('id') id: string,
     @Body() assignRolesDto: AssignRolesDto,
-    @Request() req,
+    @Request() req: any,
   ) {
     return this.usersService.assignRoles(id, assignRolesDto, req.user.id);
   }
@@ -80,7 +80,7 @@ export class UsersController {
   addRoles(
     @Param('id') id: string,
     @Body() assignRolesDto: AssignRolesDto,
-    @Request() req,
+    @Request() req: any,
   ) {
     return this.usersService.addRoles(id, assignRolesDto, req.user.id);
   }
@@ -90,7 +90,7 @@ export class UsersController {
   removeRole(
     @Param('id') id: string,
     @Param('roleId') roleId: string,
-    @Request() req,
+    @Request() req: any,
   ) {
     return this.usersService.removeRole(id, roleId, req.user.id);
   }

@@ -11,6 +11,7 @@ import { WILDCARD_ALL, WILDCARD_ACTION } from '../permissions.constants';
 import { OrgContextOptions, ORG_CONTEXT_KEY } from '../decorators/org-context.decorator';
 import { OrgContextResolverService } from './org-context-resolver.service';
 import { AccessContext } from '../interfaces/access-context.interface';
+import { AuditService } from '../../audit/audit.service';
 
 @Injectable()
 export class PermissionsGuard implements CanActivate {
@@ -19,6 +20,7 @@ export class PermissionsGuard implements CanActivate {
   constructor(
     private reflector: Reflector,
     private orgContextResolver: OrgContextResolverService,
+    private auditService: AuditService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -50,10 +52,6 @@ export class PermissionsGuard implements CanActivate {
 
     if (orgContextOptions) {
       targetOrganizationId = await this.orgContextResolver.resolveTargetOrgId(request, orgContextOptions);
-      
-      if (!targetOrganizationId) {
-        throw new ForbiddenException('Organization context required');
-      }
     }
 
     // Determine which roles apply
@@ -72,10 +70,6 @@ export class PermissionsGuard implements CanActivate {
       return false;
     });
 
-    // Check if the user has a global role that applies (isGlobalAccess)
-    // Wait, the user could have a global role (organizationId=null) that grants the needed permission.
-    // We will evaluate permissions below, but we can set isGlobalAccess to true if they use a global role.
-    
     // Collect all permissions from applicable roles (deduplicated)
     const userPermissions = new Set<string>(
       applicableRoles.flatMap(
@@ -89,7 +83,40 @@ export class PermissionsGuard implements CanActivate {
     );
 
     if (!hasAccess) {
+      const errorMsg = (orgContextOptions && !targetOrganizationId) 
+        ? 'Organization context required or global permission insufficient' 
+        : `Missing required permissions: ${requiredPermissions.join(', ')}`;
+        
+      this.auditService.logAction(
+        user.id,
+        'ACCESS_DENIED_403',
+        'Route',
+        request.url,
+        null,
+        null,
+        {
+          organizationId: user.organizationId || null,
+          ipAddress: request.ip,
+          userAgent: request.headers['user-agent'],
+          metadata: {
+            requiredPermissions,
+            providedPermissions: Array.from(userPermissions),
+            targetOrganizationId,
+            error: errorMsg
+          }
+        }
+      );
+
+      if (orgContextOptions && !targetOrganizationId) {
+        throw new ForbiddenException(errorMsg);
+      }
       return false;
+    }
+
+    // If an org context was requested but none was provided, and the user HAS access, 
+    // it means they accessed it via a global role.
+    if (orgContextOptions && !targetOrganizationId) {
+      // Allow them to proceed globally
     }
 
     // Determine if the *access granted* is from a global role or scoped role

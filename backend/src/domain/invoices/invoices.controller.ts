@@ -78,7 +78,7 @@ export class InvoicesController {
 
   @Get()
   @Permissions('invoices:read')
-  @RequiresOrgContext({ type: 'query', key: 'organizationId' })
+  @RequiresOrgContext({ type: 'currentUser' })
   @ApiOperation({ summary: 'Get all invoices with pagination and filtering' })
   @ApiResponse({
     status: 200,

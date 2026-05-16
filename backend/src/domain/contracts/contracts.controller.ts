@@ -59,7 +59,7 @@ export class ContractsController {
 
   @Get()
   @Permissions('contracts:read')
-  @RequiresOrgContext({ type: 'query', key: 'organizationId' })
+  @RequiresOrgContext({ type: 'currentUser' })
   @ApiOperation({ summary: 'Get all contracts with pagination and filtering' })
   @ApiResponse({
     status: 200,

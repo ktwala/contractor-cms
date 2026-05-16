@@ -17,7 +17,8 @@ export default function StatusBadge({ status, variant }: StatusBadgeProps) {
     }
 
     // Auto-detect from status
-    const statusUpper = status.toUpperCase();
+    if (!status) return 'bg-gray-100 text-gray-800';
+    const statusUpper = String(status).toUpperCase();
     if (['ACTIVE', 'APPROVED', 'PAID', 'SYNCED', 'COMPLETED'].includes(statusUpper)) {
       return 'bg-green-100 text-green-800';
     }

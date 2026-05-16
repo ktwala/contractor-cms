@@ -118,6 +118,9 @@ export class RolesService {
       if (!isKnownPermission(perm)) {
         throw new BadRequestException(`Unknown permission: ${perm}`);
       }
+      if (perm === '*:*') {
+        throw new BadRequestException(`Wildcard permission *:* is reserved for system admins only`);
+      }
     }
   }
 }

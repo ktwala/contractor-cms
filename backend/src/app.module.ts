@@ -25,6 +25,7 @@ import { ProjectsModule } from './domain/projects/projects.module';
 import { WithholdingModule } from './domain/withholding/withholding.module';
 import { OrganizationsModule } from './domain/organizations/organizations.module';
 import { AnalyticsModule } from './domain/analytics/analytics.module';
+import { PdpModule } from './pdp/pdp.module';
 import { HcmModule } from './core/hcm/hcm.module';
 import { IgaModule } from './core/iga/iga.module';
 
@@ -33,7 +34,7 @@ import { IgaModule } from './core/iga/iga.module';
     // Configuration with validation
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: '.env',
+      envFilePath: ['.env.test', '.env'],
       load: [appConfig, databaseConfig, jwtConfig],
       validate: validateEnvironment,
     }),
@@ -69,6 +70,7 @@ import { IgaModule } from './core/iga/iga.module';
     WithholdingModule,
     OrganizationsModule,
     AnalyticsModule,
+    PdpModule,
 
     // Health checks
     TerminusModule,

@@ -12,13 +12,18 @@ import {
   PaginatedTimesheetResponseDto,
   TimesheetResponseDto,
 } from './dto/timesheet-response.dto';
-import { Decimal } from '@prisma/client/runtime/library';
+import { Prisma } from '@prisma/client';
 
 import { AccessContext } from '../../core/auth/interfaces/access-context.interface';
 
+import { AuditService } from '../../core/audit/audit.service';
+
 @Injectable()
 export class TimesheetsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly auditService: AuditService,
+  ) {}
 
   async create(
     accessContext: AccessContext,
@@ -88,12 +93,12 @@ export class TimesheetsService {
         taskId: createTimesheetDto.taskId,
         periodStart,
         periodEnd,
-        totalHours: new Decimal(totalHours),
+        totalHours: new Prisma.Decimal(totalHours),
         status: 'DRAFT',
         entries: {
           create: createTimesheetDto.entries.map((entry) => ({
             date: new Date(entry.date),
-            hours: new Decimal(entry.hours),
+            hours: new Prisma.Decimal(entry.hours),
             description: entry.description,
             taskId: entry.taskId,
           })),
@@ -308,7 +313,7 @@ export class TimesheetsService {
       }
 
       // Calculate new total hours
-      totalHours = new Decimal(
+      totalHours = new Prisma.Decimal(
         updateTimesheetDto.entries.reduce((sum, entry) => sum + entry.hours, 0),
       );
 
@@ -334,7 +339,7 @@ export class TimesheetsService {
           ? {
               create: updateTimesheetDto.entries.map((entry) => ({
                 date: new Date(entry.date),
-                hours: new Decimal(entry.hours),
+                hours: new Prisma.Decimal(entry.hours),
                 description: entry.description,
                 taskId: entry.taskId,
               })),
@@ -430,7 +435,7 @@ export class TimesheetsService {
       );
     }
 
-    return this.prisma.timesheet.update({
+    const updatedTimesheet = await this.prisma.timesheet.update({
       where: { id },
       data: {
         status: 'SUBMITTED',
@@ -456,7 +461,19 @@ export class TimesheetsService {
           },
         },
       },
-    }) as any;
+    });
+
+    await this.auditService.logAction(
+      accessContext.actorUserId,
+      'TIMESHEET_SUBMITTED',
+      'Timesheet',
+      id,
+      timesheet,
+      updatedTimesheet,
+      { organizationId: accessContext.targetOrganizationId }
+    );
+
+    return updatedTimesheet as any;
   }
 
   async approve(
@@ -486,7 +503,7 @@ export class TimesheetsService {
       throw new BadRequestException('Only submitted timesheets can be approved');
     }
 
-    return this.prisma.timesheet.update({
+    const updatedTimesheet = await this.prisma.timesheet.update({
       where: { id },
       data: {
         status: 'APPROVED',
@@ -514,7 +531,19 @@ export class TimesheetsService {
           },
         },
       },
-    }) as any;
+    });
+
+    await this.auditService.logAction(
+      accessContext.actorUserId,
+      'TIMESHEET_APPROVED',
+      'Timesheet',
+      id,
+      timesheet,
+      updatedTimesheet,
+      { organizationId: accessContext.targetOrganizationId }
+    );
+
+    return updatedTimesheet as any;
   }
 
   async reject(
@@ -544,7 +573,7 @@ export class TimesheetsService {
       throw new BadRequestException('Only submitted timesheets can be rejected');
     }
 
-    return this.prisma.timesheet.update({
+    const updatedTimesheet = await this.prisma.timesheet.update({
       where: { id },
       data: {
         status: 'REJECTED',
@@ -572,6 +601,18 @@ export class TimesheetsService {
           },
         },
       },
-    }) as any;
+    });
+
+    await this.auditService.logAction(
+      accessContext.actorUserId,
+      'TIMESHEET_REJECTED',
+      'Timesheet',
+      id,
+      timesheet,
+      updatedTimesheet,
+      { organizationId: accessContext.targetOrganizationId }
+    );
+
+    return updatedTimesheet as any;
   }
 }

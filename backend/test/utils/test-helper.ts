@@ -85,11 +85,14 @@ export class TestHelper {
   // Organization helpers
   // ---------------------------------------------------------------------------
 
+  private static orgCounter = 0;
+
   static async createTestOrganization(data?: Partial<any>): Promise<any> {
+    TestHelper.orgCounter++;
     return this.prisma.organization.create({
       data: {
         name: data?.name || 'Test Organization',
-        code: data?.code || `TEST-${Date.now()}`,
+        code: data?.code || `TEST-${Date.now()}-${TestHelper.orgCounter}-${Math.random().toString(36).slice(2, 6)}`,
         country: data?.country || 'ZA',
         currency: data?.currency || 'ZAR',
         timezone: data?.timezone || 'Africa/Johannesburg',
@@ -132,12 +135,24 @@ export class TestHelper {
     organizationId: string | null = null,
     assignedBy = 'test-system',
   ): Promise<any> {
+    // Prisma can't use null in composite unique where clause,
+    // so for global roles (null organizationId) use findFirst + create
+    if (organizationId === null) {
+      const existing = await this.prisma.userRole.findFirst({
+        where: { userId, roleId, organizationId: null },
+      });
+      if (existing) return existing;
+      return this.prisma.userRole.create({
+        data: { userId, roleId, organizationId: null, assignedBy },
+      });
+    }
+
     return this.prisma.userRole.upsert({
       where: {
         userId_roleId_organizationId: {
           userId,
           roleId,
-          organizationId: organizationId as any,
+          organizationId,
         },
       },
       update: {},

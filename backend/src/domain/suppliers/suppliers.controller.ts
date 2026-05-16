@@ -32,7 +32,6 @@ import { SupplierStatus } from '@prisma/client';
 import { CurrentAccessContext } from '../../core/auth/decorators/current-access-context.decorator';
 import { RequiresOrgContext } from '../../core/auth/decorators/org-context.decorator';
 import { AccessContext } from '../../core/auth/interfaces/access-context.interface';
-import { SupplierStatus } from '@prisma/client';
 
 @ApiTags('suppliers')
 @Controller('suppliers')
@@ -59,7 +58,7 @@ export class SuppliersController {
 
   @Get()
   @Permissions('suppliers:read')
-  @RequiresOrgContext({ type: 'query', key: 'organizationId' })
+  @RequiresOrgContext({ type: 'currentUser' })
   @ApiOperation({ summary: 'Get all suppliers with pagination and filtering' })
   @ApiResponse({
     status: 200,

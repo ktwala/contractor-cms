@@ -42,4 +42,25 @@ export class QueryContractDto {
   @IsInt()
   @Min(1)
   limit?: number = 20;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  expiresBefore?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  expiresAfter?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  expiresWithinDays?: number;
+
+  @ApiPropertyOptional({ description: 'Filter by derived expiry state: active, expiring_soon, expired, missing_end_date' })
+  @IsOptional()
+  @IsString()
+  expiryState?: string;
 }

@@ -11,7 +11,7 @@ import {
   PaginatedWithholdingResponseDto,
   WithholdingResponseDto,
 } from './dto/withholding-response.dto';
-import { Decimal } from '@prisma/client/runtime/library';
+import { Prisma } from '@prisma/client';
 
 import { AccessContext } from '../../core/auth/interfaces/access-context.interface';
 
@@ -173,9 +173,9 @@ export class WithholdingService {
         supplierTaxNumber: contractor.supplier.taxNumber,
         withholdingType: dto.withholdingType,
         taxYear: dto.taxYear,
-        grossAmount: new Decimal(dto.grossAmount),
-        withholdingAmount: new Decimal(dto.withholdingAmount),
-        netAmount: new Decimal(netAmount),
+        grossAmount: new Prisma.Decimal(dto.grossAmount),
+        withholdingAmount: new Prisma.Decimal(dto.withholdingAmount),
+        netAmount: new Prisma.Decimal(netAmount),
         currency: dto.currency || 'ZAR',
         classification: dto.classification,
         riskScore: dto.riskScore,
@@ -355,7 +355,7 @@ export class WithholdingService {
     if (dto.grossAmount !== undefined || dto.withholdingAmount !== undefined) {
       const gross = dto.grossAmount ?? Number(existingInstruction.grossAmount);
       const withholding = dto.withholdingAmount ?? Number(existingInstruction.withholdingAmount);
-      netAmount = new Decimal(gross - withholding);
+      netAmount = new Prisma.Decimal(gross - withholding);
     }
 
     const instruction = await this.prisma.withholdingInstruction.update({
@@ -366,9 +366,9 @@ export class WithholdingService {
         workerExternalId: dto.workerExternalId,
         withholdingType: dto.withholdingType,
         taxYear: dto.taxYear,
-        grossAmount: dto.grossAmount ? new Decimal(dto.grossAmount) : undefined,
+        grossAmount: dto.grossAmount ? new Prisma.Decimal(dto.grossAmount) : undefined,
         withholdingAmount: dto.withholdingAmount
-          ? new Decimal(dto.withholdingAmount)
+          ? new Prisma.Decimal(dto.withholdingAmount)
           : undefined,
         netAmount: dto.grossAmount !== undefined || dto.withholdingAmount !== undefined
           ? netAmount

@@ -57,7 +57,7 @@ export class ProjectsController {
 
   @Get()
   @Permissions('projects:read')
-  @RequiresOrgContext({ type: 'query', key: 'organizationId' })
+  @RequiresOrgContext({ type: 'currentUser' })
   @ApiOperation({ summary: 'Get all projects with pagination and filtering' })
   @ApiResponse({
     status: 200,

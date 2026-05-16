@@ -84,7 +84,7 @@ export class ApiKeyService {
   private hashApiKey(apiKey: string): string {
     const salt = this.configService.get<string>('API_KEY_SALT');
     return crypto
-      .createHmac('sha256', salt)
+      .createHmac('sha256', salt || 'default_salt')
       .update(apiKey)
       .digest('hex');
   }

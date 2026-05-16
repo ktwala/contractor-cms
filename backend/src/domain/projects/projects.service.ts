@@ -12,7 +12,7 @@ import {
   PaginatedProjectResponseDto,
   ProjectResponseDto,
 } from './dto/project-response.dto';
-import { Decimal } from '@prisma/client/runtime/library';
+import { Prisma } from '@prisma/client';
 
 import { AccessContext } from '../../core/auth/interfaces/access-context.interface';
 
@@ -64,7 +64,7 @@ export class ProjectsService {
           ? new Date(createProjectDto.endDate)
           : undefined,
         budget: createProjectDto.budget
-          ? new Decimal(createProjectDto.budget)
+          ? new Prisma.Decimal(createProjectDto.budget)
           : undefined,
         currency: createProjectDto.currency || 'ZAR',
         costCenterId: createProjectDto.costCenterId,
@@ -242,7 +242,7 @@ export class ProjectsService {
           ? new Date(updateProjectDto.endDate)
           : undefined,
         budget: updateProjectDto.budget
-          ? new Decimal(updateProjectDto.budget)
+          ? new Prisma.Decimal(updateProjectDto.budget)
           : undefined,
         currency: updateProjectDto.currency,
         costCenterId: updateProjectDto.costCenterId,
