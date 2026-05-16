@@ -6,6 +6,11 @@ import {
 import { SponsorAccountabilityStatus } from '@prisma/client';
 import { PrismaService } from '../../core/database/prisma.service';
 import { HcmSponsorLookupService } from '../../core/hcm/hcm-sponsor-lookup.service';
+import { toIgaEventContractorSlice } from '../../core/iga/iga-event.mapper';
+import {
+  IgaWorkforceEventWriter,
+  shouldEmitSponsorAssignedEvent,
+} from '../../core/iga/iga-workforce-event-writer.service';
 import { CreateEngagementDto } from './dto/create-engagement.dto';
 import { UpdateEngagementDto } from './dto/update-engagement.dto';
 import { QueryEngagementDto } from './dto/query-engagement.dto';
@@ -16,6 +21,7 @@ import {
 
 const ENGAGEMENT_CONTRACTOR_SELECT_CORE = {
   id: true,
+  supplierId: true,
   firstName: true,
   lastName: true,
   email: true,
@@ -50,6 +56,7 @@ export class EngagementsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly hcmSponsorLookup: HcmSponsorLookupService,
+    private readonly igaWorkforceEventWriter: IgaWorkforceEventWriter,
   ) {}
 
   /**
@@ -203,42 +210,66 @@ export class EngagementsService {
       sponsorDelegateEmployeeId: sponsor.sponsorDelegateEmployeeId,
     });
 
-    const engagement = await this.prisma.contractorEngagement.create({
-      data: {
-        contractorId: createEngagementDto.contractorId,
-        contractId: createEngagementDto.contractId,
-        projectId: createEngagementDto.projectId,
-        costCenterId: createEngagementDto.costCenterId,
-        role: createEngagementDto.role,
-        startDate,
-        endDate,
-        rateType: createEngagementDto.rateType,
-        rateAmount: createEngagementDto.rateAmount,
-        currency: createEngagementDto.currency || 'ZAR',
-        isActive: true,
-        sponsorEmployeeId: sponsor.sponsorEmployeeId,
-        sponsorDelegateEmployeeId: sponsor.sponsorDelegateEmployeeId,
-        sponsorStatus: sponsor.sponsorStatus,
-      },
-      include: {
-        contractor: {
-          select: ENGAGEMENT_CONTRACTOR_SELECT_CORE,
+    const emitSponsorAssigned = shouldEmitSponsorAssignedEvent(
+      null,
+      sponsor.sponsorEmployeeId,
+    );
+
+    const engagement = await this.prisma.$transaction(async (tx) => {
+      const created = await tx.contractorEngagement.create({
+        data: {
+          contractorId: createEngagementDto.contractorId,
+          contractId: createEngagementDto.contractId,
+          projectId: createEngagementDto.projectId,
+          costCenterId: createEngagementDto.costCenterId,
+          role: createEngagementDto.role,
+          startDate,
+          endDate,
+          rateType: createEngagementDto.rateType,
+          rateAmount: createEngagementDto.rateAmount,
+          currency: createEngagementDto.currency || 'ZAR',
+          isActive: true,
+          sponsorEmployeeId: sponsor.sponsorEmployeeId,
+          sponsorDelegateEmployeeId: sponsor.sponsorDelegateEmployeeId,
+          sponsorStatus: sponsor.sponsorStatus,
         },
-        contract: {
-          select: {
-            id: true,
-            contractNumber: true,
-            title: true,
+      });
+
+      if (emitSponsorAssigned && sponsor.sponsorEmployeeId) {
+        const contractorRow = await tx.contractor.findUniqueOrThrow({
+          where: { id: created.contractorId },
+        });
+        await this.igaWorkforceEventWriter.persistSponsorAssigned(
+          toIgaEventContractorSlice(contractorRow),
+          {
+            id: created.id,
+            sponsorEmployeeId: sponsor.sponsorEmployeeId,
+            sponsorStatus: sponsor.sponsorStatus,
+          },
+          tx,
+        );
+      }
+
+      return tx.contractorEngagement.findUniqueOrThrow({
+        where: { id: created.id },
+        include: {
+          contractor: { select: ENGAGEMENT_CONTRACTOR_SELECT_CORE },
+          contract: {
+            select: {
+              id: true,
+              contractNumber: true,
+              title: true,
+            },
+          },
+          project: {
+            select: {
+              id: true,
+              code: true,
+              name: true,
+            },
           },
         },
-        project: {
-          select: {
-            id: true,
-            code: true,
-            name: true,
-          },
-        },
-      },
+      });
     });
 
     return engagement as any;
@@ -512,33 +543,59 @@ export class EngagementsService {
       });
     }
 
-    const engagement = await this.prisma.contractorEngagement.update({
-      where: { id },
-      data: {
-        ...restPatch,
-        startDate: patchStart ? new Date(patchStart) : undefined,
-        endDate: patchEnd ? new Date(patchEnd) : undefined,
-        ...(sponsorData ?? {}),
-      },
-      include: {
-        contractor: {
-          select: ENGAGEMENT_CONTRACTOR_SELECT_CORE,
+    const emitSponsorAssigned =
+      sponsorData != null &&
+      shouldEmitSponsorAssignedEvent(
+        existingEngagement.sponsorEmployeeId,
+        sponsorData.sponsorEmployeeId,
+      );
+
+    const engagement = await this.prisma.$transaction(async (tx) => {
+      const updated = await tx.contractorEngagement.update({
+        where: { id },
+        data: {
+          ...restPatch,
+          startDate: patchStart ? new Date(patchStart) : undefined,
+          endDate: patchEnd ? new Date(patchEnd) : undefined,
+          ...(sponsorData ?? {}),
         },
-        contract: {
-          select: {
-            id: true,
-            contractNumber: true,
-            title: true,
+      });
+
+      if (emitSponsorAssigned && sponsorData?.sponsorEmployeeId) {
+        const contractorRow = await tx.contractor.findUniqueOrThrow({
+          where: { id: updated.contractorId },
+        });
+        await this.igaWorkforceEventWriter.persistSponsorAssigned(
+          toIgaEventContractorSlice(contractorRow),
+          {
+            id: updated.id,
+            sponsorEmployeeId: sponsorData.sponsorEmployeeId,
+            sponsorStatus: sponsorData.sponsorStatus,
+          },
+          tx,
+        );
+      }
+
+      return tx.contractorEngagement.findUniqueOrThrow({
+        where: { id: updated.id },
+        include: {
+          contractor: { select: ENGAGEMENT_CONTRACTOR_SELECT_CORE },
+          contract: {
+            select: {
+              id: true,
+              contractNumber: true,
+              title: true,
+            },
+          },
+          project: {
+            select: {
+              id: true,
+              code: true,
+              name: true,
+            },
           },
         },
-        project: {
-          select: {
-            id: true,
-            code: true,
-            name: true,
-          },
-        },
-      },
+      });
     });
 
     return engagement as any;

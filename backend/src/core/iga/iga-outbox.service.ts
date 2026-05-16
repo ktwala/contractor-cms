@@ -11,8 +11,12 @@ import type { IgaOutboundExternalWorkforceEventV1 } from './iga-event.types';
 export class IgaOutboxService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async save(event: IgaOutboundExternalWorkforceEventV1): Promise<{ id: string }> {
-    const row = await this.prisma.igaOutboxEvent.create({
+  async save(
+    event: IgaOutboundExternalWorkforceEventV1,
+    tx?: Prisma.TransactionClient,
+  ): Promise<{ id: string }> {
+    const client = tx ?? this.prisma;
+    const row = await client.igaOutboxEvent.create({
       data: {
         eventType: event.eventType,
         eventVersion: event.version,

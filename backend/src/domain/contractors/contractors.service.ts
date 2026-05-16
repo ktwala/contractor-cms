@@ -13,10 +13,17 @@ import {
   ContractorResponseDto,
 } from './dto/contractor-response.dto';
 import { AccessContext } from '../../core/auth/interfaces/access-context.interface';
+import { AuditService } from '../../core/audit/audit.service';
+import { toIgaEventContractorSlice } from '../../core/iga/iga-event.mapper';
+import { IgaWorkforceEventWriter } from '../../core/iga/iga-workforce-event-writer.service';
 
 @Injectable()
 export class ContractorsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly auditService: AuditService,
+    private readonly igaWorkforceEventWriter: IgaWorkforceEventWriter,
+  ) {}
 
   async create(
     accessContext: AccessContext,
@@ -50,29 +57,49 @@ export class ContractorsService {
       );
     }
 
-    const contractor = await this.prisma.contractor.create({
-      data: {
-        ...createContractorDto,
-        skills: createContractorDto.skills || [],
-        dateOfBirth: createContractorDto.dateOfBirth
-          ? new Date(createContractorDto.dateOfBirth)
-          : undefined,
-        accessExpiresAt: createContractorDto.accessExpiresAt
-          ? new Date(createContractorDto.accessExpiresAt)
-          : undefined,
-      },
-      include: {
-        supplier: {
-          select: {
-            id: true,
-            companyName: true,
-            firstName: true,
-            lastName: true,
-            email: true,
+    const contractor = await this.prisma.$transaction(async (tx) => {
+      const created = await tx.contractor.create({
+        data: {
+          ...createContractorDto,
+          skills: createContractorDto.skills || [],
+          dateOfBirth: createContractorDto.dateOfBirth
+            ? new Date(createContractorDto.dateOfBirth)
+            : undefined,
+          accessExpiresAt: createContractorDto.accessExpiresAt
+            ? new Date(createContractorDto.accessExpiresAt)
+            : undefined,
+        },
+      });
+      await this.igaWorkforceEventWriter.persistExternalPersonCreated(
+        toIgaEventContractorSlice(created),
+        tx,
+      );
+      return tx.contractor.findUniqueOrThrow({
+        where: { id: created.id },
+        include: {
+          supplier: {
+            select: {
+              id: true,
+              type: true,
+              companyName: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+            },
           },
         },
-      },
+      });
     });
+
+    await this.auditService.logAction(
+      accessContext.actorUserId,
+      'CONTRACTOR_CREATED',
+      'Contractor',
+      contractor.id,
+      null,
+      contractor,
+      { organizationId: targetOrgId }
+    );
 
     return contractor as any;
   }
@@ -143,6 +170,7 @@ export class ContractorsService {
           supplier: {
             select: {
               id: true,
+              type: true,
               companyName: true,
               firstName: true,
               lastName: true,
@@ -180,6 +208,7 @@ export class ContractorsService {
         supplier: {
           select: {
             id: true,
+            type: true,
             companyName: true,
             firstName: true,
             lastName: true,
@@ -189,7 +218,7 @@ export class ContractorsService {
         engagements: {
           select: {
             id: true,
-            status: true,
+            isActive: true,
             startDate: true,
             endDate: true,
           },
@@ -262,29 +291,49 @@ export class ContractorsService {
       }
     }
 
-    const contractor = await this.prisma.contractor.update({
-      where: { id },
-      data: {
-        ...updateContractorDto,
-        dateOfBirth: updateContractorDto.dateOfBirth
-          ? new Date(updateContractorDto.dateOfBirth)
-          : undefined,
-        accessExpiresAt: updateContractorDto.accessExpiresAt
-          ? new Date(updateContractorDto.accessExpiresAt)
-          : undefined,
-      },
-      include: {
-        supplier: {
-          select: {
-            id: true,
-            companyName: true,
-            firstName: true,
-            lastName: true,
-            email: true,
+    const contractor = await this.prisma.$transaction(async (tx) => {
+      const updated = await tx.contractor.update({
+        where: { id },
+        data: {
+          ...updateContractorDto,
+          dateOfBirth: updateContractorDto.dateOfBirth
+            ? new Date(updateContractorDto.dateOfBirth)
+            : undefined,
+          accessExpiresAt: updateContractorDto.accessExpiresAt
+            ? new Date(updateContractorDto.accessExpiresAt)
+            : undefined,
+        },
+      });
+      await this.igaWorkforceEventWriter.persistExternalPersonUpdated(
+        toIgaEventContractorSlice(updated),
+        tx,
+      );
+      return tx.contractor.findUniqueOrThrow({
+        where: { id: updated.id },
+        include: {
+          supplier: {
+            select: {
+              id: true,
+              type: true,
+              companyName: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+            },
           },
         },
-      },
+      });
     });
+
+    await this.auditService.logAction(
+      accessContext.actorUserId,
+      'CONTRACTOR_UPDATED',
+      'Contractor',
+      contractor.id,
+      existingContractor,
+      contractor,
+      { organizationId: accessContext.targetOrganizationId },
+    );
 
     return contractor as any;
   }
@@ -310,7 +359,7 @@ export class ContractorsService {
 
     // Check if contractor has active engagements
     const activeEngagements = contractor.engagements.filter(
-      (e) => e.status === 'ACTIVE',
+      (e) => e.isActive,
     );
 
     if (activeEngagements.length > 0) {
@@ -322,6 +371,16 @@ export class ContractorsService {
     await this.prisma.contractor.delete({
       where: { id },
     });
+
+    await this.auditService.logAction(
+      accessContext.actorUserId,
+      'CONTRACTOR_DELETED',
+      'Contractor',
+      id,
+      contractor,
+      null,
+      { organizationId: accessContext.targetOrganizationId }
+    );
   }
 
   async deactivate(accessContext: AccessContext, id: string): Promise<ContractorResponseDto> {
@@ -347,6 +406,7 @@ export class ContractorsService {
         supplier: {
           select: {
             id: true,
+            type: true,
             companyName: true,
             firstName: true,
             lastName: true,
