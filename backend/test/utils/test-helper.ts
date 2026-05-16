@@ -59,6 +59,7 @@ export class TestHelper {
     await this.prisma.supplier.deleteMany();
     await this.prisma.task.deleteMany();
     await this.prisma.project.deleteMany();
+    await this.prisma.igaOutboxEvent.deleteMany();
     await this.prisma.userRole.deleteMany();
     await this.prisma.role.deleteMany();
     await this.prisma.userSession.deleteMany();

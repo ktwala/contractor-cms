@@ -80,7 +80,10 @@ function extractSeedPermissions(content: string): string[] {
 
 /** Check if a controller file has PermissionsGuard applied at class level */
 function hasPermissionsGuard(content: string): boolean {
-  return content.includes('PermissionsGuard');
+  return (
+    content.includes('PermissionsGuard') ||
+    content.includes('IntegrationPermissionsGuard')
+  );
 }
 
 /** Find all controller files in domain directory */

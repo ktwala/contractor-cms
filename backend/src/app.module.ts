@@ -28,6 +28,7 @@ import { AnalyticsModule } from './domain/analytics/analytics.module';
 import { PdpModule } from './pdp/pdp.module';
 import { HcmModule } from './core/hcm/hcm.module';
 import { IgaModule } from './core/iga/iga.module';
+import { ExtidModule } from './core/extid/extid.module';
 
 @Module({
   imports: [
@@ -47,6 +48,9 @@ import { IgaModule } from './core/iga/iga.module';
 
     // IGA event contract (outbound payload shape only — no bus / connector)
     IgaModule,
+
+    // EXTID integration pull API (IGA consumes; no connector in CMS)
+    ExtidModule,
 
     // Core
     AuditModule,

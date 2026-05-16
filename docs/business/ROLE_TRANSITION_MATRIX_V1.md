@@ -2,7 +2,7 @@
 
 **Status:** `DRAFT` — supports **V1.0 ratification** and **STREAM B** (RBAC realignment), sequenced **after** [`PR-EXTID-SCHEMA-1_DESIGN.md`](./PR-EXTID-SCHEMA-1_DESIGN.md) per [`EXTID_IMPLEMENTATION_ALIGNMENT_PLAN_V1.md`](./EXTID_IMPLEMENTATION_ALIGNMENT_PLAN_V1.md) **§4**.
 
-**Closed (traceability):** **PR-DOCS-SUPPLIER-TERMINOLOGY-1** — CLOSED · **PR-RBAC-REALIGN-1** — CLOSED · **PR-NAV-IA-1** — CLOSED · **PR-RBAC-REALIGN-2** — CLOSED · **PR-SPONSOR-RUNTIME-1** — CLOSED · **PR-SPONSOR-GOVERNANCE-1** — CLOSED · **PR-HCM-SPONSOR-BRIDGE-1** — CLOSED · **PR-IGA-EVENT-CONTRACT-1** — CLOSED · **PR-IGA-OUTBOX-1** — CLOSED · **PR-IGA-EVENT-WRITE-1** — CLOSED · **PR-IGA-DISPATCHER-1** — CLOSED · **PR-IGA-DISPATCH-SCHEDULER-1** — CLOSED.
+**Closed (traceability):** **PR-DOCS-SUPPLIER-TERMINOLOGY-1** — CLOSED · **PR-RBAC-REALIGN-1** — CLOSED · **PR-NAV-IA-1** — CLOSED · **PR-RBAC-REALIGN-2** — CLOSED · **PR-SPONSOR-RUNTIME-1** — CLOSED · **PR-SPONSOR-GOVERNANCE-1** — CLOSED · **PR-HCM-SPONSOR-BRIDGE-1** — CLOSED · **PR-IGA-EVENT-CONTRACT-1** — CLOSED · **PR-IGA-OUTBOX-1** — CLOSED · **PR-IGA-EVENT-WRITE-1** — CLOSED · **PR-IGA-DISPATCHER-1** — CLOSED · **PR-IGA-DISPATCH-SCHEDULER-1** — CLOSED · **PR-EXTID-EVENT-FEED-1** — CLOSED.
 
 **Purpose:** Map **current seeded / implied personas** to **target doctrine personas** and define **deprecate → restrict → replace** paths without destructive role removal.
 
@@ -92,7 +92,9 @@ Exact strings: [`seed-system-role-bundles.ts`](../../backend/src/core/auth/seed-
 | Dispatch scheduler | PR-IGA-DISPATCH-SCHEDULER-1 | CLOSED |
 | **Outbound delivery adapter** | **PR-EXTID-EVENT-DELIVERY-1** | **Planned** |
 
-**Planned next:** **`PR-EXTID-EVENT-DELIVERY-1`** — real outbound delivery adapter (HTTP webhook, Soffid endpoint, or bus — transport only). **Do not** use `PR-IGA-CONNECTOR-1`; that name implies CMS becomes IGA.
+**Planned next:** **`PR-EXTID-EVENT-DELIVERY-1`** — optional push delivery adapter (HTTP webhook, Soffid endpoint, or bus — transport only). **Do not** use `PR-IGA-CONNECTOR-1`; that name implies CMS becomes IGA.
+
+**Closed (IGA consume path):** **`PR-EXTID-EVENT-FEED-1`** — secure pull API at `GET/POST /api/v1/extid/events` (list, read, ack → SENT, fail → FAILED); JWT or `X-API-Key` with `extid-events:*` scopes; org-scoped outbox rows; audit on pull/ack/fail. See [`backend/src/core/extid/`](../../backend/src/core/extid/).
 
 ---
 
@@ -111,6 +113,7 @@ Exact strings: [`seed-system-role-bundles.ts`](../../backend/src/core/auth/seed-
 
 | Version | Note |
 |---------|------|
+| 2.4 | **PR-EXTID-EVENT-FEED-1** — **CLOSED:** integration pull API (`ExtidModule`); list/read/ack/fail on `IgaOutboxEvent`; `organizationId` + `failureReason` on outbox; permissions `extid-events:read|ack|fail`; no IGA connector or provisioning in CMS. |
 | 2.3 | **PR-IGA-DISPATCH-SCHEDULER-1** — **CLOSED:** optional `IgaDispatchSchedulerService` interval worker (`IGA_DISPATCH_ENABLED`, `IGA_DISPATCH_INTERVAL_SECONDS`, `IGA_DISPATCH_BATCH_SIZE`); calls `processPending`; logs counts only; disabled by default. |
 | 2.2 | **PR-IGA-DISPATCHER-1** — **CLOSED:** `IgaOutboxDispatcherService.processPending` + `IgaDeliveryProvider` stub; PENDING → SENT/FAILED + `lastAttemptAt`; no scheduler, retry policy, or real connector. |
 | 2.1 | **PR-IGA-EVENT-WRITE-1** — **CLOSED:** contractor create/update + engagement sponsor assign/change → build + transactional outbox save (`IgaWorkforceEventWriter`); API fails if outbox save fails; no dispatch / connector. |

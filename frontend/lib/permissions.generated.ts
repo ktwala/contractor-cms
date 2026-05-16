@@ -121,6 +121,11 @@ export const PERMISSIONS = {
   "GOVERNANCE_RISK": {
     "VIEW": "governance-risk:view",
     "MANAGE": "governance-risk:manage"
+  },
+  "EXTID_EVENTS": {
+    "READ": "extid-events:read",
+    "ACK": "extid-events:ack",
+    "FAIL": "extid-events:fail"
   }
 } as const;
 
@@ -143,6 +148,9 @@ export const ALL_PERMISSIONS: ReadonlySet<string> = new Set([
   "engagements:delete",
   "engagements:read",
   "engagements:update",
+  "extid-events:ack",
+  "extid-events:fail",
+  "extid-events:read",
   "governance-analytics:export",
   "governance-analytics:view",
   "governance-risk:manage",
@@ -655,6 +663,27 @@ export const PERMISSION_GROUPS = [
         "action": "MANAGE",
         "value": "governance-risk:manage",
         "label": "Manage"
+      }
+    ]
+  },
+  {
+    "resource": "EXTID_EVENTS",
+    "label": "EXTID EVENTS",
+    "permissions": [
+      {
+        "action": "READ",
+        "value": "extid-events:read",
+        "label": "Read"
+      },
+      {
+        "action": "ACK",
+        "value": "extid-events:ack",
+        "label": "Ack"
+      },
+      {
+        "action": "FAIL",
+        "value": "extid-events:fail",
+        "label": "Fail"
       }
     ]
   }

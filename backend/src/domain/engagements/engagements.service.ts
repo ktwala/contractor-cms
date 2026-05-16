@@ -246,6 +246,7 @@ export class EngagementsService {
             sponsorEmployeeId: sponsor.sponsorEmployeeId,
             sponsorStatus: sponsor.sponsorStatus,
           },
+          organizationId,
           tx,
         );
       }
@@ -572,6 +573,7 @@ export class EngagementsService {
             sponsorEmployeeId: sponsorData.sponsorEmployeeId,
             sponsorStatus: sponsorData.sponsorStatus,
           },
+          organizationId,
           tx,
         );
       }

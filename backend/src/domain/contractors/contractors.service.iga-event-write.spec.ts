@@ -94,7 +94,8 @@ describe('ContractorsService IGA event writes (PR-IGA-EVENT-WRITE-1)', () => {
 
     expect(persistCreated).toHaveBeenCalledTimes(1);
     expect(persistUpdated).not.toHaveBeenCalled();
-    expect(persistCreated.mock.calls[0][1]).toBeDefined();
+    expect(persistCreated.mock.calls[0][1]).toBe('org-1');
+    expect(persistCreated.mock.calls[0][2]).toBeDefined();
   });
 
   it('update writes one EXTERNAL_PERSON_UPDATED outbox event in the transaction', async () => {

@@ -115,6 +115,7 @@ describe('EngagementsService IGA event writes (PR-IGA-EVENT-WRITE-1)', () => {
       id: 'eng-1',
       sponsorEmployeeId: 'hcm:sponsor-1',
     });
+    expect(persistSponsorAssigned.mock.calls[0][2]).toBe(orgId);
   });
 
   it('update changing primary sponsor writes SPONSOR_ASSIGNED outbox event', async () => {

@@ -65,6 +65,12 @@ export const AUDIT_EVENTS = {
 
   // Settings & Configuration
   SECURITY_SETTINGS_CHANGED: { action: 'SECURITY_SETTINGS_CHANGED', defaultSeverity: AUDIT_SEVERITY.CRITICAL },
+
+  // PR-EXTID-EVENT-FEED-1 — integration pull API (IGA/middleware consumes)
+  EXTID_EVENTS_LISTED: { action: 'EXTID_EVENTS_LISTED', defaultSeverity: AUDIT_SEVERITY.INFO },
+  EXTID_EVENT_READ: { action: 'EXTID_EVENT_READ', defaultSeverity: AUDIT_SEVERITY.INFO },
+  EXTID_EVENT_ACKED: { action: 'EXTID_EVENT_ACKED', defaultSeverity: AUDIT_SEVERITY.INFO },
+  EXTID_EVENT_FAILED: { action: 'EXTID_EVENT_FAILED', defaultSeverity: AUDIT_SEVERITY.WARNING },
 } as const;
 
 export function isKnownAuditEvent(action: string): boolean {

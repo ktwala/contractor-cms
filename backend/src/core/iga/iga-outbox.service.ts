@@ -13,11 +13,15 @@ export class IgaOutboxService {
 
   async save(
     event: IgaOutboundExternalWorkforceEventV1,
-    tx?: Prisma.TransactionClient,
+    options?: {
+      tx?: Prisma.TransactionClient;
+      organizationId?: string | null;
+    },
   ): Promise<{ id: string }> {
-    const client = tx ?? this.prisma;
+    const client = options?.tx ?? this.prisma;
     const row = await client.igaOutboxEvent.create({
       data: {
+        organizationId: options?.organizationId ?? null,
         eventType: event.eventType,
         eventVersion: event.version,
         source: event.source,

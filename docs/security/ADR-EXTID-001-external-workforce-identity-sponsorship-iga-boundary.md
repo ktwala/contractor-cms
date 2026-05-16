@@ -98,7 +98,7 @@ access_enablement_status
 
 ## 6. Event doctrine (CMS outbound — contract substrate)
 
-**Implemented in** [`backend/src/core/iga/`](../../backend/src/core/iga/): **PR-IGA-EVENT-CONTRACT-1** (`IgaEventBuilder`, `IgaOutboundExternalWorkforceEventV1`) — authoritative event names and payload shape; **PR-IGA-OUTBOX-1** durable `IgaOutboxEvent` rows; **PR-IGA-EVENT-WRITE-1** mutation-triggered transactional saves; **PR-IGA-DISPATCHER-1** `IgaOutboxDispatcherService.processPending` via stub `IgaDeliveryProvider` (SENT/FAILED); **PR-IGA-DISPATCH-SCHEDULER-1** optional interval worker (disabled by default). Message bus, webhooks, and vendor connectors remain future PRs.
+**Implemented in** [`backend/src/core/iga/`](../../backend/src/core/iga/): **PR-IGA-EVENT-CONTRACT-1** (`IgaEventBuilder`, `IgaOutboundExternalWorkforceEventV1`) — authoritative event names and payload shape; **PR-IGA-OUTBOX-1** durable `IgaOutboxEvent` rows; **PR-IGA-EVENT-WRITE-1** mutation-triggered transactional saves; **PR-IGA-DISPATCHER-1** `IgaOutboxDispatcherService.processPending` via stub `IgaDeliveryProvider` (SENT/FAILED); **PR-IGA-DISPATCH-SCHEDULER-1** optional interval worker (disabled by default). **PR-EXTID-EVENT-FEED-1** — **Option A** pull API in [`backend/src/core/extid/`](../../backend/src/core/extid/) (`GET/POST /api/v1/extid/events`, ack/fail, integration auth). Push adapter (**PR-EXTID-EVENT-DELIVERY-1**), message bus, and platform-specific connectors remain future PRs.
 
 Canonical names (v1):
 
@@ -148,7 +148,7 @@ C — CMS publishes to a message bus
 D — Manual / export file integration
 ```
 
-The planned implementation PR **`PR-EXTID-EVENT-DELIVERY-1`** (not `PR-IGA-CONNECTOR-1`) covers **Option B-style push** or equivalent **transport only**: take an outbox event, send to the configured external endpoint, record success or failure. **Supersedes** the informal label “IGA connector,” which wrongly implies CMS becomes IGA.
+**Recommended sequence:** **`PR-EXTID-EVENT-FEED-1`** (Option A — IGA/middleware **pulls** from CMS) is implemented first so CMS stays a source system. **`PR-EXTID-EVENT-DELIVERY-1`** (not `PR-IGA-CONNECTOR-1`) covers **Option B-style push** or equivalent **transport only**: take an outbox event, send to the configured external endpoint, record success or failure. **Supersedes** the informal label “IGA connector,” which wrongly implies CMS becomes IGA.
 
 **Adapter must not:** create AD accounts, assign application roles, approve or certify access, run SoD, map entitlements, or execute provisioning.
 

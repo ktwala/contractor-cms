@@ -21,27 +21,30 @@ export class IgaWorkforceEventWriter {
 
   async persistExternalPersonCreated(
     contractor: IgaEventContractorSlice,
+    organizationId: string | null,
     tx?: PrismaTx,
   ): Promise<void> {
     const event = this.eventBuilder.buildExternalPersonCreated({ contractor });
-    await this.outbox.save(event, tx);
+    await this.outbox.save(event, { tx, organizationId });
   }
 
   async persistExternalPersonUpdated(
     contractor: IgaEventContractorSlice,
+    organizationId: string | null,
     tx?: PrismaTx,
   ): Promise<void> {
     const event = this.eventBuilder.buildExternalPersonUpdated({ contractor });
-    await this.outbox.save(event, tx);
+    await this.outbox.save(event, { tx, organizationId });
   }
 
   async persistSponsorAssigned(
     contractor: IgaEventContractorSlice,
     engagement: IgaEventEngagementSponsorSlice,
+    organizationId: string | null,
     tx?: PrismaTx,
   ): Promise<void> {
     const event = this.eventBuilder.buildSponsorAssigned({ contractor, engagement });
-    await this.outbox.save(event, tx);
+    await this.outbox.save(event, { tx, organizationId });
   }
 }
 

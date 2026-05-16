@@ -155,6 +155,13 @@ export const PERMISSIONS = {
     VIEW: 'governance-risk:view',
     MANAGE: 'governance-risk:manage',
   },
+
+  /** PR-EXTID-EVENT-FEED-1 — integration pull API (IGA/middleware consumes; CMS does not execute IGA). */
+  EXTID_EVENTS: {
+    READ: 'extid-events:read',
+    ACK: 'extid-events:ack',
+    FAIL: 'extid-events:fail',
+  },
 } as const;
 
 // ---------------------------------------------------------------------------

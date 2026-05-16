@@ -83,6 +83,14 @@ The following is the exhaustive list of governed audit events.
 | `TIMESHEET_APPROVED` | INFO | Timesheets Service | Timesheet approved by manager. |
 | `TIMESHEET_REJECTED` | WARNING | Timesheets Service | Timesheet explicitly rejected. |
 
+### EXTID integration feed (PR-EXTID-EVENT-FEED-1)
+| Action | Default Severity | Emitting Component | Description |
+| :--- | :--- | :--- | :--- |
+| `EXTID_EVENTS_LISTED` | INFO | Extid Events Service | Integration client listed outbox events (pull feed). |
+| `EXTID_EVENT_READ` | INFO | Extid Events Service | Integration client read a single outbox event. |
+| `EXTID_EVENT_ACKED` | INFO | Extid Events Service | Integration client acknowledged event (deliveryStatus → SENT). |
+| `EXTID_EVENT_FAILED` | WARNING | Extid Events Service | Integration client marked event failed with reason. |
+
 ### System & Operations
 | Action | Default Severity | Emitting Component | Description |
 | :--- | :--- | :--- | :--- |

@@ -72,6 +72,7 @@ export class ContractorsService {
       });
       await this.igaWorkforceEventWriter.persistExternalPersonCreated(
         toIgaEventContractorSlice(created),
+        targetOrgId,
         tx,
       );
       return tx.contractor.findUniqueOrThrow({
@@ -254,6 +255,15 @@ export class ContractorsService {
       throw new NotFoundException('Contractor not found');
     }
 
+    let outboxOrganizationId = accessContext.targetOrganizationId;
+    if (!outboxOrganizationId) {
+      const supplierOrg = await this.prisma.supplier.findUnique({
+        where: { id: existingContractor.supplierId },
+        select: { organizationId: true },
+      });
+      outboxOrganizationId = supplierOrg?.organizationId ?? null;
+    }
+
     // If changing supplier, verify new supplier belongs to organization
     if (
       updateContractorDto.supplierId &&
@@ -306,6 +316,7 @@ export class ContractorsService {
       });
       await this.igaWorkforceEventWriter.persistExternalPersonUpdated(
         toIgaEventContractorSlice(updated),
+        outboxOrganizationId,
         tx,
       );
       return tx.contractor.findUniqueOrThrow({
