@@ -42,45 +42,56 @@ async function main() {
     },
   });
 
+  const financeUserPermissions = [
+    'invoices:read',
+    'invoices:approve',
+    'suppliers:read',
+    'contractors:read',
+    'timesheets:read',
+    'timesheets:approve',
+    'pdp-activation:view',
+    'pdp-exceptions:view',
+  ];
+
   const financeUserRole = await prisma.role.upsert({
     where: { name: 'FINANCE_USER' },
-    update: {},
+    update: { permissions: financeUserPermissions },
     create: {
       name: 'FINANCE_USER',
       description: 'Finance and AP user',
-      permissions: [
-        'invoices:read',
-        'invoices:approve',
-        'suppliers:read',
-        'contractors:read',
-        'timesheets:read',
-        'timesheets:approve',
-      ],
+      permissions: financeUserPermissions,
       isSystemRole: true,
     },
   });
 
+  const contractorManagerPermissions = [
+    'suppliers:create',
+    'suppliers:read',
+    'suppliers:update',
+    'contractors:create',
+    'contractors:read',
+    'contractors:update',
+    'contracts:create',
+    'contracts:read',
+    'contracts:update',
+    'engagements:create',
+    'engagements:read',
+    'engagements:update',
+    'timesheets:read',
+    'timesheets:approve',
+    'tax-classifications:create',
+    'tax-classifications:read',
+    'pdp-activation:view',
+    'pdp-exceptions:view',
+  ];
+
   const contractorManagerRole = await prisma.role.upsert({
     where: { name: 'CONTRACTOR_MANAGER' },
-    update: {},
+    update: { permissions: contractorManagerPermissions },
     create: {
       name: 'CONTRACTOR_MANAGER',
       description: 'Contractor and supplier manager',
-      permissions: [
-        'suppliers:create',
-        'suppliers:read',
-        'suppliers:update',
-        'contractors:create',
-        'contractors:read',
-        'contractors:update',
-        'contracts:create',
-        'contracts:read',
-        'contracts:update',
-        'timesheets:read',
-        'timesheets:approve',
-        'tax-classifications:create',
-        'tax-classifications:read',
-      ],
+      permissions: contractorManagerPermissions,
       isSystemRole: true,
     },
   });
@@ -290,6 +301,76 @@ async function main() {
   console.log(`✅ Created finance user: ${financeUser.email}`);
   console.log(`   Password: Finance123!`);
 
+  // Demo CONTRACTOR_MANAGER (persona smoke)
+  const managerPasswordHash = await hashPassword('Manager123!');
+  const managerUser = await prisma.user.upsert({
+    where: { email: 'manager@contractor-cms.com' },
+    update: {},
+    create: {
+      email: 'manager@contractor-cms.com',
+      passwordHash: managerPasswordHash,
+      firstName: 'Contractor',
+      lastName: 'Manager',
+      userType: UserType.INTERNAL,
+      organizationId: demoOrg.id,
+      isActive: true,
+      emailVerified: true,
+    },
+  });
+  await prisma.userRole.upsert({
+    where: {
+      userId_roleId_organizationId: {
+        userId: managerUser.id,
+        roleId: contractorManagerRole.id,
+        organizationId: demoOrg.id,
+      },
+    },
+    update: {},
+    create: {
+      userId: managerUser.id,
+      roleId: contractorManagerRole.id,
+      organizationId: demoOrg.id,
+      assignedBy: adminUser.id,
+    },
+  });
+  console.log(`✅ Created contractor manager: ${managerUser.email}`);
+  console.log(`   Password: Manager123!`);
+
+  // Demo CONTRACTOR (persona smoke — timesheets only in nav)
+  const contractorPasswordHash = await hashPassword('Contractor123!');
+  const contractorLoginUser = await prisma.user.upsert({
+    where: { email: 'contractor@contractor-cms.com' },
+    update: {},
+    create: {
+      email: 'contractor@contractor-cms.com',
+      passwordHash: contractorPasswordHash,
+      firstName: 'Demo',
+      lastName: 'Contractor',
+      userType: UserType.CONTRACTOR,
+      organizationId: demoOrg.id,
+      isActive: true,
+      emailVerified: true,
+    },
+  });
+  await prisma.userRole.upsert({
+    where: {
+      userId_roleId_organizationId: {
+        userId: contractorLoginUser.id,
+        roleId: contractorRole.id,
+        organizationId: demoOrg.id,
+      },
+    },
+    update: {},
+    create: {
+      userId: contractorLoginUser.id,
+      roleId: contractorRole.id,
+      organizationId: demoOrg.id,
+      assignedBy: adminUser.id,
+    },
+  });
+  console.log(`✅ Created contractor login user: ${contractorLoginUser.email}`);
+  console.log(`   Password: Contractor123!`);
+
   // Create demo supplier
   console.log('Creating demo supplier...');
 
@@ -361,9 +442,11 @@ async function main() {
     '   - 7 system roles (CMS_ADMIN, FINANCE_USER, CONTRACTOR_MANAGER, CONTRACTOR, SUPPLIER_ADMIN, SUPPLIER_MANAGER, SPONSOR)',
   );
   console.log('   - 1 organization created (Demo Organization)');
-  console.log('   - 2 users created:');
+  console.log('   - 4 demo users created:');
   console.log('     • admin@contractor-cms.com (password: Admin123!)');
   console.log('     • finance@contractor-cms.com (password: Finance123!)');
+  console.log('     • manager@contractor-cms.com (password: Manager123!)');
+  console.log('     • contractor@contractor-cms.com (password: Contractor123!)');
   console.log('   - 1 supplier created (Demo Supplier Ltd)');
   console.log('   - 1 demo contractor row (EXTID substrate defaults applied idempotently)');
   console.log('\n🚀 You can now login at http://localhost:3000/api/v1/auth/login');

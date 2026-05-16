@@ -148,7 +148,7 @@ C — CMS publishes to a message bus
 D — Manual / export file integration
 ```
 
-**Recommended sequence:** **`PR-EXTID-EVENT-FEED-1`** (Option A — IGA/middleware **pulls** from CMS) is implemented first so CMS stays a source system. **`PR-EXTID-EVENT-DELIVERY-1`** (not `PR-IGA-CONNECTOR-1`) covers **Option B-style push** or equivalent **transport only**: take an outbox event, send to the configured external endpoint, record success or failure. **Supersedes** the informal label “IGA connector,” which wrongly implies CMS becomes IGA.
+**Recommended sequence:** **`PR-EXTID-EVENT-FEED-1`** (Option A — IGA/middleware **pulls** from CMS) is implemented first so CMS stays a source system. Consumer onboarding: [`EXTID_EVENT_FEED_INTEGRATION_RUNBOOK.md`](./EXTID_EVENT_FEED_INTEGRATION_RUNBOOK.md) (**PR-EXTID-FEED-RUNBOOK-1**). **`PR-EXTID-EVENT-DELIVERY-1`** (not `PR-IGA-CONNECTOR-1`) covers **Option B-style push** only if pull is insufficient — **transport only**: take an outbox event, send to the configured external endpoint, record success or failure. **Supersedes** the informal label “IGA connector,” which wrongly implies CMS becomes IGA.
 
 **Adapter must not:** create AD accounts, assign application roles, approve or certify access, run SoD, map entitlements, or execute provisioning.
 
