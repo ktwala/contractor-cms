@@ -502,6 +502,25 @@ async function main() {
 
   console.log(`✅ Created supplier: ${demoSupplier.companyName}`);
 
+  // Isolation proof fixture — second supplier in same org (supplier.admin must not see)
+  const otherSupplier =
+    (await prisma.supplier.findFirst({
+      where: { organizationId: demoOrg.id, email: 'other-supplier@demo.com' },
+    })) ??
+    (await prisma.supplier.create({
+      data: {
+        organizationId: demoOrg.id,
+        type: SupplierType.COMPANY,
+        status: 'ACTIVE',
+        companyName: 'Other Supplier Ltd',
+        registrationNumber: '2024/999999/07',
+        email: 'other-supplier@demo.com',
+        phone: '+27999999999',
+        country: 'ZA',
+      },
+    }));
+  console.log(`✅ Created isolation fixture supplier: ${otherSupplier.companyName}`);
+
   // PR-SUPPLIER-SCOPING-1 — bind supplier-portal demo users to demo supplier
   await prisma.supplierMembership.upsert({
     where: {

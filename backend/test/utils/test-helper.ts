@@ -56,6 +56,7 @@ export class TestHelper {
     await this.prisma.contractorTaxClassification.deleteMany();
     await this.prisma.supplierDocument.deleteMany();
     await this.prisma.contractor.deleteMany();
+    await this.prisma.supplierMembership.deleteMany();
     await this.prisma.supplier.deleteMany();
     await this.prisma.task.deleteMany();
     await this.prisma.project.deleteMany();
@@ -229,12 +230,23 @@ export class TestHelper {
     const user = await this.createTestUser(organizationId, data);
 
     for (const roleSpec of data.roles) {
-      // Create or upsert the role
-      const role = await this.createTestRole(
-        roleSpec.role,
-        roleSpec.permissions || [],
-        roleSpec.isSystemRole || false,
-      );
+      let role;
+      if (roleSpec.permissions !== undefined) {
+        role = await this.createTestRole(
+          roleSpec.role,
+          roleSpec.permissions,
+          roleSpec.isSystemRole || false,
+        );
+      } else {
+        role = await this.prisma.role.findUnique({
+          where: { name: roleSpec.role },
+        });
+        if (!role) {
+          throw new Error(
+            `Test role "${roleSpec.role}" not found; pass permissions in role spec or create the role first`,
+          );
+        }
+      }
 
       // Assign role to user
       await this.assignRole(

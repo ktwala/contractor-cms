@@ -14,7 +14,10 @@ import {
   SupplierResponseDto,
 } from './dto/supplier-response.dto';
 import { AccessContext } from '../../core/auth/interfaces/access-context.interface';
-import { applySupplierEntityScope } from '../../core/auth/utils/supplier-scope.helper';
+import {
+  applySupplierEntityScope,
+  assertSupplierEntityAccess,
+} from '../../core/auth/utils/supplier-scope.helper';
 import { AuditService } from '../../core/audit/audit.service';
 
 @Injectable()
@@ -137,6 +140,8 @@ export class SuppliersService {
     accessContext: AccessContext,
     id: string,
   ): Promise<any> {
+    assertSupplierEntityAccess(accessContext, id);
+
     const where: any = { id };
     if (!accessContext.isGlobalAccess) {
       where.organizationId = accessContext.targetOrganizationId;
@@ -170,6 +175,8 @@ export class SuppliersService {
     id: string,
     updateSupplierDto: UpdateSupplierDto,
   ): Promise<any> {
+    assertSupplierEntityAccess(accessContext, id);
+
     const where: any = { id };
     if (!accessContext.isGlobalAccess) {
       where.organizationId = accessContext.targetOrganizationId;
@@ -237,6 +244,8 @@ export class SuppliersService {
   }
 
   async remove(accessContext: AccessContext, id: string): Promise<void> {
+    assertSupplierEntityAccess(accessContext, id);
+
     const where: any = { id };
     if (!accessContext.isGlobalAccess) {
       where.organizationId = accessContext.targetOrganizationId;

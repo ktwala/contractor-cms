@@ -139,6 +139,37 @@ export class PermissionsGuard implements CanActivate {
     const activeMembership = user.supplierMemberships?.find(
       (m: { isActive: boolean }) => m.isActive,
     );
+
+    const accessViaSupplierPortal = requiredPermissions.some(
+      (required) =>
+        required.startsWith('supplier-') &&
+        this.hasPermission(userPermissions, required),
+    );
+
+    // Fail closed: supplier-* permissions require an active SupplierMembership row scope
+    if (accessViaSupplierPortal && !isGlobalAccess && !activeMembership) {
+      const errorMsg =
+        'Active supplier membership required for supplier-portal access';
+      this.auditService.logAction(
+        user.id,
+        'ACCESS_DENIED_403',
+        'Route',
+        request.url,
+        null,
+        null,
+        {
+          organizationId: user.organizationId || null,
+          ipAddress: request.ip,
+          userAgent: request.headers['user-agent'],
+          metadata: {
+            requiredPermissions,
+            error: errorMsg,
+          },
+        },
+      );
+      throw new ForbiddenException(errorMsg);
+    }
+
     const supplierScopeId =
       !isGlobalAccess && activeMembership ? activeMembership.supplierId : null;
 

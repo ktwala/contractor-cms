@@ -1,6 +1,8 @@
+import { NotFoundException } from '@nestjs/common';
 import {
   applySupplierContractorScope,
   applySupplierEntityScope,
+  assertSupplierEntityAccess,
 } from './supplier-scope.helper';
 import { AccessContext } from '../interfaces/access-context.interface';
 
@@ -34,5 +36,12 @@ describe('supplier-scope.helper', () => {
     const where: Record<string, unknown> = {};
     applySupplierContractorScope(where, scoped);
     expect(where.contractor).toEqual({ supplierId: 'sup-demo' });
+  });
+
+  it('assertSupplierEntityAccess throws when id is outside scope', () => {
+    expect(() => assertSupplierEntityAccess(scoped, 'other-supplier')).toThrow(
+      NotFoundException,
+    );
+    expect(() => assertSupplierEntityAccess(unscoped, 'any-id')).not.toThrow();
   });
 });

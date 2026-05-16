@@ -1,6 +1,19 @@
+import { NotFoundException } from '@nestjs/common';
 import { AccessContext } from '../interfaces/access-context.interface';
 
-/** Restrict supplier entity queries to the portal user's bound supplier. */
+/**
+ * For single-entity routes: fail closed when the requested id is outside membership scope.
+ */
+export function assertSupplierEntityAccess(
+  accessContext: AccessContext,
+  entityId: string,
+): void {
+  if (accessContext.supplierScopeId && entityId !== accessContext.supplierScopeId) {
+    throw new NotFoundException('Supplier not found');
+  }
+}
+
+/** Restrict supplier list queries to the portal user's bound supplier. */
 export function applySupplierEntityScope(
   where: Record<string, unknown>,
   accessContext: AccessContext,
