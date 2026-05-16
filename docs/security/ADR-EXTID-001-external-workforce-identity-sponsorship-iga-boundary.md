@@ -98,7 +98,7 @@ access_enablement_status
 
 ## 6. Event doctrine (CMS outbound — contract substrate)
 
-**Implemented in** [`backend/src/core/iga/`](../../backend/src/core/iga/): **PR-IGA-EVENT-CONTRACT-1** (`IgaEventBuilder`, `IgaOutboundExternalWorkforceEventV1`) — authoritative event names and payload shape; **PR-IGA-OUTBOX-1** durable `IgaOutboxEvent` rows; **PR-IGA-EVENT-WRITE-1** mutation-triggered transactional saves; **PR-IGA-DISPATCHER-1** `IgaOutboxDispatcherService.processPending` via stub `IgaDeliveryProvider` (SENT/FAILED, no scheduler or real connector). Message bus, webhooks, and vendor connectors remain future PRs.
+**Implemented in** [`backend/src/core/iga/`](../../backend/src/core/iga/): **PR-IGA-EVENT-CONTRACT-1** (`IgaEventBuilder`, `IgaOutboundExternalWorkforceEventV1`) — authoritative event names and payload shape; **PR-IGA-OUTBOX-1** durable `IgaOutboxEvent` rows; **PR-IGA-EVENT-WRITE-1** mutation-triggered transactional saves; **PR-IGA-DISPATCHER-1** `IgaOutboxDispatcherService.processPending` via stub `IgaDeliveryProvider` (SENT/FAILED); **PR-IGA-DISPATCH-SCHEDULER-1** optional interval worker (disabled by default). Message bus, webhooks, and vendor connectors remain future PRs.
 
 Canonical names (v1):
 
@@ -219,6 +219,7 @@ PR-IGA-EVENT-CONTRACT-1
 PR-IGA-OUTBOX-1
 PR-IGA-EVENT-WRITE-1
 PR-IGA-DISPATCHER-1
+PR-IGA-DISPATCH-SCHEDULER-1
 PR-IGA-CONNECTOR-1
 PR-NAV-IA-1
 ```

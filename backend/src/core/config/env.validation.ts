@@ -48,6 +48,23 @@ export class EnvironmentVariables {
   @IsOptional()
   @IsString()
   HCM_SPONSOR_REFERENCE_PATTERN?: string;
+
+  /** PR-IGA-DISPATCH-SCHEDULER-1 — when `true`, interval worker calls `IgaOutboxDispatcherService.processPending`. */
+  @IsOptional()
+  @IsString()
+  IGA_DISPATCH_ENABLED?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  IGA_DISPATCH_INTERVAL_SECONDS?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  IGA_DISPATCH_BATCH_SIZE?: number;
 }
 
 export function validateEnvironment(config: Record<string, unknown>) {
