@@ -5,6 +5,7 @@ import DashboardNavCards from '@/components/dashboard/DashboardNavCards';
 import PermissionAwareDashboard from '@/components/dashboard/PermissionAwareDashboard';
 import { useAuth } from '@/lib/auth-context';
 import { api } from '@/lib/api';
+import { supplierPortalApi } from '@/lib/api-supplier-portal';
 /** Mirrors `backend/src/core/auth/seed-system-role-bundles.ts` doctrine target roles. */
 const TARGET_ROLE_PERMISSIONS = {
   SUPPLIER_ADMIN: [
@@ -40,6 +41,12 @@ jest.mock('@/lib/api', () => ({
   },
 }));
 
+jest.mock('@/lib/api-supplier-portal', () => ({
+  supplierPortalApi: {
+    getTimesheets: jest.fn(),
+  },
+}));
+
 jest.mock('@/components/dashboard/ContractRenewalsWidget', () => ({
   ContractRenewalsWidget: () => <div data-testid="renewals-widget">Renewals</div>,
 }));
@@ -64,7 +71,8 @@ describe('Dashboard role parity (permission-filtered cards)', () => {
 
     render(<DashboardNavCards />);
 
-    expect(screen.getByText('Suppliers')).toBeInTheDocument();
+    expect(screen.getByText('Supplier profile')).toBeInTheDocument();
+    expect(screen.queryByText('Suppliers')).not.toBeInTheDocument();
     expect(screen.queryByText('Contractors')).not.toBeInTheDocument();
     expect(screen.queryByText('Contracts')).not.toBeInTheDocument();
     expect(screen.queryByText('Timesheets')).not.toBeInTheDocument();
@@ -77,8 +85,9 @@ describe('Dashboard role parity (permission-filtered cards)', () => {
 
     render(<DashboardNavCards />);
 
-    expect(screen.getByText('Suppliers')).toBeInTheDocument();
+    expect(screen.getByText('Supplier profile')).toBeInTheDocument();
     expect(screen.getByText('Timesheets')).toBeInTheDocument();
+    expect(screen.queryByText('Suppliers')).not.toBeInTheDocument();
     expect(screen.queryByText('Contractors')).not.toBeInTheDocument();
     expect(screen.queryByText('Contracts')).not.toBeInTheDocument();
   });
@@ -130,6 +139,22 @@ describe('Dashboard role parity (permission-gated API calls)', () => {
     jest.clearAllMocks();
     (api.getTimesheets as jest.Mock).mockResolvedValue({ data: [] });
     (api.getInvoices as jest.Mock).mockResolvedValue({ data: [] });
+  });
+
+  it('SUPPLIER_MANAGER dashboard uses supplier portal timesheets API', async () => {
+    (useAuth as jest.Mock).mockReturnValue({
+      can: mockCan(TARGET_ROLE_PERMISSIONS.SUPPLIER_MANAGER),
+      user: { firstName: 'Mgr' },
+    });
+
+    (supplierPortalApi.getTimesheets as jest.Mock).mockResolvedValue({ data: [] });
+
+    render(<PermissionAwareDashboard />);
+
+    await waitFor(() => {
+      expect(supplierPortalApi.getTimesheets).toHaveBeenCalled();
+    });
+    expect(api.getTimesheets).not.toHaveBeenCalled();
   });
 
   it('CONTRACTOR dashboard does not call getInvoices', async () => {

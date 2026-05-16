@@ -3,10 +3,16 @@
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth-context';
 import { filterDashboardModules } from '@/lib/dashboard-modules';
+import {
+  filterSupplierPortalModules,
+  isSupplierPortalUser,
+} from '@/lib/supplier-portal-modules';
 
 export default function DashboardNavCards() {
   const { can } = useAuth();
-  const modules = filterDashboardModules(can);
+  const modules = isSupplierPortalUser(can)
+    ? filterSupplierPortalModules(can)
+    : filterDashboardModules(can);
 
   if (modules.length === 0) {
     return (

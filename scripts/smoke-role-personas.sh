@@ -101,17 +101,19 @@ EOF
       cat <<'EOF'
   Operations:
     - Dashboard
-    - Suppliers
-  (no Contractors, Contracts, Engagements, Timesheets, Invoices, Governance, Administration)
+    - Supplier profile
+    - Resources
+  (supplier-portal only — no client /suppliers, Contractors, Contracts, Invoices)
 EOF
       ;;
     SUPPLIER_MANAGER)
       cat <<'EOF'
   Operations:
     - Dashboard
-    - Suppliers
-    - Timesheets
-  (no Contractors, Contracts, Engagements, Invoices, Governance, Administration)
+    - Supplier profile
+    - Resources
+    - Supplier timesheets
+  (supplier-portal only — no client /suppliers or /timesheets)
 EOF
       ;;
     SPONSOR)
@@ -165,6 +167,9 @@ run_persona() {
   echo "API surface checks (2xx = allowed, 403 = forbidden, 404 = missing route):"
 
   for item in \
+    "GET /supplier-portal/profile" \
+    "GET /supplier-portal/resources" \
+    "GET /supplier-portal/timesheets" \
     "GET /suppliers" \
     "GET /contractors" \
     "GET /contracts" \

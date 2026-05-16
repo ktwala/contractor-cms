@@ -109,6 +109,32 @@ class ApiClient {
     await this.client.delete(`/suppliers/${id}`);
   }
 
+  // Supplier portal (PR-SUPPLIER-PORTAL-UI-1 — membership-scoped; not client /suppliers)
+  async getSupplierPortalProfile() {
+    const response = await this.client.get('/supplier-portal/profile');
+    return response.data;
+  }
+
+  async updateSupplierPortalProfile(data: Record<string, unknown>) {
+    const response = await this.client.patch('/supplier-portal/profile', data);
+    return response.data;
+  }
+
+  async getSupplierPortalResources(params?: { page?: number; limit?: number }) {
+    const response = await this.client.get('/supplier-portal/resources', { params });
+    return response.data;
+  }
+
+  async createSupplierPortalResource(data: Record<string, unknown>) {
+    const response = await this.client.post('/supplier-portal/resources', data);
+    return response.data;
+  }
+
+  async getSupplierPortalTimesheets(params?: Record<string, unknown>) {
+    const response = await this.client.get('/supplier-portal/timesheets', { params });
+    return response.data;
+  }
+
   // Contractors
   async getContractors(params?: any) {
     const response = await this.client.get('/contractors', { params });

@@ -36,7 +36,7 @@ export interface DashboardModuleDef {
 export const DASHBOARD_MODULES: DashboardModuleDef[] = [
   {
     id: 'suppliers',
-    permissions: [PERMISSIONS.SUPPLIERS.READ, PERMISSIONS.SUPPLIER_PROFILE.READ],
+    permissions: [PERMISSIONS.SUPPLIERS.READ],
     href: '/suppliers',
     title: 'Suppliers',
     description: 'Manage supplier entities',
@@ -80,7 +80,7 @@ export const DASHBOARD_MODULES: DashboardModuleDef[] = [
   },
   {
     id: 'timesheets',
-    permissions: [PERMISSIONS.TIMESHEETS.READ, PERMISSIONS.SUPPLIER_TIMESHEETS.READ],
+    permissions: [PERMISSIONS.TIMESHEETS.READ],
     href: '/timesheets',
     title: 'Timesheets',
     description: 'Review and approve',

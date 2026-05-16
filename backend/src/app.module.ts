@@ -15,6 +15,7 @@ import { AuditModule } from './core/audit/audit.module';
 import { UsersModule } from './domain/users/users.module';
 import { RolesModule } from './domain/roles/roles.module';
 import { SuppliersModule } from './domain/suppliers/suppliers.module';
+import { SupplierPortalModule } from './domain/supplier-portal/supplier-portal.module';
 import { ContractorsModule } from './domain/contractors/contractors.module';
 import { ContractsModule } from './domain/contracts/contracts.module';
 import { EngagementsModule } from './domain/engagements/engagements.module';
@@ -64,6 +65,7 @@ import { ExtidModule } from './core/extid/extid.module';
 
     // Domain modules
     SuppliersModule,
+    SupplierPortalModule,
     ContractorsModule,
     ContractsModule,
     EngagementsModule,

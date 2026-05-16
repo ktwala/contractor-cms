@@ -48,7 +48,25 @@ export const PROTECTED_ROUTES: ProtectedRoute[] = [
   {
     path: '/suppliers',
     name: 'Suppliers',
-    permission: [PERMISSIONS.SUPPLIERS.READ, PERMISSIONS.SUPPLIER_PROFILE.READ],
+    permission: PERMISSIONS.SUPPLIERS.READ,
+    navGroup: 'operations',
+  },
+  {
+    path: '/supplier-portal/profile',
+    name: 'Supplier profile',
+    permission: PERMISSIONS.SUPPLIER_PROFILE.READ,
+    navGroup: 'operations',
+  },
+  {
+    path: '/supplier-portal/resources',
+    name: 'Resources',
+    permission: PERMISSIONS.SUPPLIER_RESOURCES.READ,
+    navGroup: 'operations',
+  },
+  {
+    path: '/supplier-portal/timesheets',
+    name: 'Supplier timesheets',
+    permission: PERMISSIONS.SUPPLIER_TIMESHEETS.READ,
     navGroup: 'operations',
   },
   {
@@ -72,7 +90,7 @@ export const PROTECTED_ROUTES: ProtectedRoute[] = [
   {
     path: '/timesheets',
     name: 'Timesheets',
-    permission: [PERMISSIONS.TIMESHEETS.READ, PERMISSIONS.SUPPLIER_TIMESHEETS.READ],
+    permission: PERMISSIONS.TIMESHEETS.READ,
     navGroup: 'operations',
   },
   {

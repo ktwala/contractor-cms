@@ -8,6 +8,8 @@ import { useAuth } from '@/lib/auth-context';
 import { PERMISSIONS } from '@/lib/permissions.generated';
 import DashboardNavCards from './DashboardNavCards';
 import { ContractRenewalsWidget } from './ContractRenewalsWidget';
+import { supplierPortalApi } from '@/lib/api-supplier-portal';
+import { isSupplierPortalUser } from '@/lib/supplier-portal-modules';
 
 interface TimesheetStats {
   total: number;
@@ -24,8 +26,10 @@ interface InvoiceStats {
 
 export default function PermissionAwareDashboard() {
   const { can, user } = useAuth();
-  const canTimesheets =
-    can(PERMISSIONS.TIMESHEETS.READ) || can(PERMISSIONS.SUPPLIER_TIMESHEETS.READ);
+  const portalUser = isSupplierPortalUser(can);
+  const canClientTimesheets = can(PERMISSIONS.TIMESHEETS.READ);
+  const canPortalTimesheets = can(PERMISSIONS.SUPPLIER_TIMESHEETS.READ);
+  const canTimesheets = canClientTimesheets || canPortalTimesheets;
   const canInvoices = can(PERMISSIONS.INVOICES.READ);
   const canContracts = can(PERMISSIONS.CONTRACTS.READ);
 
@@ -44,7 +48,22 @@ export default function PermissionAwareDashboard() {
     try {
       const tasks: Promise<void>[] = [];
 
-      if (canTimesheets) {
+      if (canPortalTimesheets && portalUser) {
+        tasks.push(
+          supplierPortalApi.getTimesheets({ page: 1, limit: 100 }).then((res) => {
+            const rows = res.data || [];
+            setTimesheets({
+              total: rows.length,
+              pending: rows.filter((t: { status: string }) => t.status === 'SUBMITTED')
+                .length,
+              approved: rows.filter((t: { status: string }) => t.status === 'APPROVED')
+                .length,
+              rejected: rows.filter((t: { status: string }) => t.status === 'REJECTED')
+                .length,
+            });
+          }),
+        );
+      } else if (canClientTimesheets) {
         tasks.push(
           api.getTimesheets().then((res) => {
             const rows = res.data || [];
@@ -100,7 +119,7 @@ export default function PermissionAwareDashboard() {
     } finally {
       setLoading(false);
     }
-  }, [canTimesheets, canInvoices]);
+  }, [canTimesheets, canInvoices, canClientTimesheets, canPortalTimesheets, portalUser]);
 
   useEffect(() => {
     loadData();
@@ -123,8 +142,7 @@ export default function PermissionAwareDashboard() {
               : 'Shortcuts and summaries for modules you can access.'}
           </p>
         </div>
-        {(can(PERMISSIONS.TIMESHEETS.CREATE) ||
-          can(PERMISSIONS.SUPPLIER_TIMESHEETS.SUBMIT)) && (
+        {can(PERMISSIONS.TIMESHEETS.CREATE) && (
           <Link href="/timesheets/new" className="btn btn-primary">
             Submit Timesheet
           </Link>
@@ -230,7 +248,11 @@ export default function PermissionAwareDashboard() {
               </div>
               <div className="mt-6">
                 <Link
-                  href="/timesheets"
+                  href={
+                    portalUser && canPortalTimesheets
+                      ? '/supplier-portal/timesheets'
+                      : '/timesheets'
+                  }
                   className="text-indigo-600 hover:text-indigo-800 text-sm font-medium"
                 >
                   View all timesheets →

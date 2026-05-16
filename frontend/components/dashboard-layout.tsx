@@ -34,6 +34,9 @@ import type { Permission } from '@/lib/permissions.generated';
 const ICON_MAP: Record<string, React.ElementType> = {
   '/dashboard': LayoutDashboard,
   '/suppliers': Users,
+  '/supplier-portal/profile': Building2,
+  '/supplier-portal/resources': Users,
+  '/supplier-portal/timesheets': Clock,
   '/contractors': Users,
   '/contracts': FileText,
   '/engagements': Briefcase,
