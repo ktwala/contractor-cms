@@ -29,7 +29,9 @@ import { JwtAuthGuard } from '../../core/auth/guards/jwt-auth.guard';
 import { Permissions } from '../../core/auth/decorators/permissions.decorator';
 import { PermissionsGuard } from '../../core/auth/guards/permissions.guard';
 import { CurrentUser } from '../../core/auth/decorators/current-user.decorator';
+import { CurrentAccessContext } from '../../core/auth/decorators/current-access-context.decorator';
 import { RequiresOrgContext } from '../../core/auth/decorators/org-context.decorator';
+import { AccessContext } from '../../core/auth/interfaces/access-context.interface';
 
 @ApiTags('engagements')
 @Controller('engagements')
@@ -66,10 +68,10 @@ export class EngagementsController {
     type: PaginatedEngagementResponseDto,
   })
   async findAll(
-    @CurrentUser('organizationId') organizationId: string,
+    @CurrentAccessContext() accessContext: AccessContext,
     @Query() query: QueryEngagementDto,
   ): Promise<PaginatedEngagementResponseDto> {
-    return this.engagementsService.findAll(organizationId, query);
+    return this.engagementsService.findAll(accessContext, query);
   }
 
   @Get(':id')
@@ -82,10 +84,10 @@ export class EngagementsController {
     type: EngagementResponseDto,
   })
   async findOne(
-    @CurrentUser('organizationId') organizationId: string,
+    @CurrentAccessContext() accessContext: AccessContext,
     @Param('id') id: string,
   ): Promise<EngagementResponseDto> {
-    return this.engagementsService.findOne(organizationId, id);
+    return this.engagementsService.findOne(accessContext, id);
   }
 
   @Patch(':id')

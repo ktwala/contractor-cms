@@ -61,8 +61,9 @@ export class PermissionsGuard implements CanActivate {
     // If targetOrganizationId is missing: allow global roles only
     
     const applicableRoles = user.roles.filter((ur: any) => {
-      if (ur.organizationId === null) {
-        return true; // Global role always applies
+      // Global role: null or legacy empty string from early seed data
+      if (ur.organizationId === null || ur.organizationId === '') {
+        return true;
       }
       if (targetOrganizationId && ur.organizationId === targetOrganizationId) {
         return true; // Scoped role applies if target matches
@@ -123,7 +124,9 @@ export class PermissionsGuard implements CanActivate {
     // If the targetOrganizationId is known, but the user only has access because of a global role,
     // they are acting globally.
     // If they have access from a global role, they are global.
-    const globalRoles = applicableRoles.filter((ur: any) => ur.organizationId === null);
+    const globalRoles = applicableRoles.filter(
+      (ur: any) => ur.organizationId === null || ur.organizationId === '',
+    );
     const globalPermissions = new Set<string>(
       globalRoles.flatMap((ur: any) => ur.role.permissions || [])
     );

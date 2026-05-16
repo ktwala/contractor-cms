@@ -18,6 +18,7 @@ import {
   PaginatedEngagementResponseDto,
   EngagementResponseDto,
 } from './dto/engagement-response.dto';
+import { AccessContext } from '../../core/auth/interfaces/access-context.interface';
 
 const ENGAGEMENT_CONTRACTOR_SELECT_CORE = {
   id: true,
@@ -58,6 +59,25 @@ export class EngagementsService {
     private readonly hcmSponsorLookup: HcmSponsorLookupService,
     private readonly igaWorkforceEventWriter: IgaWorkforceEventWriter,
   ) {}
+
+  /** Tenant filter for list/read; omitted when actor has global access (PR-ENGAGEMENTS-ADMIN-500-1). */
+  private engagementTenantWhere(
+    accessContext: AccessContext,
+  ): Record<string, unknown> {
+    if (accessContext.isGlobalAccess) {
+      return {};
+    }
+    if (!accessContext.targetOrganizationId) {
+      throw new BadRequestException('Organization context is required');
+    }
+    return {
+      contractor: {
+        supplier: {
+          organizationId: accessContext.targetOrganizationId,
+        },
+      },
+    };
+  }
 
   /**
    * PR-SPONSOR-GOVERNANCE-1 — structural sponsor accountability baseline (no HCM / attestation).
@@ -277,7 +297,7 @@ export class EngagementsService {
   }
 
   async findAll(
-    organizationId: string,
+    accessContext: AccessContext,
     query: QueryEngagementDto,
   ): Promise<PaginatedEngagementResponseDto> {
     const {
@@ -293,11 +313,7 @@ export class EngagementsService {
     } = query;
 
     const where: any = {
-      contractor: {
-        supplier: {
-          organizationId,
-        },
-      },
+      ...this.engagementTenantWhere(accessContext),
     };
 
     if (search) {
@@ -378,17 +394,13 @@ export class EngagementsService {
   }
 
   async findOne(
-    organizationId: string,
+    accessContext: AccessContext,
     id: string,
   ): Promise<EngagementResponseDto> {
     const engagement = await this.prisma.contractorEngagement.findFirst({
       where: {
         id,
-        contractor: {
-          supplier: {
-            organizationId,
-          },
-        },
+        ...this.engagementTenantWhere(accessContext),
       },
       include: {
         contractor: {

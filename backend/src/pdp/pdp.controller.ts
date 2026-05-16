@@ -9,10 +9,12 @@ import { ApproveExceptionDto, RejectExceptionDto } from './dto/approve-exception
 import { JwtAuthGuard } from '../core/auth/guards/jwt-auth.guard';
 import { Permissions } from '../core/auth/decorators/permissions.decorator';
 import { PermissionsGuard } from '../core/auth/guards/permissions.guard';
+import { RequiresOrgContext } from '../core/auth/decorators/org-context.decorator';
 import { PERMISSIONS } from '../core/auth/permissions.constants';
 
 @Controller('pdp')
 @UseGuards(JwtAuthGuard, PermissionsGuard)
+@RequiresOrgContext({ type: 'currentUser' })
 export class PdpController {
   constructor(
     private readonly telemetryService: PdpTelemetryService,

@@ -241,19 +241,15 @@ async function main() {
     },
   });
 
-  // Assign admin role (global CMS admin: use empty-string org key for composite unique)
-  await prisma.userRole.upsert({
-    where: {
-      userId_roleId_organizationId: {
-        userId: adminUser.id,
-        roleId: cmsAdminRole.id,
-        organizationId: '',
-      },
-    },
-    update: {},
-    create: {
+  // PR-SEED-ROLE-DUPE-1 — single global CMS_ADMIN assignment (null = platform-wide)
+  await prisma.userRole.deleteMany({
+    where: { userId: adminUser.id, roleId: cmsAdminRole.id },
+  });
+  await prisma.userRole.create({
+    data: {
       userId: adminUser.id,
       roleId: cmsAdminRole.id,
+      organizationId: null,
       assignedBy: 'system',
     },
   });
@@ -371,6 +367,109 @@ async function main() {
   console.log(`✅ Created contractor login user: ${contractorLoginUser.email}`);
   console.log(`   Password: Contractor123!`);
 
+  // PR-SEED-PERSONA-USERS-1 — target doctrine personas (existing role bundles only; smoke / regression)
+  const supplierAdminPasswordHash = await hashPassword('SupplierAdmin123!');
+  const supplierAdminUser = await prisma.user.upsert({
+    where: { email: 'supplier.admin@contractor-cms.com' },
+    update: {},
+    create: {
+      email: 'supplier.admin@contractor-cms.com',
+      passwordHash: supplierAdminPasswordHash,
+      firstName: 'Supplier',
+      lastName: 'Admin',
+      userType: UserType.INTERNAL,
+      organizationId: demoOrg.id,
+      isActive: true,
+      emailVerified: true,
+    },
+  });
+  await prisma.userRole.upsert({
+    where: {
+      userId_roleId_organizationId: {
+        userId: supplierAdminUser.id,
+        roleId: supplierAdminRole.id,
+        organizationId: demoOrg.id,
+      },
+    },
+    update: {},
+    create: {
+      userId: supplierAdminUser.id,
+      roleId: supplierAdminRole.id,
+      organizationId: demoOrg.id,
+      assignedBy: adminUser.id,
+    },
+  });
+  console.log(`✅ Created supplier admin: ${supplierAdminUser.email}`);
+  console.log(`   Password: SupplierAdmin123!`);
+
+  const supplierManagerPasswordHash = await hashPassword('SupplierManager123!');
+  const supplierManagerUser = await prisma.user.upsert({
+    where: { email: 'supplier.manager@contractor-cms.com' },
+    update: {},
+    create: {
+      email: 'supplier.manager@contractor-cms.com',
+      passwordHash: supplierManagerPasswordHash,
+      firstName: 'Supplier',
+      lastName: 'Manager',
+      userType: UserType.INTERNAL,
+      organizationId: demoOrg.id,
+      isActive: true,
+      emailVerified: true,
+    },
+  });
+  await prisma.userRole.upsert({
+    where: {
+      userId_roleId_organizationId: {
+        userId: supplierManagerUser.id,
+        roleId: supplierManagerRole.id,
+        organizationId: demoOrg.id,
+      },
+    },
+    update: {},
+    create: {
+      userId: supplierManagerUser.id,
+      roleId: supplierManagerRole.id,
+      organizationId: demoOrg.id,
+      assignedBy: adminUser.id,
+    },
+  });
+  console.log(`✅ Created supplier manager: ${supplierManagerUser.email}`);
+  console.log(`   Password: SupplierManager123!`);
+
+  const sponsorPasswordHash = await hashPassword('Sponsor123!');
+  const sponsorUser = await prisma.user.upsert({
+    where: { email: 'sponsor@contractor-cms.com' },
+    update: {},
+    create: {
+      email: 'sponsor@contractor-cms.com',
+      passwordHash: sponsorPasswordHash,
+      firstName: 'Workforce',
+      lastName: 'Sponsor',
+      userType: UserType.INTERNAL,
+      organizationId: demoOrg.id,
+      isActive: true,
+      emailVerified: true,
+    },
+  });
+  await prisma.userRole.upsert({
+    where: {
+      userId_roleId_organizationId: {
+        userId: sponsorUser.id,
+        roleId: sponsorRole.id,
+        organizationId: demoOrg.id,
+      },
+    },
+    update: {},
+    create: {
+      userId: sponsorUser.id,
+      roleId: sponsorRole.id,
+      organizationId: demoOrg.id,
+      assignedBy: adminUser.id,
+    },
+  });
+  console.log(`✅ Created sponsor: ${sponsorUser.email}`);
+  console.log(`   Password: Sponsor123!`);
+
   // Create demo supplier
   console.log('Creating demo supplier...');
 
@@ -442,11 +541,14 @@ async function main() {
     '   - 7 system roles (CMS_ADMIN, FINANCE_USER, CONTRACTOR_MANAGER, CONTRACTOR, SUPPLIER_ADMIN, SUPPLIER_MANAGER, SPONSOR)',
   );
   console.log('   - 1 organization created (Demo Organization)');
-  console.log('   - 4 demo users created:');
-  console.log('     • admin@contractor-cms.com (password: Admin123!)');
-  console.log('     • finance@contractor-cms.com (password: Finance123!)');
-  console.log('     • manager@contractor-cms.com (password: Manager123!)');
-  console.log('     • contractor@contractor-cms.com (password: Contractor123!)');
+  console.log('   - 7 demo users (legacy + target personas):');
+  console.log('     • admin@contractor-cms.com (Admin123!) — CMS_ADMIN');
+  console.log('     • finance@contractor-cms.com (Finance123!) — FINANCE_USER');
+  console.log('     • manager@contractor-cms.com (Manager123!) — CONTRACTOR_MANAGER');
+  console.log('     • contractor@contractor-cms.com (Contractor123!) — CONTRACTOR');
+  console.log('     • supplier.admin@contractor-cms.com (SupplierAdmin123!) — SUPPLIER_ADMIN');
+  console.log('     • supplier.manager@contractor-cms.com (SupplierManager123!) — SUPPLIER_MANAGER');
+  console.log('     • sponsor@contractor-cms.com (Sponsor123!) — SPONSOR');
   console.log('   - 1 supplier created (Demo Supplier Ltd)');
   console.log('   - 1 demo contractor row (EXTID substrate defaults applied idempotently)');
   console.log('\n🚀 You can now login at http://localhost:3000/api/v1/auth/login');

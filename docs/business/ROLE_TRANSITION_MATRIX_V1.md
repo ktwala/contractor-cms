@@ -2,7 +2,7 @@
 
 **Status:** `DRAFT` — supports **V1.0 ratification** and **STREAM B** (RBAC realignment), sequenced **after** [`PR-EXTID-SCHEMA-1_DESIGN.md`](./PR-EXTID-SCHEMA-1_DESIGN.md) per [`EXTID_IMPLEMENTATION_ALIGNMENT_PLAN_V1.md`](./EXTID_IMPLEMENTATION_ALIGNMENT_PLAN_V1.md) **§4**.
 
-**Closed (traceability):** **PR-DOCS-SUPPLIER-TERMINOLOGY-1** — CLOSED · **PR-RBAC-REALIGN-1** — CLOSED · **PR-NAV-IA-1** — CLOSED · **PR-RBAC-REALIGN-2** — CLOSED · **PR-SPONSOR-RUNTIME-1** — CLOSED · **PR-SPONSOR-GOVERNANCE-1** — CLOSED · **PR-HCM-SPONSOR-BRIDGE-1** — CLOSED · **PR-IGA-EVENT-CONTRACT-1** — CLOSED · **PR-IGA-OUTBOX-1** — CLOSED · **PR-IGA-EVENT-WRITE-1** — CLOSED · **PR-IGA-DISPATCHER-1** — CLOSED · **PR-IGA-DISPATCH-SCHEDULER-1** — CLOSED · **PR-EXTID-EVENT-FEED-1** — CLOSED · **PR-EXTID-FEED-RUNBOOK-1** — CLOSED.
+**Closed (traceability):** **PR-DOCS-SUPPLIER-TERMINOLOGY-1** — CLOSED · **PR-RBAC-REALIGN-1** — CLOSED · **PR-NAV-IA-1** — CLOSED · **PR-RBAC-REALIGN-2** — CLOSED · **PR-SPONSOR-RUNTIME-1** — CLOSED · **PR-SPONSOR-GOVERNANCE-1** — CLOSED · **PR-HCM-SPONSOR-BRIDGE-1** — CLOSED · **PR-IGA-EVENT-CONTRACT-1** — CLOSED · **PR-IGA-OUTBOX-1** — CLOSED · **PR-IGA-EVENT-WRITE-1** — CLOSED · **PR-IGA-DISPATCHER-1** — CLOSED · **PR-IGA-DISPATCH-SCHEDULER-1** — CLOSED · **PR-EXTID-EVENT-FEED-1** — CLOSED · **PR-EXTID-FEED-RUNBOOK-1** — CLOSED · **PR-SEED-PERSONA-USERS-1** — CLOSED · **PR-PDP-RBAC-ALIGN-1** — CLOSED · **PR-ENGAGEMENTS-ADMIN-500-1** — CLOSED · **PR-SEED-ROLE-DUPE-1** — CLOSED.
 
 **Purpose:** Map **current seeded / implied personas** to **target doctrine personas** and define **deprecate → restrict → replace** paths without destructive role removal.
 
@@ -116,6 +116,8 @@ Exact strings: [`seed-system-role-bundles.ts`](../../backend/src/core/auth/seed-
 
 | Version | Note |
 |---------|------|
+| 2.7 | **PR-PDP-RBAC-ALIGN-1** — **CLOSED:** `@RequiresOrgContext({ type: 'currentUser' })` on `PdpController`; org-scoped roles now satisfy PDP view perms (fixes false-affordance 403). **PR-ENGAGEMENTS-ADMIN-500-1** — **CLOSED:** `engagements` list/read use `AccessContext.isGlobalAccess` (no `organizationId: null` Prisma filter). **PR-SEED-ROLE-DUPE-1** — **CLOSED:** single global `CMS_ADMIN` `UserRole` (`organizationId: null`); profile dedupes role rows. |
+| 2.6 | **PR-SEED-PERSONA-USERS-1** — **CLOSED:** demo logins for `SUPPLIER_ADMIN`, `SUPPLIER_MANAGER`, `SPONSOR` (existing bundles only); [`scripts/smoke-role-personas.sh`](../../scripts/smoke-role-personas.sh) extended. |
 | 2.5 | **PR-EXTID-FEED-RUNBOOK-1** — **CLOSED:** integration runbook for external workforce event feed (API keys, pull/ack/fail, tenancy, security, consumer responsibilities, troubleshooting). |
 | 2.4 | **PR-EXTID-EVENT-FEED-1** — **CLOSED:** integration pull API (`ExtidModule`); list/read/ack/fail on `IgaOutboxEvent`; `organizationId` + `failureReason` on outbox; permissions `extid-events:read|ack|fail`; no IGA connector or provisioning in CMS. |
 | 2.3 | **PR-IGA-DISPATCH-SCHEDULER-1** — **CLOSED:** optional `IgaDispatchSchedulerService` interval worker (`IGA_DISPATCH_ENABLED`, `IGA_DISPATCH_INTERVAL_SECONDS`, `IGA_DISPATCH_BATCH_SIZE`); calls `processPending`; logs counts only; disabled by default. |

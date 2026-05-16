@@ -80,11 +80,18 @@ export class AuthController {
       lastName: user.lastName,
       userType: user.userType,
       organizationId: user.organizationId,
-      roles: user.roles.map((ur: any) => ({
-        name: ur.role.name,
-        permissions: ur.role.permissions,
-        organizationId: ur.organizationId,
-      })),
+      roles: Array.from(
+        new Map(
+          user.roles.map((ur: any) => [
+            `${ur.roleId}:${ur.organizationId ?? 'global'}`,
+            {
+              name: ur.role.name,
+              permissions: ur.role.permissions,
+              organizationId: ur.organizationId,
+            },
+          ]),
+        ).values(),
+      ),
       effectivePermissions,
     };
   }
