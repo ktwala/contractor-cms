@@ -91,19 +91,52 @@ describe('PR-NAV-IA-1: buildSidebarNavSections (seed-aligned)', () => {
     );
   });
 
-  it('SUPPLIER_ADMIN seed bundle: suppliers only in Operations', () => {
+  it('SUPPLIER_ADMIN portal bundle: profile + resources only (no client Suppliers)', () => {
     const can = canFromSeedPermissions(
       new Set([
-        'suppliers:create',
-        'suppliers:read',
-        'suppliers:update',
-        'suppliers:delete',
+        'supplier-profile:read',
+        'supplier-profile:update',
+        'supplier-users:manage',
+        'supplier-resources:read',
+        'supplier-resources:create',
+        'profile:read',
+        'profile:update',
       ]),
     );
     const sections = buildSidebarNavSections(can);
     const ops = sections.find((s) => s.group === 'operations');
-    expect(ops?.items.map((i) => i.name)).toEqual(['Dashboard', 'Suppliers']);
+    expect(ops?.items.map((i) => i.name)).toEqual([
+      'Dashboard',
+      'Supplier profile',
+      'Resources',
+    ]);
+    expect(ops?.items.some((i) => i.name === 'Suppliers')).toBe(false);
     expect(ops?.items.some((i) => i.name === 'Invoices')).toBe(false);
+    expect(sections.some((s) => s.group === 'governance')).toBe(false);
+  });
+
+  it('SUPPLIER_MANAGER portal bundle: profile, resources, supplier timesheets', () => {
+    const can = canFromSeedPermissions(
+      new Set([
+        'supplier-profile:read',
+        'supplier-resources:read',
+        'supplier-resources:create',
+        'supplier-timesheets:read',
+        'supplier-timesheets:submit',
+        'profile:read',
+        'profile:update',
+      ]),
+    );
+    const sections = buildSidebarNavSections(can);
+    const ops = sections.find((s) => s.group === 'operations');
+    expect(ops?.items.map((i) => i.name)).toEqual([
+      'Dashboard',
+      'Supplier profile',
+      'Resources',
+      'Supplier timesheets',
+    ]);
+    expect(ops?.items.some((i) => i.name === 'Suppliers')).toBe(false);
+    expect(ops?.items.some((i) => i.name === 'Timesheets')).toBe(false);
   });
 
   it('SPONSOR seed bundle: contractors + engagements; no Invoices', () => {
@@ -166,6 +199,41 @@ describe('PR-NAV-IA-1: DashboardLayout grouped sidebar', () => {
     expect(screen.getByTestId('nav-section-operations')).toBeInTheDocument();
     expect(screen.getByTestId('nav-section-label-operations')).toHaveTextContent('Operations');
     expect(screen.getByRole('link', { name: /Timesheets/i })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /^Invoices$/ })).not.toBeInTheDocument();
+    expect(screen.queryByTestId('nav-section-governance')).not.toBeInTheDocument();
+  });
+
+  it('renders supplier portal links for SUPPLIER_ADMIN (no client Suppliers)', () => {
+    (useAuth as jest.Mock).mockReturnValue({
+      user: {
+        id: 'sa1',
+        firstName: 'Supplier',
+        lastName: 'Admin',
+        effectivePermissions: [
+          'supplier-profile:read',
+          'supplier-profile:update',
+          'supplier-users:manage',
+          'supplier-resources:read',
+          'supplier-resources:create',
+        ],
+      },
+      loading: false,
+      logout: jest.fn(),
+      can: (p: Permission) =>
+        [
+          'supplier-profile:read',
+          'supplier-profile:update',
+          'supplier-users:manage',
+          'supplier-resources:read',
+          'supplier-resources:create',
+        ].includes(p),
+    });
+
+    render(<DashboardLayout>child</DashboardLayout>);
+
+    expect(screen.getByRole('link', { name: /Supplier profile/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /^Resources$/ })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /^Suppliers$/ })).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: /^Invoices$/ })).not.toBeInTheDocument();
     expect(screen.queryByTestId('nav-section-governance')).not.toBeInTheDocument();
   });
