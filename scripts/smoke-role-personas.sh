@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
-# Persona smoke — login as each seeded role, probe /auth/profile + key APIs, print expected sidebar.
+# Persona smoke — login as seeded users, probe /auth/profile + key APIs, print expected sidebar.
+#
+# Legacy demo users (same email, role bundle refreshed on reseed):
+#   admin, finance, manager, contractor
+# Target doctrine personas (PR-SEED-PERSONA-USERS-1):
+#   supplier.admin, supplier.manager, sponsor
+#
 # Usage: API_BASE=http://localhost:3010/api/v1 ./scripts/smoke-role-personas.sh
 # Prerequisite: cd backend && npm run db:seed
 
@@ -91,6 +97,32 @@ EOF
     - Roles
 EOF
       ;;
+    SUPPLIER_ADMIN)
+      cat <<'EOF'
+  Operations:
+    - Dashboard
+    - Suppliers
+  (no Contractors, Contracts, Engagements, Timesheets, Invoices, Governance, Administration)
+EOF
+      ;;
+    SUPPLIER_MANAGER)
+      cat <<'EOF'
+  Operations:
+    - Dashboard
+    - Suppliers
+    - Timesheets
+  (no Contractors, Contracts, Engagements, Invoices, Governance, Administration)
+EOF
+      ;;
+    SPONSOR)
+      cat <<'EOF'
+  Operations:
+    - Dashboard
+    - Contractors
+    - Engagements
+  (no Suppliers, Contracts, Timesheets, Invoices, Governance, Administration)
+EOF
+      ;;
     *)
       echo "  (no template for $persona)"
       ;;
@@ -154,11 +186,19 @@ run_persona() {
 
 echo "API_BASE=$API_BASE"
 echo "Reseed first: cd backend && npm run db:seed"
+echo
 
+echo "── Legacy demo users (updated role bundles on same emails) ──"
 run_persona "CMS_ADMIN" "CMS Admin" "admin@contractor-cms.com" "Admin123!"
 run_persona "FINANCE_USER" "Finance User" "finance@contractor-cms.com" "Finance123!"
 run_persona "CONTRACTOR_MANAGER" "Contractor Manager" "manager@contractor-cms.com" "Manager123!"
 run_persona "CONTRACTOR" "Contractor" "contractor@contractor-cms.com" "Contractor123!"
+
+echo
+echo "── Target doctrine personas (PR-SEED-PERSONA-USERS-1) ──"
+run_persona "SUPPLIER_ADMIN" "Supplier Admin" "supplier.admin@contractor-cms.com" "SupplierAdmin123!"
+run_persona "SUPPLIER_MANAGER" "Supplier Manager" "supplier.manager@contractor-cms.com" "SupplierManager123!"
+run_persona "SPONSOR" "Sponsor" "sponsor@contractor-cms.com" "Sponsor123!"
 
 echo
 echo "Done."
