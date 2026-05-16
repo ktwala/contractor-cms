@@ -11,8 +11,9 @@ export interface IgaOutboxDeliveryInput {
 }
 
 /**
- * PR-IGA-DISPATCHER-1 — pluggable outbound delivery (stub / future Soffid connector).
- * Must not mutate workforce state; transport acknowledgment only.
+ * PR-IGA-DISPATCHER-1 / planned PR-EXTID-EVENT-DELIVERY-1 — outbound **delivery adapter** only.
+ * CMS publishes events; IGA (e.g. Soffid) consumes and executes governance — CMS is not IGA.
+ * Must not provision, certify, map entitlements, or mutate workforce state in CMS.
  */
 export interface IgaDeliveryProvider {
   deliver(input: IgaOutboxDeliveryInput): Promise<void>;

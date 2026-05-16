@@ -14,8 +14,8 @@ export interface IgaOutboxDispatchResult {
 }
 
 /**
- * PR-IGA-DISPATCHER-1 — single-pass poll of PENDING outbox rows; transport via provider only.
- * No scheduler, retry policy, or provisioning semantics in this PR.
+ * PR-IGA-DISPATCHER-1 — single-pass poll of PENDING outbox rows; transport via delivery adapter only.
+ * Outbox is source of truth. Does not provision, certify, or act as IGA (see ADR-EXTID-001 §6.1).
  */
 @Injectable()
 export class IgaOutboxDispatcherService {

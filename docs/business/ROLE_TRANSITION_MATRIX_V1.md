@@ -79,6 +79,23 @@ Exact strings: [`seed-system-role-bundles.ts`](../../backend/src/core/auth/seed-
 
 ---
 
+## 7. EXTID outbound lane (publisher doctrine)
+
+**CMS is not IGA.** Contractor CMS **publishes** external workforce events; enterprise IGA (e.g. Soffid) **consumes** them and **executes** identity governance. Code under [`backend/src/core/iga/`](../../backend/src/core/iga/) is **publisher + transport** only — not provisioning, entitlements, or certification.
+
+| Stage | PR | Status |
+|-------|-----|--------|
+| Event contract | PR-IGA-EVENT-CONTRACT-1 | CLOSED |
+| Outbox | PR-IGA-OUTBOX-1 | CLOSED |
+| Mutation writes | PR-IGA-EVENT-WRITE-1 | CLOSED |
+| Dispatcher (stub provider) | PR-IGA-DISPATCHER-1 | CLOSED |
+| Dispatch scheduler | PR-IGA-DISPATCH-SCHEDULER-1 | CLOSED |
+| **Outbound delivery adapter** | **PR-EXTID-EVENT-DELIVERY-1** | **Planned** |
+
+**Planned next:** **`PR-EXTID-EVENT-DELIVERY-1`** — real outbound delivery adapter (HTTP webhook, Soffid endpoint, or bus — transport only). **Do not** use `PR-IGA-CONNECTOR-1`; that name implies CMS becomes IGA.
+
+---
+
 ## References
 
 - [`SEED_ROLE_BUNDLES_PR_RBAC_REALIGN.md`](./SEED_ROLE_BUNDLES_PR_RBAC_REALIGN.md) — seed-only target bundles (aligned with **PR-RBAC-REALIGN-1**)
@@ -86,7 +103,7 @@ Exact strings: [`seed-system-role-bundles.ts`](../../backend/src/core/auth/seed-
 - [`PR-EXTID-SCHEMA-1_DESIGN.md`](./PR-EXTID-SCHEMA-1_DESIGN.md)
 - [`IMPLEMENTATION_DRIFT_GATES.md`](./IMPLEMENTATION_DRIFT_GATES.md)
 - [`SCHEMA_IMPACT_REGISTER_V1.md`](./SCHEMA_IMPACT_REGISTER_V1.md)
-- [`ADR-EXTID-001`](../security/ADR-EXTID-001-external-workforce-identity-sponsorship-iga-boundary.md) — identity / sponsorship / IGA boundary; **§6** outbound event catalog + [`backend/src/core/iga/`](../../backend/src/core/iga/) contract implementation (**PR-IGA-EVENT-CONTRACT-1**)
+- [`ADR-EXTID-001`](../security/ADR-EXTID-001-external-workforce-identity-sponsorship-iga-boundary.md) — identity / sponsorship / IGA boundary; **§6–6.1** CMS publisher vs IGA consumer; [`backend/src/core/iga/`](../../backend/src/core/iga/) implementation
 
 ---
 

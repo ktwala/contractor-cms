@@ -5,8 +5,8 @@ import type {
 } from './iga-delivery-provider.interface';
 
 /**
- * Default delivery provider — no outbound IGA vendor call.
- * Replace with a real connector in a future PR; outbox rows remain authoritative.
+ * Default delivery adapter (no-op) — no outbound vendor call.
+ * Replace via PR-EXTID-EVENT-DELIVERY-1 (HTTP/webhook/bus); outbox remains source of truth.
  */
 @Injectable()
 export class IgaDeliveryProviderStub implements IgaDeliveryProvider {

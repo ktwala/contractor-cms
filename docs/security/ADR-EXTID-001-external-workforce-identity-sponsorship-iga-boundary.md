@@ -115,6 +115,45 @@ EXTERNAL_PERSON_TERMINATED
 
 Additional lifecycle or commercial events (e.g. contract extension) remain documented in the operating model **§24.2** until folded into a bus catalog ADR.
 
+### 6.1 Publisher vs consumer (CMS is not IGA)
+
+```text
+Contractor CMS  = source of external workforce truth (publisher)
+IGA (e.g. Soffid) = identity governance and access execution (consumer / executor)
+Outbound adapter = transport bridge only (not an “IGA engine” in CMS)
+```
+
+**CMS publishes** authoritative context, for example:
+
+```text
+This supplier resource exists.
+This person has sponsor X.
+This engagement changed.
+This external person was suspended or terminated.
+```
+
+**IGA decides** (outside CMS):
+
+```text
+Whether to create an identity, which account, which systems, roles,
+approval workflows, certification, SoD, and when to revoke access.
+```
+
+Delivery options (deployment choice; not CMS doctrine):
+
+```text
+A — IGA pulls from CMS API
+B — CMS pushes event payload to IGA API
+C — CMS publishes to a message bus
+D — Manual / export file integration
+```
+
+The planned implementation PR **`PR-EXTID-EVENT-DELIVERY-1`** (not `PR-IGA-CONNECTOR-1`) covers **Option B-style push** or equivalent **transport only**: take an outbox event, send to the configured external endpoint, record success or failure. **Supersedes** the informal label “IGA connector,” which wrongly implies CMS becomes IGA.
+
+**Adapter must not:** create AD accounts, assign application roles, approve or certify access, run SoD, map entitlements, or execute provisioning.
+
+**Adapter may only:** deliver the serialized outbox payload; dispatcher marks SENT/FAILED; outbox remains source of truth.
+
 ---
 
 ## 7. Consequences
@@ -141,7 +180,7 @@ Exact schema migrations and FK graphs
 API payload versioning and compatibility policy
 Supplier portal MVP delivery order
 Badge provider and PACS specifics
-Per-supplier IGA connector behavior
+Per-deployment outbound event delivery adapter (transport only; not IGA execution)
 RBAC matrix realignment detail (covered in dedicated PRs / ADRs)
 Invoice row-scope remediation (tracked via gap matrix + implementation PRs)
 ```
@@ -220,7 +259,7 @@ PR-IGA-OUTBOX-1
 PR-IGA-EVENT-WRITE-1
 PR-IGA-DISPATCHER-1
 PR-IGA-DISPATCH-SCHEDULER-1
-PR-IGA-CONNECTOR-1
+PR-EXTID-EVENT-DELIVERY-1   # outbound adapter — CMS publisher only; supersedes PR-IGA-CONNECTOR-1
 PR-NAV-IA-1
 ```
 
@@ -232,6 +271,7 @@ Order and scope are decided at **v1.0 bind** and backlog prioritization — **no
 
 | Version | Note |
 |---------|------|
+| 0.6 | **§6.1** publisher vs consumer boundary; rename planned **`PR-EXTID-EVENT-DELIVERY-1`** (rejects `PR-IGA-CONNECTOR-1` wording) |
 | 0.1 | Draft shell — post **operating model v0.5** doctrine lock |
 | 0.5 | **SCHEMA_DIFF_REVIEW** + **§9** prerequisite for **1A** merge; **§10** reference row |
 | 0.4 | **§11** lifecycle: **PROPOSED** = [`V1_0_RATIFICATION_RECORD.md`](../business/V1_0_RATIFICATION_RECORD.md) §7; **ACCEPTED** = production acceptance; **§12** ladder **1A–1D**; **§9–§10** ratification record + **EXTID_MIGRATION_SAFETY_CHECKLIST**; header ties handoff to ratification record |
