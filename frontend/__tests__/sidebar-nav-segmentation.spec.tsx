@@ -91,14 +91,35 @@ describe('PR-NAV-IA-1: buildSidebarNavSections (seed-aligned)', () => {
     );
   });
 
-  it('SUPPLIER_ADMIN portal bundle: profile + resources only (no client Suppliers)', () => {
+  it('on /supplier-portal paths, sidebar shows portal routes only (no client Suppliers)', () => {
+    const can = canFromSeedPermissions(
+      new Set([
+        'supplier-profile:read',
+        'supplier-contractors:read',
+        'suppliers:read',
+        'contractors:read',
+        'invoices:read',
+      ]),
+    );
+    const sections = buildSidebarNavSections(can, '/supplier-portal/profile');
+    const ops = sections.find((s) => s.group === 'operations');
+    expect(ops?.items.map((i) => i.name)).toEqual(
+      expect.arrayContaining(['Dashboard', 'Supplier profile', 'Contractors']),
+    );
+    expect(ops?.items.some((i) => i.name === 'Suppliers')).toBe(false);
+    expect(ops?.items.some((i) => i.name === 'Invoices')).toBe(false);
+    expect(sections.some((s) => s.group === 'governance')).toBe(false);
+  });
+
+  it('SUPPLIER_ADMIN portal bundle: profile + contractors only (no client Suppliers)', () => {
     const can = canFromSeedPermissions(
       new Set([
         'supplier-profile:read',
         'supplier-profile:update',
         'supplier-users:manage',
-        'supplier-resources:read',
-        'supplier-resources:create',
+        'supplier-contractors:read',
+        'supplier-contractors:create',
+        'supplier-contractors:update',
         'profile:read',
         'profile:update',
       ]),
@@ -108,19 +129,19 @@ describe('PR-NAV-IA-1: buildSidebarNavSections (seed-aligned)', () => {
     expect(ops?.items.map((i) => i.name)).toEqual([
       'Dashboard',
       'Supplier profile',
-      'Resources',
+      'Contractors',
     ]);
     expect(ops?.items.some((i) => i.name === 'Suppliers')).toBe(false);
     expect(ops?.items.some((i) => i.name === 'Invoices')).toBe(false);
     expect(sections.some((s) => s.group === 'governance')).toBe(false);
   });
 
-  it('SUPPLIER_MANAGER portal bundle: profile, resources, supplier timesheets', () => {
+  it('SUPPLIER_MANAGER portal bundle: profile, contractors, supplier timesheets', () => {
     const can = canFromSeedPermissions(
       new Set([
         'supplier-profile:read',
-        'supplier-resources:read',
-        'supplier-resources:create',
+        'supplier-contractors:read',
+        'supplier-contractors:create',
         'supplier-timesheets:read',
         'supplier-timesheets:submit',
         'profile:read',
@@ -132,7 +153,7 @@ describe('PR-NAV-IA-1: buildSidebarNavSections (seed-aligned)', () => {
     expect(ops?.items.map((i) => i.name)).toEqual([
       'Dashboard',
       'Supplier profile',
-      'Resources',
+      'Contractors',
       'Supplier timesheets',
     ]);
     expect(ops?.items.some((i) => i.name === 'Suppliers')).toBe(false);
@@ -213,8 +234,9 @@ describe('PR-NAV-IA-1: DashboardLayout grouped sidebar', () => {
           'supplier-profile:read',
           'supplier-profile:update',
           'supplier-users:manage',
-          'supplier-resources:read',
-          'supplier-resources:create',
+          'supplier-contractors:read',
+          'supplier-contractors:create',
+          'supplier-contractors:update',
         ],
       },
       loading: false,
@@ -224,15 +246,16 @@ describe('PR-NAV-IA-1: DashboardLayout grouped sidebar', () => {
           'supplier-profile:read',
           'supplier-profile:update',
           'supplier-users:manage',
-          'supplier-resources:read',
-          'supplier-resources:create',
+          'supplier-contractors:read',
+          'supplier-contractors:create',
+          'supplier-contractors:update',
         ].includes(p),
     });
 
     render(<DashboardLayout>child</DashboardLayout>);
 
     expect(screen.getByRole('link', { name: /Supplier profile/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /^Resources$/ })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /^Contractors$/ })).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: /^Suppliers$/ })).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: /^Invoices$/ })).not.toBeInTheDocument();
     expect(screen.queryByTestId('nav-section-governance')).not.toBeInTheDocument();

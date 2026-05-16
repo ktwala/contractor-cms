@@ -147,7 +147,7 @@ export class PermissionsGuard implements CanActivate {
     );
 
     // Fail closed: supplier-* permissions require an active SupplierMembership row scope
-    if (accessViaSupplierPortal && !isGlobalAccess && !activeMembership) {
+    if (accessViaSupplierPortal && !activeMembership) {
       const errorMsg =
         'Active supplier membership required for supplier-portal access';
       this.auditService.logAction(
@@ -170,8 +170,14 @@ export class PermissionsGuard implements CanActivate {
       throw new ForbiddenException(errorMsg);
     }
 
+    // Supplier-portal routes are row-scoped by membership whenever a membership exists,
+    // even if the user also holds a global role (PR-SUPPLIER-PORTAL-HYDRATION-FIX-1).
     const supplierScopeId =
-      !isGlobalAccess && activeMembership ? activeMembership.supplierId : null;
+      accessViaSupplierPortal && activeMembership
+        ? activeMembership.supplierId
+        : !isGlobalAccess && activeMembership
+          ? activeMembership.supplierId
+          : null;
 
     // Populate AccessContext
     const accessContext: AccessContext = {

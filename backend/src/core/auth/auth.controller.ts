@@ -64,7 +64,7 @@ export class AuthController {
     await this.authService.logout(userId, '');
   }
 
-  @Get('profile')
+  @Get(['profile', 'me'])
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get current user profile with effective permissions' })

@@ -102,7 +102,7 @@ EOF
   Operations:
     - Dashboard
     - Supplier profile
-    - Resources
+    - Contractors
   (supplier-portal only — no client /suppliers, Contractors, Contracts, Invoices)
 EOF
       ;;
@@ -111,7 +111,7 @@ EOF
   Operations:
     - Dashboard
     - Supplier profile
-    - Resources
+    - Contractors
     - Supplier timesheets
   (supplier-portal only — no client /suppliers or /timesheets)
 EOF
@@ -168,7 +168,7 @@ run_persona() {
 
   for item in \
     "GET /supplier-portal/profile" \
-    "GET /supplier-portal/resources" \
+    "GET /supplier-portal/contractors" \
     "GET /supplier-portal/timesheets" \
     "GET /suppliers" \
     "GET /contractors" \

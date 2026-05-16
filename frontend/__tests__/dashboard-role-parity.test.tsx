@@ -12,15 +12,16 @@ const TARGET_ROLE_PERMISSIONS = {
     'supplier-profile:read',
     'supplier-profile:update',
     'supplier-users:manage',
-    'supplier-resources:read',
-    'supplier-resources:create',
+    'supplier-contractors:read',
+    'supplier-contractors:create',
+    'supplier-contractors:update',
     'profile:read',
     'profile:update',
   ],
   SUPPLIER_MANAGER: [
     'supplier-profile:read',
-    'supplier-resources:read',
-    'supplier-resources:create',
+    'supplier-contractors:read',
+    'supplier-contractors:create',
     'supplier-timesheets:read',
     'supplier-timesheets:submit',
     'profile:read',
@@ -64,7 +65,7 @@ describe('Dashboard role parity (permission-filtered cards)', () => {
     (api.getContracts as jest.Mock).mockResolvedValue({ data: [], total: 0 });
   });
 
-  it('SUPPLIER_ADMIN dashboard does not render Contractors, Contracts, or Timesheets cards', () => {
+  it('SUPPLIER_ADMIN dashboard renders supplier Contractors card, not client modules', () => {
     (useAuth as jest.Mock).mockReturnValue({
       can: mockCan(TARGET_ROLE_PERMISSIONS.SUPPLIER_ADMIN),
     });
@@ -72,13 +73,13 @@ describe('Dashboard role parity (permission-filtered cards)', () => {
     render(<DashboardNavCards />);
 
     expect(screen.getByText('Supplier profile')).toBeInTheDocument();
+    expect(screen.getByText('Contractors')).toBeInTheDocument();
     expect(screen.queryByText('Suppliers')).not.toBeInTheDocument();
-    expect(screen.queryByText('Contractors')).not.toBeInTheDocument();
     expect(screen.queryByText('Contracts')).not.toBeInTheDocument();
     expect(screen.queryByText('Timesheets')).not.toBeInTheDocument();
   });
 
-  it('SUPPLIER_MANAGER dashboard does not render Contractors or Contracts cards', () => {
+  it('SUPPLIER_MANAGER dashboard renders supplier Contractors and timesheets, not client modules', () => {
     (useAuth as jest.Mock).mockReturnValue({
       can: mockCan(TARGET_ROLE_PERMISSIONS.SUPPLIER_MANAGER),
     });
@@ -86,9 +87,9 @@ describe('Dashboard role parity (permission-filtered cards)', () => {
     render(<DashboardNavCards />);
 
     expect(screen.getByText('Supplier profile')).toBeInTheDocument();
+    expect(screen.getByText('Contractors')).toBeInTheDocument();
     expect(screen.getByText('Timesheets')).toBeInTheDocument();
     expect(screen.queryByText('Suppliers')).not.toBeInTheDocument();
-    expect(screen.queryByText('Contractors')).not.toBeInTheDocument();
     expect(screen.queryByText('Contracts')).not.toBeInTheDocument();
   });
 

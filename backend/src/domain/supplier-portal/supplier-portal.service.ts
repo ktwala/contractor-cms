@@ -1,18 +1,38 @@
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../../core/database/prisma.service';
 import { AccessContext } from '../../core/auth/interfaces/access-context.interface';
+import { AuditService } from '../../core/audit/audit.service';
+import { toIgaEventContractorSlice } from '../../core/iga/iga-event.mapper';
+import { IgaWorkforceEventWriter } from '../../core/iga/iga-workforce-event-writer.service';
 import { SupplierPortalUpdateProfileDto } from './dto/supplier-portal-update-profile.dto';
-import { SupplierPortalCreateResourceDto } from './dto/supplier-portal-create-resource.dto';
+import { SupplierPortalCreateContractorDto } from './dto/supplier-portal-create-contractor.dto';
 import { QueryTimesheetDto } from '../timesheets/dto/query-timesheet.dto';
+
+const contractorListSelect = {
+  id: true,
+  firstName: true,
+  lastName: true,
+  email: true,
+  phone: true,
+  workerClassification: true,
+  engagementModel: true,
+  isActive: true,
+  createdAt: true,
+} as const;
 
 @Injectable()
 export class SupplierPortalService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly auditService: AuditService,
+    private readonly igaWorkforceEventWriter: IgaWorkforceEventWriter,
+  ) {}
 
   private requireSupplierScope(accessContext: AccessContext): string {
     if (!accessContext.supplierScopeId) {
@@ -59,7 +79,7 @@ export class SupplierPortalService {
     });
   }
 
-  async listResources(
+  async listContractors(
     accessContext: AccessContext,
     page = 1,
     limit = 20,
@@ -73,17 +93,7 @@ export class SupplierPortalService {
         skip: (page - 1) * limit,
         take: limit,
         orderBy: { createdAt: 'desc' },
-        select: {
-          id: true,
-          firstName: true,
-          lastName: true,
-          email: true,
-          phone: true,
-          workerClassification: true,
-          engagementModel: true,
-          isActive: true,
-          createdAt: true,
-        },
+        select: contractorListSelect,
       }),
       this.prisma.contractor.count({ where }),
     ]);
@@ -91,45 +101,68 @@ export class SupplierPortalService {
     return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
   }
 
-  async createResource(
+  async createContractor(
     accessContext: AccessContext,
-    dto: SupplierPortalCreateResourceDto,
+    dto: SupplierPortalCreateContractorDto,
   ) {
     const supplierId = this.requireSupplierScope(accessContext);
+    const targetOrgId = accessContext.targetOrganizationId;
+    if (!targetOrgId) {
+      throw new BadRequestException('Organization context is required');
+    }
+
+    const supplier = await this.prisma.supplier.findFirst({
+      where: { id: supplierId, organizationId: targetOrgId },
+    });
+    if (!supplier) {
+      throw new NotFoundException('Supplier profile not found');
+    }
 
     const existing = await this.prisma.contractor.findFirst({
       where: { supplierId, email: dto.email },
     });
     if (existing) {
-      throw new BadRequestException(
-        'A resource with this email already exists for your supplier',
+      throw new ConflictException(
+        'A contractor with this email already exists for your supplier',
       );
     }
 
-    return this.prisma.contractor.create({
-      data: {
-        supplierId,
-        firstName: dto.firstName,
-        lastName: dto.lastName,
-        email: dto.email,
-        phone: dto.phone,
-        workerClassification: dto.workerClassification,
-        engagementModel: dto.engagementModel,
-        taxResidency: dto.taxResidency,
-        skills: [],
-      },
-      select: {
-        id: true,
-        firstName: true,
-        lastName: true,
-        email: true,
-        phone: true,
-        workerClassification: true,
-        engagementModel: true,
-        isActive: true,
-        createdAt: true,
-      },
+    const contractor = await this.prisma.$transaction(async (tx) => {
+      const created = await tx.contractor.create({
+        data: {
+          supplierId,
+          firstName: dto.firstName,
+          lastName: dto.lastName,
+          email: dto.email,
+          phone: dto.phone,
+          workerClassification: dto.workerClassification,
+          engagementModel: dto.engagementModel,
+          taxResidency: dto.taxResidency,
+          skills: [],
+        },
+      });
+      await this.igaWorkforceEventWriter.persistExternalPersonCreated(
+        toIgaEventContractorSlice(created),
+        targetOrgId,
+        tx,
+      );
+      return tx.contractor.findUniqueOrThrow({
+        where: { id: created.id },
+        select: contractorListSelect,
+      });
     });
+
+    await this.auditService.logAction(
+      accessContext.actorUserId,
+      'CONTRACTOR_CREATED',
+      'Contractor',
+      contractor.id,
+      null,
+      contractor,
+      { organizationId: targetOrgId },
+    );
+
+    return contractor;
   }
 
   async listTimesheets(accessContext: AccessContext, query: QueryTimesheetDto) {

@@ -8,22 +8,22 @@ import { Users } from 'lucide-react';
 describe('PR-SUPPLIER-PORTAL-UX-1', () => {
   it('PortalPageHeader shows supplier portal label', () => {
     render(
-      <PortalPageHeader title="Resources" description="Scoped list" />,
+      <PortalPageHeader title="Contractors" description="Scoped list" />,
     );
     expect(screen.getByText('Supplier portal')).toBeInTheDocument();
-    expect(screen.getByText('Resources')).toBeInTheDocument();
+    expect(screen.getByText('Contractors')).toBeInTheDocument();
   });
 
   it('PortalEmptyState renders title and action', () => {
     render(
       <PortalEmptyState
         icon={Users}
-        title="No resources yet"
+        title="No contractors yet"
         description="Nominate someone"
         action={<button type="button">Add</button>}
       />,
     );
-    expect(screen.getByText('No resources yet')).toBeInTheDocument();
+    expect(screen.getByText('No contractors yet')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Add' })).toBeInTheDocument();
   });
 });

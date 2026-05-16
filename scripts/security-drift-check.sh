@@ -77,7 +77,11 @@ if ! (cd backend && npx --yes ts-node ../scripts/governance-drift-check.ts); the
   DRIFT_FOUND=1
 fi
 
-# 7. EXTID substrate drift (PR-EXTID-SCHEMA-1D — G-EXTID-02, migration tracking, sponsor placement)
+# 7. Supplier portal terminology (warn-only — no "Resources" in production UI)
+echo "Checking supplier portal terminology (warn-only)..."
+(cd backend && npx --yes ts-node ../scripts/supplier-portal-terminology-drift-check.ts) || true
+
+# 8. EXTID substrate drift (PR-EXTID-SCHEMA-1D — G-EXTID-02, migration tracking, sponsor placement)
 echo "Checking EXTID substrate drift (G-EXTID / migration SQL)..."
 if ! (cd backend && npx --yes ts-node ../scripts/extid-drift-check.ts); then
   DRIFT_FOUND=1

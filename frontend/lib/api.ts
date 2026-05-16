@@ -120,13 +120,13 @@ class ApiClient {
     return response.data;
   }
 
-  async getSupplierPortalResources(params?: { page?: number; limit?: number }) {
-    const response = await this.client.get('/supplier-portal/resources', { params });
+  async getSupplierPortalContractors(params?: { page?: number; limit?: number }) {
+    const response = await this.client.get('/supplier-portal/contractors', { params });
     return response.data;
   }
 
-  async createSupplierPortalResource(data: Record<string, unknown>) {
-    const response = await this.client.post('/supplier-portal/resources', data);
+  async createSupplierPortalContractor(data: Record<string, unknown>) {
+    const response = await this.client.post('/supplier-portal/contractors', data);
     return response.data;
   }
 

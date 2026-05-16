@@ -17,8 +17,8 @@
 | **FINANCE_USER** | `finance@contractor-cms.com` | `Finance123!` | Operations: Dashboard, Suppliers, Contractors, Timesheets, Invoices · Governance: Activation, Exceptions |
 | **CONTRACTOR_MANAGER** | `manager@contractor-cms.com` | `Manager123!` | Operations: Dashboard, Suppliers, Contractors, Contracts, Engagements, Timesheets · Governance: Activation, Exceptions (no Invoices) |
 | **CONTRACTOR** | `contractor@contractor-cms.com` | `Contractor123!` | Operations: Dashboard, Timesheets only (no Invoices) |
-| **SUPPLIER_ADMIN** | `supplier.admin@contractor-cms.com` | `SupplierAdmin123!` | Operations: Dashboard, Supplier profile, Resources (supplier-portal; not client Suppliers) |
-| **SUPPLIER_MANAGER** | `supplier.manager@contractor-cms.com` | `SupplierManager123!` | Operations: Dashboard, Supplier profile, Resources, Supplier timesheets |
+| **SUPPLIER_ADMIN** | `supplier.admin@contractor-cms.com` | `SupplierAdmin123!` | Operations: Dashboard, Supplier profile, Contractors (supplier-portal; not client Contractors registry) |
+| **SUPPLIER_MANAGER** | `supplier.manager@contractor-cms.com` | `SupplierManager123!` | Operations: Dashboard, Supplier profile, Contractors, Supplier timesheets |
 | **SPONSOR** | `sponsor@contractor-cms.com` | `Sponsor123!` | Operations: Dashboard, Contractors, Engagements |
 
 ---
@@ -37,7 +37,7 @@
 | Route | Permission |
 |-------|------------|
 | `GET/PATCH /supplier-portal/profile` | `supplier-profile:*` |
-| `GET/POST /supplier-portal/resources` | `supplier-resources:*` |
+| `GET/POST /supplier-portal/contractors` | `supplier-contractors:*` |
 | `GET /supplier-portal/timesheets` | `supplier-timesheets:read` |
 
 ---

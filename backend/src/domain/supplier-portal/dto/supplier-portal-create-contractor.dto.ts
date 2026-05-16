@@ -2,8 +2,8 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { EngagementModel, WorkerClassification } from '@prisma/client';
 import { IsEmail, IsEnum, IsOptional, IsString } from 'class-validator';
 
-/** Resource nomination — supplierId is injected from membership scope. */
-export class SupplierPortalCreateResourceDto {
+/** Supplier-scoped contractor create — supplierId is injected from membership scope. */
+export class SupplierPortalCreateContractorDto {
   @ApiProperty()
   @IsString()
   firstName: string;

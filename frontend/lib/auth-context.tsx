@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { api } from './api';
 import { Permission } from './permissions.generated';
 
@@ -22,6 +22,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   register: (data: any) => Promise<void>;
   logout: () => void;
+  refreshProfile: () => Promise<void>;
   can: (permission: Permission) => boolean;
   canAny: (permissions: Permission[]) => boolean;
   canAll: (permissions: Permission[]) => boolean;
@@ -30,33 +31,110 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+function mapProfileToUser(profile: Record<string, unknown>): User {
+  const roles = profile.roles as User['roles'];
+  const roleNames = Array.isArray(roles)
+    ? roles.map((r) => (typeof r === 'string' ? r : r.name))
+    : [];
+
+  return {
+    id: profile.id as string,
+    email: profile.email as string,
+    firstName: profile.firstName as string,
+    lastName: profile.lastName as string,
+    organizationId: (profile.organizationId as string) || '',
+    supplierId: (profile.supplierId as string | null) ?? null,
+    roles: roleNames.length > 0 ? roleNames : roles,
+    effectivePermissions: (profile.effectivePermissions as string[]) || [],
+  };
+}
+
+function persistUser(user: User) {
+  localStorage.setItem('user', JSON.stringify(user));
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    // Check for existing session
+  const refreshProfile = useCallback(async () => {
     const token = localStorage.getItem('auth_token');
-    const savedUser = localStorage.getItem('user');
-
-    if (token && savedUser) {
-      setUser(JSON.parse(savedUser));
+    if (!token) {
+      setUser(null);
+      return;
     }
-    setLoading(false);
+    const profile = await api.getProfile();
+    const hydrated = mapProfileToUser(profile);
+    setUser(hydrated);
+    persistUser(hydrated);
   }, []);
+
+  useEffect(() => {
+    const bootstrap = async () => {
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+
+      const savedUser = localStorage.getItem('user');
+      if (savedUser) {
+        try {
+          setUser(JSON.parse(savedUser));
+        } catch {
+          localStorage.removeItem('user');
+        }
+      }
+
+      try {
+        await refreshProfile();
+      } catch {
+        // Stale token — keep saved user for display; API calls will 401
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    bootstrap();
+  }, [refreshProfile]);
 
   const login = async (email: string, password: string) => {
     const response = await api.login(email, password);
     localStorage.setItem('auth_token', response.accessToken);
-    localStorage.setItem('user', JSON.stringify(response.user));
-    setUser(response.user);
+    const nextUser: User = {
+      id: response.user.id,
+      email: response.user.email,
+      firstName: response.user.firstName,
+      lastName: response.user.lastName,
+      organizationId: response.user.organizationId || '',
+      supplierId: response.user.supplierId ?? null,
+      roles: response.user.roles,
+      effectivePermissions: response.user.effectivePermissions,
+    };
+    persistUser(nextUser);
+    setUser(nextUser);
+    try {
+      await refreshProfile();
+    } catch {
+      // login response is sufficient
+    }
   };
 
   const register = async (data: any) => {
     const response = await api.register(data);
     localStorage.setItem('auth_token', response.accessToken);
-    localStorage.setItem('user', JSON.stringify(response.user));
-    setUser(response.user);
+    const nextUser: User = {
+      id: response.user.id,
+      email: response.user.email,
+      firstName: response.user.firstName,
+      lastName: response.user.lastName,
+      organizationId: response.user.organizationId || '',
+      supplierId: response.user.supplierId ?? null,
+      roles: response.user.roles,
+      effectivePermissions: response.user.effectivePermissions,
+    };
+    persistUser(nextUser);
+    setUser(nextUser);
   };
 
   const logout = () => {
@@ -66,7 +144,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     window.location.href = '/login';
   };
 
-  // Authorization Helpers
   const can = (permission: Permission): boolean => {
     if (!user || !user.effectivePermissions) return false;
     return user.effectivePermissions.includes(permission);
@@ -82,7 +159,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return permissions.every((p) => user.effectivePermissions.includes(p));
   };
 
-  // For display/diagnostics only - NOT for authorization
   const hasRole = (roleName: string): boolean => {
     if (!user || !user.roles) return false;
     return user.roles.some((r) => {
@@ -92,7 +168,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, can, canAny, canAll, hasRole }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        login,
+        register,
+        logout,
+        refreshProfile,
+        can,
+        canAny,
+        canAll,
+        hasRole,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

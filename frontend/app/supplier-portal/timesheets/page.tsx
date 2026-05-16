@@ -8,6 +8,7 @@ import PortalEmptyState from '@/components/supplier-portal/PortalEmptyState';
 import StatusBadge from '@/components/ui/status-badge';
 import { PERMISSIONS } from '@/lib/permissions.generated';
 import { supplierPortalApi } from '@/lib/api-supplier-portal';
+import { getSupplierPortalErrorMessage } from '@/lib/supplier-portal-errors';
 import { format } from 'date-fns';
 import { Clock } from 'lucide-react';
 
@@ -42,8 +43,10 @@ export default function SupplierPortalTimesheetsPage() {
       if (statusFilter) params.status = statusFilter;
       const res = await supplierPortalApi.getTimesheets(params);
       setTimesheets(res.data || []);
-    } catch {
-      setError('Failed to load timesheets for your resources.');
+    } catch (err) {
+      setError(
+        getSupplierPortalErrorMessage(err, 'Failed to load timesheets for your contractors.'),
+      );
     } finally {
       setLoading(false);
     }
@@ -93,8 +96,8 @@ export default function SupplierPortalTimesheetsPage() {
               title="No timesheets found"
               description={
                 statusFilter
-                  ? 'No timesheets match this status for your resources.'
-                  : 'When your resources submit timesheets, they will appear here.'
+                  ? 'No timesheets match this status for your contractors.'
+                  : 'When your contractors submit timesheets, they will appear here.'
               }
             />
           )}

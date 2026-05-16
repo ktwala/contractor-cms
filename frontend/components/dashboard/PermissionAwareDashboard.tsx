@@ -10,6 +10,7 @@ import DashboardNavCards from './DashboardNavCards';
 import { ContractRenewalsWidget } from './ContractRenewalsWidget';
 import { supplierPortalApi } from '@/lib/api-supplier-portal';
 import { isSupplierPortalUser } from '@/lib/supplier-portal-modules';
+import { getSupplierPortalErrorMessage } from '@/lib/supplier-portal-errors';
 
 interface TimesheetStats {
   total: number;
@@ -115,7 +116,9 @@ export default function PermissionAwareDashboard() {
       await Promise.all(tasks);
     } catch (err) {
       console.error(err);
-      setError('Failed to load dashboard data');
+      setError(
+        getSupplierPortalErrorMessage(err, 'Failed to load dashboard data'),
+      );
     } finally {
       setLoading(false);
     }

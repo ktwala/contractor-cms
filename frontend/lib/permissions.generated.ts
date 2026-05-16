@@ -134,9 +134,10 @@ export const PERMISSIONS = {
   "SUPPLIER_USERS": {
     "MANAGE": "supplier-users:manage"
   },
-  "SUPPLIER_RESOURCES": {
-    "READ": "supplier-resources:read",
-    "CREATE": "supplier-resources:create"
+  "SUPPLIER_CONTRACTORS": {
+    "READ": "supplier-contractors:read",
+    "CREATE": "supplier-contractors:create",
+    "UPDATE": "supplier-contractors:update"
   },
   "SUPPLIER_TIMESHEETS": {
     "READ": "supplier-timesheets:read",
@@ -199,11 +200,12 @@ export const ALL_PERMISSIONS: ReadonlySet<string> = new Set([
   "roles:delete",
   "roles:read",
   "roles:update",
+  "supplier-contractors:create",
+  "supplier-contractors:read",
+  "supplier-contractors:update",
   "supplier-invoices:submit",
   "supplier-profile:read",
   "supplier-profile:update",
-  "supplier-resources:create",
-  "supplier-resources:read",
   "supplier-timesheets:read",
   "supplier-timesheets:submit",
   "supplier-users:manage",
@@ -741,18 +743,23 @@ export const PERMISSION_GROUPS = [
     ]
   },
   {
-    "resource": "SUPPLIER_RESOURCES",
-    "label": "SUPPLIER RESOURCES",
+    "resource": "SUPPLIER_CONTRACTORS",
+    "label": "SUPPLIER CONTRACTORS",
     "permissions": [
       {
         "action": "READ",
-        "value": "supplier-resources:read",
+        "value": "supplier-contractors:read",
         "label": "Read"
       },
       {
         "action": "CREATE",
-        "value": "supplier-resources:create",
+        "value": "supplier-contractors:create",
         "label": "Create"
+      },
+      {
+        "action": "UPDATE",
+        "value": "supplier-contractors:update",
+        "label": "Update"
       }
     ]
   },

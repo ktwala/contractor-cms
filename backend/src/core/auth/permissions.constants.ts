@@ -174,9 +174,11 @@ export const PERMISSIONS = {
   SUPPLIER_USERS: {
     MANAGE: 'supplier-users:manage',
   },
-  SUPPLIER_RESOURCES: {
-    READ: 'supplier-resources:read',
-    CREATE: 'supplier-resources:create',
+  /** Supplier-portal contractor CRUD (membership-scoped; not client `contractors:*`). */
+  SUPPLIER_CONTRACTORS: {
+    READ: 'supplier-contractors:read',
+    CREATE: 'supplier-contractors:create',
+    UPDATE: 'supplier-contractors:update',
   },
   SUPPLIER_TIMESHEETS: {
     READ: 'supplier-timesheets:read',
@@ -198,6 +200,13 @@ const _allPermissions: string[] = Object.values(PERMISSIONS).flatMap(
 
 /** Read-only set for O(1) membership checks. */
 export const ALL_PERMISSIONS: ReadonlySet<string> = new Set(_allPermissions);
+
+/** Supplier portal contractor route permissions (PR-SUPPLIER-RESOURCE-ALIAS-REMOVAL-1). */
+export const SUPPLIER_PORTAL_CONTRACTOR_PERMISSIONS = {
+  READ: [PERMISSIONS.SUPPLIER_CONTRACTORS.READ] as const,
+  CREATE: [PERMISSIONS.SUPPLIER_CONTRACTORS.CREATE] as const,
+  UPDATE: [PERMISSIONS.SUPPLIER_CONTRACTORS.UPDATE] as const,
+};
 
 /**
  * Grouped permissions for UI display (role editor, permission picker).

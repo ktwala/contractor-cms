@@ -1,4 +1,5 @@
 import { PERMISSIONS, Permission } from './permissions.generated';
+import { SUPPLIER_PORTAL_CONTRACTOR_READ } from './supplier-portal-permissions';
 
 /** PR-NAV-IA-1 — sidebar segmentation (group headings only; access still from `permission`). */
 export type NavGroup = 'operations' | 'governance' | 'administration';
@@ -58,9 +59,9 @@ export const PROTECTED_ROUTES: ProtectedRoute[] = [
     navGroup: 'operations',
   },
   {
-    path: '/supplier-portal/resources',
-    name: 'Resources',
-    permission: PERMISSIONS.SUPPLIER_RESOURCES.READ,
+    path: '/supplier-portal/contractors',
+    name: 'Contractors',
+    permission: SUPPLIER_PORTAL_CONTRACTOR_READ,
     navGroup: 'operations',
   },
   {

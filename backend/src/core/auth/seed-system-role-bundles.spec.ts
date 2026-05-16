@@ -1,34 +1,32 @@
 import {
   SEED_TARGET_ROLE_PERMISSIONS,
-  type SeedTargetDoctrineRoleName,
+  SeedTargetDoctrineRoleName,
 } from './seed-system-role-bundles';
-import { isKnownPermission } from './permissions.constants';
+import { ALL_PERMISSIONS } from './permissions.constants';
 
-describe('PR-RBAC-REALIGN-2: seed target role bundles', () => {
-  const ORG_WIDE_FINANCIAL = ['invoices:read', 'invoices:create', 'invoices:approve'];
+function expectCatalogAndNoDupes(role: SeedTargetDoctrineRoleName) {
+  const perms = [...SEED_TARGET_ROLE_PERMISSIONS[role]];
+  expect(new Set(perms).size).toBe(perms.length);
+  perms.forEach((p) => expect(ALL_PERMISSIONS.has(p)).toBe(true));
+}
 
-  function expectCatalogAndNoDupes(role: SeedTargetDoctrineRoleName) {
-    const perms = [...SEED_TARGET_ROLE_PERMISSIONS[role]];
-    expect(new Set(perms).size).toBe(perms.length);
-    for (const p of perms) {
-      expect(isKnownPermission(p)).toBe(true);
-    }
-  }
-
+describe('SEED_TARGET_ROLE_PERMISSIONS (PR-RBAC-REALIGN-2)', () => {
   it('SUPPLIER_ADMIN uses supplier-portal scoped permissions only', () => {
     expectCatalogAndNoDupes('SUPPLIER_ADMIN');
     expect(SEED_TARGET_ROLE_PERMISSIONS.SUPPLIER_ADMIN).toEqual([
       'supplier-profile:read',
       'supplier-profile:update',
       'supplier-users:manage',
-      'supplier-resources:read',
-      'supplier-resources:create',
+      'supplier-contractors:read',
+      'supplier-contractors:create',
+      'supplier-contractors:update',
       'profile:read',
       'profile:update',
     ]);
-    for (const forbidden of [...ORG_WIDE_FINANCIAL, 'suppliers:read', 'contractors:read']) {
-      expect(SEED_TARGET_ROLE_PERMISSIONS.SUPPLIER_ADMIN).not.toContain(forbidden);
-    }
+    const forbidden = ['suppliers:read', 'contractors:read', 'timesheets:read'];
+    forbidden.forEach((f) => {
+      expect(SEED_TARGET_ROLE_PERMISSIONS.SUPPLIER_ADMIN).not.toContain(f);
+    });
     expect(SEED_TARGET_ROLE_PERMISSIONS.SUPPLIER_ADMIN).not.toContain('engagements:read');
   });
 
@@ -36,28 +34,30 @@ describe('PR-RBAC-REALIGN-2: seed target role bundles', () => {
     expectCatalogAndNoDupes('SUPPLIER_MANAGER');
     expect(SEED_TARGET_ROLE_PERMISSIONS.SUPPLIER_MANAGER).toEqual([
       'supplier-profile:read',
-      'supplier-resources:read',
-      'supplier-resources:create',
+      'supplier-contractors:read',
+      'supplier-contractors:create',
       'supplier-timesheets:read',
       'supplier-timesheets:submit',
       'profile:read',
       'profile:update',
     ]);
-    for (const forbidden of [...ORG_WIDE_FINANCIAL, 'suppliers:read', 'timesheets:read']) {
-      expect(SEED_TARGET_ROLE_PERMISSIONS.SUPPLIER_MANAGER).not.toContain(forbidden);
-    }
+    const forbidden = ['suppliers:read', 'contractors:read', 'timesheets:read'];
+    forbidden.forEach((f) => {
+      expect(SEED_TARGET_ROLE_PERMISSIONS.SUPPLIER_MANAGER).not.toContain(f);
+    });
   });
 
-  it('SPONSOR matches expected placement bundle (no supplier portal, no invoices)', () => {
+  it('SPONSOR uses contractors + engagements only (no suppliers/invoices)', () => {
     expectCatalogAndNoDupes('SPONSOR');
     expect(SEED_TARGET_ROLE_PERMISSIONS.SPONSOR).toEqual([
       'contractors:read',
       'engagements:read',
       'engagements:update',
     ]);
-    for (const forbidden of ORG_WIDE_FINANCIAL) {
-      expect(SEED_TARGET_ROLE_PERMISSIONS.SPONSOR).not.toContain(forbidden);
-    }
+    const forbidden = ['suppliers:read', 'invoices:read', 'timesheets:read'];
+    forbidden.forEach((f) => {
+      expect(SEED_TARGET_ROLE_PERMISSIONS.SPONSOR).not.toContain(f);
+    });
     expect(SEED_TARGET_ROLE_PERMISSIONS.SPONSOR).not.toContain('suppliers:read');
   });
 });

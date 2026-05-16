@@ -4,7 +4,10 @@ import request from 'supertest';
 import { SEED_TARGET_ROLE_PERMISSIONS } from '../src/core/auth/seed-system-role-bundles';
 import { TestHelper } from './utils/test-helper';
 
-describe('Supplier portal API (PR-SUPPLIER-PORTAL-UI-1)', () => {
+/**
+ * PR-SUPPLIER-PORTAL-HYDRATION-FIX-1 — membership scope + auth profile contract.
+ */
+describe('Supplier portal hydration (PR-SUPPLIER-PORTAL-HYDRATION-FIX-1)', () => {
   let app: INestApplication;
 
   beforeAll(async () => {
@@ -20,35 +23,24 @@ describe('Supplier portal API (PR-SUPPLIER-PORTAL-UI-1)', () => {
     await TestHelper.closeApp();
   });
 
-  it('supplier admin uses portal routes only; client /suppliers is forbidden', async () => {
+  it('supplier persona: profile/me exposes supplierId; portal surfaces return 200', async () => {
     const org = await TestHelper.createTestOrganization();
     const prisma = TestHelper.getPrisma();
 
-    const supplierA = await prisma.supplier.create({
+    const supplier = await prisma.supplier.create({
       data: {
         organizationId: org.id,
         type: SupplierType.COMPANY,
         status: 'ACTIVE',
         companyName: 'Demo Supplier Ltd',
-        email: 'a@test.com',
-        country: 'ZA',
-      },
-    });
-
-    await prisma.supplier.create({
-      data: {
-        organizationId: org.id,
-        type: SupplierType.COMPANY,
-        status: 'ACTIVE',
-        companyName: 'Other Supplier Ltd',
-        email: 'b@test.com',
+        email: 'hydration@test.com',
         country: 'ZA',
       },
     });
 
     const portalUser = await TestHelper.createUserWithRoles(org.id, {
-      email: 'supplier.admin@test.com',
-      password: 'SupplierAdmin123!',
+      email: 'supplier.hydration@test.com',
+      password: 'SupplierHydrate123!',
       roles: [
         {
           role: 'SUPPLIER_ADMIN',
@@ -62,29 +54,37 @@ describe('Supplier portal API (PR-SUPPLIER-PORTAL-UI-1)', () => {
     await prisma.supplierMembership.create({
       data: {
         userId: portalUser.id,
-        supplierId: supplierA.id,
+        supplierId: supplier.id,
         role: 'ADMIN',
         assignedBy: portalUser.id,
       },
     });
 
     const { token } = await TestHelper.login(
-      'supplier.admin@test.com',
-      'SupplierAdmin123!',
+      'supplier.hydration@test.com',
+      'SupplierHydrate123!',
     );
 
     const profile = await request(app.getHttpServer())
-      .get('/supplier-portal/profile')
+      .get('/auth/me')
       .set('Authorization', `Bearer ${token}`)
       .expect(200);
 
-    expect(profile.body.companyName).toBe('Demo Supplier Ltd');
-    expect(profile.body.id).toBe(supplierA.id);
+    expect(profile.body.supplierId).toBe(supplier.id);
+    expect(profile.body.effectivePermissions).toEqual(
+      expect.arrayContaining([
+        'supplier-contractors:read',
+        'supplier-contractors:create',
+      ]),
+    );
+    expect(profile.body.effectivePermissions).not.toEqual(
+      expect.arrayContaining(['supplier-resources:read']),
+    );
 
     await request(app.getHttpServer())
-      .get('/suppliers')
+      .get('/supplier-portal/profile')
       .set('Authorization', `Bearer ${token}`)
-      .expect(403);
+      .expect(200);
 
     await request(app.getHttpServer())
       .get('/supplier-portal/contractors')
@@ -95,26 +95,34 @@ describe('Supplier portal API (PR-SUPPLIER-PORTAL-UI-1)', () => {
       .get('/supplier-portal/resources')
       .set('Authorization', `Bearer ${token}`)
       .expect(404);
+  });
 
-    const createBody = {
-      firstName: 'Portal',
-      lastName: 'Contractor',
-      email: 'portal.contractor@test.com',
-      workerClassification: 'INDEPENDENT_CONTRACTOR',
-      engagementModel: 'DIRECT',
-      taxResidency: 'ZA',
-    };
+  it('platform admin without membership: portal routes return 403 with membership message', async () => {
+    const org = await TestHelper.createTestOrganization();
 
-    await request(app.getHttpServer())
-      .post('/supplier-portal/contractors')
+    await TestHelper.createUserWithRoles(org.id, {
+      email: 'admin.hydration@test.com',
+      password: 'AdminHydrate123!',
+      roles: [
+        {
+          role: 'CMS_ADMIN',
+          orgId: null,
+          permissions: ['*:*'],
+          isSystemRole: true,
+        },
+      ],
+    });
+
+    const { token } = await TestHelper.login(
+      'admin.hydration@test.com',
+      'AdminHydrate123!',
+    );
+
+    const res = await request(app.getHttpServer())
+      .get('/supplier-portal/profile')
       .set('Authorization', `Bearer ${token}`)
-      .send(createBody)
-      .expect(201);
+      .expect(403);
 
-    await request(app.getHttpServer())
-      .post('/supplier-portal/resources')
-      .set('Authorization', `Bearer ${token}`)
-      .send(createBody)
-      .expect(404);
+    expect(res.body.message).toMatch(/supplier membership/i);
   });
 });

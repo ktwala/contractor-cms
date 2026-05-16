@@ -1,5 +1,9 @@
 import { Building2, Users, Clock } from 'lucide-react';
 import { PERMISSIONS, type Permission } from './permissions.generated';
+import {
+  SUPPLIER_PORTAL_CONTRACTOR_READ,
+  canAccessSupplierPortalContractors,
+} from './supplier-portal-permissions';
 
 export interface SupplierPortalModuleDef {
   id: string;
@@ -27,11 +31,11 @@ export const SUPPLIER_PORTAL_MODULES: SupplierPortalModuleDef[] = [
     iconClass: 'text-indigo-600',
   },
   {
-    id: 'portal-resources',
-    permissions: [PERMISSIONS.SUPPLIER_RESOURCES.READ],
-    href: '/supplier-portal/resources',
-    title: 'Resources',
-    description: 'Nominated contractors for your supplier',
+    id: 'portal-contractors',
+    permissions: [SUPPLIER_PORTAL_CONTRACTOR_READ],
+    href: '/supplier-portal/contractors',
+    title: 'Contractors',
+    description: 'Supplier-scoped contractors for your organization',
     icon: Users,
     borderClass: 'border-blue-500',
     iconBgClass: 'bg-blue-50',
@@ -42,7 +46,7 @@ export const SUPPLIER_PORTAL_MODULES: SupplierPortalModuleDef[] = [
     permissions: [PERMISSIONS.SUPPLIER_TIMESHEETS.READ],
     href: '/supplier-portal/timesheets',
     title: 'Timesheets',
-    description: 'Timesheets for your resources',
+    description: 'Timesheets for your supplier contractors',
     icon: Clock,
     borderClass: 'border-amber-500',
     iconBgClass: 'bg-amber-50',
@@ -60,7 +64,7 @@ export function filterSupplierPortalModules(
 export function isSupplierPortalUser(can: (permission: Permission) => boolean): boolean {
   return (
     can(PERMISSIONS.SUPPLIER_PROFILE.READ) ||
-    can(PERMISSIONS.SUPPLIER_RESOURCES.READ) ||
+    canAccessSupplierPortalContractors(can) ||
     can(PERMISSIONS.SUPPLIER_TIMESHEETS.READ)
   ) && !can(PERMISSIONS.SUPPLIERS.READ);
 }

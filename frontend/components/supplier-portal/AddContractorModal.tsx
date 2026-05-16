@@ -6,7 +6,7 @@ import FormInput from '@/components/ui/form-input';
 import FormSelect from '@/components/ui/form-select';
 import { supplierPortalApi } from '@/lib/api-supplier-portal';
 
-interface ResourceNominationModalProps {
+interface AddContractorModalProps {
   isOpen: boolean;
   onClose: () => void;
   onCreated: () => void;
@@ -21,11 +21,11 @@ const CLASSIFICATION_OPTIONS = [
   { value: 'INDEPENDENT_CONTRACTOR', label: 'Independent contractor' },
 ];
 
-export default function ResourceNominationModal({
+export default function AddContractorModal({
   isOpen,
   onClose,
   onCreated,
-}: ResourceNominationModalProps) {
+}: AddContractorModalProps) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [form, setForm] = useState({
@@ -47,7 +47,7 @@ export default function ResourceNominationModal({
     setSubmitting(true);
     setError('');
     try {
-      await supplierPortalApi.createResource({
+      await supplierPortalApi.createContractor({
         firstName: form.firstName.trim(),
         lastName: form.lastName.trim(),
         email: form.email.trim(),
@@ -68,17 +68,17 @@ export default function ResourceNominationModal({
         taxResidency: 'ZA',
       });
     } catch {
-      setError('Could not nominate resource. Check the email is unique for your supplier.');
+      setError('Could not add contractor. Check the email is unique for your supplier.');
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Nominate resource" size="lg">
+    <Modal isOpen={isOpen} onClose={onClose} title="Add contractor" size="lg">
       <form onSubmit={handleSubmit} className="space-y-4">
         <p className="text-sm text-gray-500">
-          Add a contractor resource under your supplier. They will not appear in the
+          Add a contractor under your supplier. Your supplier contractors only — not the
           client-wide contractor registry.
         </p>
         {error && (
@@ -138,7 +138,7 @@ export default function ResourceNominationModal({
             Cancel
           </button>
           <button type="submit" className="btn btn-primary" disabled={submitting}>
-            {submitting ? 'Saving…' : 'Nominate resource'}
+            {submitting ? 'Saving…' : 'Add contractor'}
           </button>
         </div>
       </form>

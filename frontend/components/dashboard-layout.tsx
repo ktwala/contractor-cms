@@ -35,7 +35,7 @@ const ICON_MAP: Record<string, React.ElementType> = {
   '/dashboard': LayoutDashboard,
   '/suppliers': Users,
   '/supplier-portal/profile': Building2,
-  '/supplier-portal/resources': Users,
+  '/supplier-portal/contractors': Users,
   '/supplier-portal/timesheets': Clock,
   '/contractors': Users,
   '/contracts': FileText,
@@ -117,11 +117,23 @@ function SidebarNavSections({
   );
 }
 
+const SUPPLIER_PORTAL_PATH_PREFIX = '/supplier-portal';
+
 /** PR-NAV-IA-1 — build grouped nav from route table + permission filter (pure; testable). */
 export function buildSidebarNavSections(
   can: (permission: Permission) => boolean,
+  pathname?: string | null,
 ): SidebarNavSection[] {
-  const items: SidebarNavItem[] = PROTECTED_ROUTES.filter((route) => {
+  const onSupplierPortal = pathname?.startsWith(SUPPLIER_PORTAL_PATH_PREFIX) ?? false;
+
+  const routeTable = onSupplierPortal
+    ? PROTECTED_ROUTES.filter(
+        (route) =>
+          route.path === '/dashboard' || route.path.startsWith(SUPPLIER_PORTAL_PATH_PREFIX),
+      )
+    : PROTECTED_ROUTES;
+
+  const items: SidebarNavItem[] = routeTable.filter((route) => {
     if (route.showInSidebar === false) return false;
     return isRouteAllowed(route.permission, can);
   }).map((route) => ({
@@ -151,7 +163,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }
   }, [user, loading, router]);
 
-  const groupedSections = useMemo(() => buildSidebarNavSections(can), [user, can]);
+  const groupedSections = useMemo(
+    () => buildSidebarNavSections(can, pathname),
+    [can, pathname],
+  );
 
   if (loading) {
     return (

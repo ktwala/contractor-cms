@@ -7,6 +7,7 @@ import PortalPageHeader from '@/components/supplier-portal/PortalPageHeader';
 import FormInput from '@/components/ui/form-input';
 import { PERMISSIONS } from '@/lib/permissions.generated';
 import { supplierPortalApi } from '@/lib/api-supplier-portal';
+import { getSupplierPortalErrorMessage } from '@/lib/supplier-portal-errors';
 import { useAuth } from '@/lib/auth-context';
 import { Building2, Pencil } from 'lucide-react';
 
@@ -58,8 +59,8 @@ export default function SupplierPortalProfilePage() {
         city: data.city || '',
         postalCode: data.postalCode || '',
       });
-    } catch {
-      setError('Failed to load your supplier profile.');
+    } catch (err) {
+      setError(getSupplierPortalErrorMessage(err, 'Failed to load your supplier profile.'));
     } finally {
       setLoading(false);
     }

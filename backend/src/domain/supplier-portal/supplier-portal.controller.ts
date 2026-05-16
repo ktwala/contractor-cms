@@ -15,8 +15,9 @@ import { RequiresOrgContext } from '../../core/auth/decorators/org-context.decor
 import { CurrentAccessContext } from '../../core/auth/decorators/current-access-context.decorator';
 import { AccessContext } from '../../core/auth/interfaces/access-context.interface';
 import { SupplierPortalUpdateProfileDto } from './dto/supplier-portal-update-profile.dto';
-import { SupplierPortalCreateResourceDto } from './dto/supplier-portal-create-resource.dto';
+import { SupplierPortalCreateContractorDto } from './dto/supplier-portal-create-contractor.dto';
 import { QueryTimesheetDto } from '../timesheets/dto/query-timesheet.dto';
+import { SUPPLIER_PORTAL_CONTRACTOR_PERMISSIONS } from '../../core/auth/permissions.constants';
 import { SupplierPortalService } from './supplier-portal.service';
 import { SupplierPortalScopeGuard } from './guards/supplier-portal-scope.guard';
 
@@ -46,37 +47,37 @@ export class SupplierPortalController {
     return this.supplierPortalService.updateProfile(accessContext, dto);
   }
 
-  @Get('resources')
-  @Permissions('supplier-resources:read')
+  @Get('contractors')
+  @Permissions(...SUPPLIER_PORTAL_CONTRACTOR_PERMISSIONS.READ)
   @RequiresOrgContext({ type: 'currentUser' })
-  @ApiOperation({ summary: 'Resources (contractors) for own supplier only' })
-  listResources(
+  @ApiOperation({ summary: 'Supplier-scoped contractors (membership-bound)' })
+  listContractors(
     @CurrentAccessContext() accessContext: AccessContext,
     @Query('page') page?: number,
     @Query('limit') limit?: number,
   ) {
-    return this.supplierPortalService.listResources(
+    return this.supplierPortalService.listContractors(
       accessContext,
       page ? Number(page) : 1,
       limit ? Number(limit) : 20,
     );
   }
 
-  @Post('resources')
-  @Permissions('supplier-resources:create')
+  @Post('contractors')
+  @Permissions(...SUPPLIER_PORTAL_CONTRACTOR_PERMISSIONS.CREATE)
   @RequiresOrgContext({ type: 'currentUser' })
-  @ApiOperation({ summary: 'Nominate a resource for own supplier' })
-  createResource(
+  @ApiOperation({ summary: 'Add a supplier-scoped contractor' })
+  createContractor(
     @CurrentAccessContext() accessContext: AccessContext,
-    @Body() dto: SupplierPortalCreateResourceDto,
+    @Body() dto: SupplierPortalCreateContractorDto,
   ) {
-    return this.supplierPortalService.createResource(accessContext, dto);
+    return this.supplierPortalService.createContractor(accessContext, dto);
   }
 
   @Get('timesheets')
   @Permissions('supplier-timesheets:read')
   @RequiresOrgContext({ type: 'currentUser' })
-  @ApiOperation({ summary: 'Timesheets for own supplier resources only' })
+  @ApiOperation({ summary: 'Timesheets for own supplier contractors only' })
   listTimesheets(
     @CurrentAccessContext() accessContext: AccessContext,
     @Query() query: QueryTimesheetDto,
