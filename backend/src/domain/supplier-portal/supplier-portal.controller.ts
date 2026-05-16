@@ -14,8 +14,8 @@ import { Permissions } from '../../core/auth/decorators/permissions.decorator';
 import { RequiresOrgContext } from '../../core/auth/decorators/org-context.decorator';
 import { CurrentAccessContext } from '../../core/auth/decorators/current-access-context.decorator';
 import { AccessContext } from '../../core/auth/interfaces/access-context.interface';
-import { UpdateSupplierDto } from '../suppliers/dto/update-supplier.dto';
-import { CreateContractorDto } from '../contractors/dto/create-contractor.dto';
+import { SupplierPortalUpdateProfileDto } from './dto/supplier-portal-update-profile.dto';
+import { SupplierPortalCreateResourceDto } from './dto/supplier-portal-create-resource.dto';
 import { QueryTimesheetDto } from '../timesheets/dto/query-timesheet.dto';
 import { SupplierPortalService } from './supplier-portal.service';
 import { SupplierPortalScopeGuard } from './guards/supplier-portal-scope.guard';
@@ -41,7 +41,7 @@ export class SupplierPortalController {
   @ApiOperation({ summary: 'Update own supplier profile' })
   updateProfile(
     @CurrentAccessContext() accessContext: AccessContext,
-    @Body() dto: UpdateSupplierDto,
+    @Body() dto: SupplierPortalUpdateProfileDto,
   ) {
     return this.supplierPortalService.updateProfile(accessContext, dto);
   }
@@ -68,7 +68,7 @@ export class SupplierPortalController {
   @ApiOperation({ summary: 'Nominate a resource for own supplier' })
   createResource(
     @CurrentAccessContext() accessContext: AccessContext,
-    @Body() dto: CreateContractorDto,
+    @Body() dto: SupplierPortalCreateResourceDto,
   ) {
     return this.supplierPortalService.createResource(accessContext, dto);
   }

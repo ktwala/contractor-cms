@@ -6,8 +6,8 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../core/database/prisma.service';
 import { AccessContext } from '../../core/auth/interfaces/access-context.interface';
-import { UpdateSupplierDto } from '../suppliers/dto/update-supplier.dto';
-import { CreateContractorDto } from '../contractors/dto/create-contractor.dto';
+import { SupplierPortalUpdateProfileDto } from './dto/supplier-portal-update-profile.dto';
+import { SupplierPortalCreateResourceDto } from './dto/supplier-portal-create-resource.dto';
 import { QueryTimesheetDto } from '../timesheets/dto/query-timesheet.dto';
 
 @Injectable()
@@ -40,7 +40,7 @@ export class SupplierPortalService {
 
   async updateProfile(
     accessContext: AccessContext,
-    dto: UpdateSupplierDto,
+    dto: SupplierPortalUpdateProfileDto,
   ) {
     const supplierId = this.requireSupplierScope(accessContext);
     const existing = await this.prisma.supplier.findFirst({
@@ -55,13 +55,7 @@ export class SupplierPortalService {
 
     return this.prisma.supplier.update({
       where: { id: supplierId },
-      data: {
-        ...dto,
-        taxClearanceExpiry: dto.taxClearanceExpiry
-          ? new Date(dto.taxClearanceExpiry)
-          : undefined,
-        bbbeeExpiry: dto.bbbeeExpiry ? new Date(dto.bbbeeExpiry) : undefined,
-      },
+      data: dto,
     });
   }
 
@@ -99,17 +93,9 @@ export class SupplierPortalService {
 
   async createResource(
     accessContext: AccessContext,
-    dto: CreateContractorDto,
+    dto: SupplierPortalCreateResourceDto,
   ) {
     const supplierId = this.requireSupplierScope(accessContext);
-    const targetOrgId = accessContext.targetOrganizationId;
-    if (!targetOrgId) {
-      throw new BadRequestException('Organization context is required');
-    }
-
-    if (dto.supplierId && dto.supplierId !== supplierId) {
-      throw new ForbiddenException('Cannot nominate resources for another supplier');
-    }
 
     const existing = await this.prisma.contractor.findFirst({
       where: { supplierId, email: dto.email },
@@ -122,13 +108,15 @@ export class SupplierPortalService {
 
     return this.prisma.contractor.create({
       data: {
-        ...dto,
         supplierId,
-        skills: dto.skills || [],
-        dateOfBirth: dto.dateOfBirth ? new Date(dto.dateOfBirth) : undefined,
-        accessExpiresAt: dto.accessExpiresAt
-          ? new Date(dto.accessExpiresAt)
-          : undefined,
+        firstName: dto.firstName,
+        lastName: dto.lastName,
+        email: dto.email,
+        phone: dto.phone,
+        workerClassification: dto.workerClassification,
+        engagementModel: dto.engagementModel,
+        taxResidency: dto.taxResidency,
+        skills: [],
       },
       select: {
         id: true,

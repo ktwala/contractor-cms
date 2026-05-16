@@ -90,5 +90,18 @@ describe('Supplier portal API (PR-SUPPLIER-PORTAL-UI-1)', () => {
       .get('/supplier-portal/resources')
       .set('Authorization', `Bearer ${token}`)
       .expect(200);
+
+    await request(app.getHttpServer())
+      .post('/supplier-portal/resources')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        firstName: 'Portal',
+        lastName: 'Resource',
+        email: 'portal.resource@test.com',
+        workerClassification: 'INDEPENDENT_CONTRACTOR',
+        engagementModel: 'DIRECT',
+        taxResidency: 'ZA',
+      })
+      .expect(201);
   });
 });
