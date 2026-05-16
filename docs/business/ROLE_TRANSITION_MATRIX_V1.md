@@ -2,7 +2,7 @@
 
 **Status:** `DRAFT` — supports **V1.0 ratification** and **STREAM B** (RBAC realignment), sequenced **after** [`PR-EXTID-SCHEMA-1_DESIGN.md`](./PR-EXTID-SCHEMA-1_DESIGN.md) per [`EXTID_IMPLEMENTATION_ALIGNMENT_PLAN_V1.md`](./EXTID_IMPLEMENTATION_ALIGNMENT_PLAN_V1.md) **§4**.
 
-**Closed (traceability):** **PR-DOCS-SUPPLIER-TERMINOLOGY-1** — CLOSED · **PR-RBAC-REALIGN-1** — CLOSED · **PR-NAV-IA-1** — CLOSED · **PR-RBAC-REALIGN-2** — CLOSED · **PR-SPONSOR-RUNTIME-1** — CLOSED · **PR-SPONSOR-GOVERNANCE-1** — CLOSED · **PR-HCM-SPONSOR-BRIDGE-1** — CLOSED · **PR-IGA-EVENT-CONTRACT-1** — CLOSED · **PR-IGA-OUTBOX-1** — CLOSED · **PR-IGA-EVENT-WRITE-1** — CLOSED.
+**Closed (traceability):** **PR-DOCS-SUPPLIER-TERMINOLOGY-1** — CLOSED · **PR-RBAC-REALIGN-1** — CLOSED · **PR-NAV-IA-1** — CLOSED · **PR-RBAC-REALIGN-2** — CLOSED · **PR-SPONSOR-RUNTIME-1** — CLOSED · **PR-SPONSOR-GOVERNANCE-1** — CLOSED · **PR-HCM-SPONSOR-BRIDGE-1** — CLOSED · **PR-IGA-EVENT-CONTRACT-1** — CLOSED · **PR-IGA-OUTBOX-1** — CLOSED · **PR-IGA-EVENT-WRITE-1** — CLOSED · **PR-IGA-DISPATCHER-1** — CLOSED.
 
 **Purpose:** Map **current seeded / implied personas** to **target doctrine personas** and define **deprecate → restrict → replace** paths without destructive role removal.
 
@@ -94,6 +94,7 @@ Exact strings: [`seed-system-role-bundles.ts`](../../backend/src/core/auth/seed-
 
 | Version | Note |
 |---------|------|
+| 2.2 | **PR-IGA-DISPATCHER-1** — **CLOSED:** `IgaOutboxDispatcherService.processPending` + `IgaDeliveryProvider` stub; PENDING → SENT/FAILED + `lastAttemptAt`; no scheduler, retry policy, or real connector. |
 | 2.1 | **PR-IGA-EVENT-WRITE-1** — **CLOSED:** contractor create/update + engagement sponsor assign/change → build + transactional outbox save (`IgaWorkforceEventWriter`); API fails if outbox save fails; no dispatch / connector. |
 | 2.0 | **PR-IGA-OUTBOX-1** — **CLOSED:** `IgaOutboxEvent` table + `IgaOutboxDeliveryStatus` + `IgaOutboxService.save` (PENDING default); no dispatcher / transport / retries. |
 | 1.9 | **PR-IGA-EVENT-CONTRACT-1** — **CLOSED:** outbound external-workforce **event contract v1** only — [`backend/src/core/iga/`](../../backend/src/core/iga/) (`IgaEventBuilder`, serializable payloads); no queue, bus, webhook, connector, or provisioning. |

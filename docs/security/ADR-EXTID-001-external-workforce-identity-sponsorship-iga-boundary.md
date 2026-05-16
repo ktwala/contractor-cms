@@ -98,7 +98,7 @@ access_enablement_status
 
 ## 6. Event doctrine (CMS outbound — contract substrate)
 
-**Implemented (v1 contract only, no transport):** [`backend/src/core/iga/`](../../backend/src/core/iga/) — **PR-IGA-EVENT-CONTRACT-1** (`IgaEventBuilder`, `IgaOutboundExternalWorkforceEventV1`). This is the **authoritative catalog** for canonical event names and JSON-serializable payload shape until a dedicated integration ADR supersedes it. **Outbox, message bus, webhooks, and connectors are explicitly out of scope** for that PR.
+**Implemented in** [`backend/src/core/iga/`](../../backend/src/core/iga/): **PR-IGA-EVENT-CONTRACT-1** (`IgaEventBuilder`, `IgaOutboundExternalWorkforceEventV1`) — authoritative event names and payload shape; **PR-IGA-OUTBOX-1** durable `IgaOutboxEvent` rows; **PR-IGA-EVENT-WRITE-1** mutation-triggered transactional saves; **PR-IGA-DISPATCHER-1** `IgaOutboxDispatcherService.processPending` via stub `IgaDeliveryProvider` (SENT/FAILED, no scheduler or real connector). Message bus, webhooks, and vendor connectors remain future PRs.
 
 Canonical names (v1):
 
@@ -217,6 +217,8 @@ PR-RBAC-REALIGN-1
 PR-HCM-SPONSOR-BRIDGE-1
 PR-IGA-EVENT-CONTRACT-1
 PR-IGA-OUTBOX-1
+PR-IGA-EVENT-WRITE-1
+PR-IGA-DISPATCHER-1
 PR-IGA-CONNECTOR-1
 PR-NAV-IA-1
 ```
