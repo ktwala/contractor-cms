@@ -1,7 +1,7 @@
 {
-  "name": "contractor-cms",
+  "name": "external-workforce-platform-backend",
   "version": "1.0.0",
-  "description": "Contractor Management System - Independent SaaS Platform",
+  "description": "External Workforce Platform — Backend API",
   "main": "dist/main.js",
   "scripts": {
     "build": "nest build",
@@ -35,7 +35,7 @@
   },
   "keywords": [
     "contractor",
-    "cms",
+    "ewp",
     "nestjs",
     "prisma",
     "saas"

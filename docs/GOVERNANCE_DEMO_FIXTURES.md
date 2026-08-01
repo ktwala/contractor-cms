@@ -5,8 +5,8 @@
 
 Deterministic IDs for demos and UAT. Reseed: `cd backend && npm run db:seed`.
 
-**Login (operations):** `governance.ops@contractor-cms.com` / `GovOps123!`  
-**Login (reviewer):** `governance.reviewer@contractor-cms.com` / `GovReview123!`  
+**Login (operations):** `workforce.import@ewp.demo` / `GovOps123!`
+**Login (reviewer):** `governance.reviewer@ewp.demo` / `GovReview123!`
 **Supplier governance reference:** [`SUPPLIER_GOVERNANCE_OPERATIONS.md`](SUPPLIER_GOVERNANCE_OPERATIONS.md)
 
 **Tenant:** Demo Organization — `ORACLE_ONLY` suppliers. **Live connector demo:** `CMS_ONLY` contractors (HCM bootstrap only). Legacy seed fixtures below require `SEED_GOVERNANCE_FIXTURES=true`.

@@ -390,7 +390,7 @@ PR: [`business/PR-DEMO-CONNECTOR-1_MOCK_ORACLE_DEMO_CONTROLS.md`](business/PR-DE
 ### Login (canonical operations persona)
 
 ```text
-governance.ops@contractor-cms.com
+workforce.import@ewp.demo
 GovOps123!
 ```
 

@@ -29,7 +29,7 @@ This is the **canonical enterprise governance tenant** for connector ops, CMS go
 
 | Field | Value |
 |-------|--------|
-| Email | `governance.ops@contractor-cms.com` |
+| Email | `workforce.import@ewp.demo` |
 | Password | `GovOps123!` |
 | Role | `GOVERNANCE_OPERATIONS_ADMIN` |
 
@@ -80,7 +80,7 @@ Legacy named fixtures: [`GOVERNANCE_DEMO_FIXTURES.md`](GOVERNANCE_DEMO_FIXTURES.
 
 | Field | Value |
 |-------|--------|
-| Email | `integration.operator@contractor-cms.com` |
+| Email | `integration@ewp.demo` |
 | Password | `IntegrationOps123!` |
 | Role | `GOVERNANCE_INTEGRATION_OPERATOR` |
 
@@ -94,7 +94,7 @@ Must run supplier sync + HCM bootstrap; may **read** `/suppliers` and `/contract
 
 | Field | Value |
 |-------|--------|
-| Email | `supplier.reviewer@contractor-cms.com` |
+| Email | `supplier.reviewer@ewp.demo` |
 | Password | `SupplierReview123!` |
 | Role | `SUPPLIER_GOVERNANCE_REVIEWER` |
 
@@ -108,7 +108,7 @@ Approvals queue only — must **not** `POST …/oracle/sync` or `POST …/oracle
 
 | Field | Value |
 |-------|--------|
-| Email | `governance.reviewer@contractor-cms.com` |
+| Email | `governance.reviewer@ewp.demo` |
 | Password | `GovReview123!` |
 | Role | `GOVERNANCE_REVIEWER` |
 
@@ -127,11 +127,11 @@ Flagship remediation is pre-assigned to this user.
 
 | Field | Value |
 |-------|--------|
-| Email | `supplier.portal@contractor-cms.com` |
+| Email | `supplier.portal@ewp.demo` |
 | Password | `SupplierPortal123!` |
 | Role | `SUPPLIER_ADMIN` (membership on Demo Supplier Ltd) |
 
-Also available: `supplier.admin@contractor-cms.com` / `SupplierAdmin123!`
+Also available: `supplier.admin@ewp.demo` / `SupplierAdmin123!`
 
 ### Validate
 
@@ -152,7 +152,7 @@ Workforce lifecycle and remediation visibility (no connector manage).
 
 | Field | Value |
 |-------|--------|
-| Email | `contractor.ops@contractor-cms.com` |
+| Email | `engagement.ops@ewp.demo` |
 | Password | `ContractorOps123!` |
 | Role | `CONTRACTOR_OPERATIONS_USER` |
 
@@ -164,7 +164,7 @@ Catches bugs where buttons disappear, routes partially render, or API succeeds b
 
 | Field | Value |
 |-------|--------|
-| Email | `governance.viewer@contractor-cms.com` |
+| Email | `governance.viewer@ewp.demo` |
 | Password | `GovView123!` |
 | Role | `GOVERNANCE_VIEWER` |
 

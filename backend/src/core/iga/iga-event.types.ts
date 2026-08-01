@@ -5,6 +5,10 @@
 
 export const IGA_EVENT_CONTRACT_VERSION = 1 as const;
 
+/**
+ * Legacy wire identifier retained for IGA event compatibility.
+ * The product name is External Workforce Platform.
+ */
 export const IGA_EVENT_SOURCE = 'contractor-cms' as const;
 
 export const IgaEventType = {

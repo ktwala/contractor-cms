@@ -33,8 +33,8 @@ async function bootstrap() {
 
   // Swagger documentation
   const config = new DocumentBuilder()
-    .setTitle('Contractor CMS API')
-    .setDescription('Contractor Management System - Independent SaaS Platform')
+    .setTitle('External Workforce Platform API')
+    .setDescription('External Workforce Platform — Independent SaaS Platform')
     .setVersion('1.0')
     .addBearerAuth()
     .addApiKey({ type: 'apiKey', name: 'X-API-Key', in: 'header' }, 'api-key')
@@ -53,12 +53,12 @@ async function bootstrap() {
   await app.listen(port);
 
   console.log(`
-    ┌─────────────────────────────────────────────────────────┐
-    │                                                          │
-    │   Contractor CMS - Running on http://localhost:${port}     │
-    │   API Docs: http://localhost:${port}/api/docs             │
-    │                                                          │
-    └─────────────────────────────────────────────────────────┘
+    ┌──────────────────────────────────────────────────────────────┐
+    │                                                              │
+    │   External Workforce Platform — http://localhost:${port}       │
+    │   API Docs: http://localhost:${port}/api/docs                 │
+    │                                                              │
+    └──────────────────────────────────────────────────────────────┘
   `);
 }
 

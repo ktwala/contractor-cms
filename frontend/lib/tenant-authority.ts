@@ -22,7 +22,7 @@ export function usesOracleSupplierConnector(
   return mode === 'ORACLE_ONLY' || mode === 'HYBRID';
 }
 
-/** HCM workforce bootstrap surface (import + CMS materialization). */
+/** HCM workforce bootstrap surface (import + platform materialization). */
 export function usesHcmContractorConnector(
   authority?: TenantAuthorityProfile | null,
 ): boolean {

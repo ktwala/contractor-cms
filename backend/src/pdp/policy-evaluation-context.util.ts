@@ -5,6 +5,7 @@ export type PolicyEvaluationSourceTruth =
   | 'Workforce Governance'
   | 'Supplier Governance'
   | 'Workforce Discovery'
+  /** Legacy contract value retained for policy evaluation context compatibility */
   | 'CMS Workforce Registry';
 
 export type PolicyEvaluationStepStatus = 'PASS' | 'FAIL';

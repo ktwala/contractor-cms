@@ -44,7 +44,7 @@ export class WorkforceGovernanceRuleEvaluator {
       message:
         'Workforce governance remediation is active. Operational actions are restricted until governance closes the remediation (contractor record is not auto-deactivated).',
       next_action:
-        'Complete operational governance remediation (assign sponsor / resolve CMS governance issue).',
+        'Complete operational governance remediation (assign sponsor / resolve governance issue).',
     };
   }
 }

@@ -130,9 +130,9 @@ export const WORKFORCE_TELEMETRY_POPULATION_SCOPES = {
   workforceResolutionTasks:
     'Open workforce resolution task records (workforce gaps only — not Supplier Governance)',
   materializedHcmContractors:
-    'Materialized HCM contractors in the CMS workforce registry',
+    'Materialized HCM contractors in the platform workforce registry',
   operationalWorkforceState:
-    'Lifecycle state views over the CMS registry (categories may overlap — not a partition of assessment)',
+    'Lifecycle state views over the platform registry (categories may overlap — not a partition of assessment)',
 } as const;
 
 /** Three governance dimensions on Workforce Discovery — not additive totals. */
@@ -225,7 +225,7 @@ export const WORKFORCE_RESOLUTION_METRICS = {
   assignResponsibleManager: INTERNAL_ACCOUNTABILITY_LABELS.assignAction,
 } as const;
 
-/** Operational workforce — lifecycle states over materialized CMS registry (Governance tab) */
+/** Operational workforce — lifecycle states over materialized platform registry (Governance tab) */
 export const WORKFORCE_OPERATIONAL_METRICS = {
   operationallyReady: 'Operational',
   blocked: 'Blocked',
@@ -249,7 +249,7 @@ export const WORKFORCE_IMPORT_NARRATIVE = {
   governanceSectionFootnote:
     'Assessment counts use the discovery snapshot staging population. They do not add up to operational workforce registry totals below.',
   operationalWorkforceFootnote:
-    'Lifecycle state over materialized CMS contractors — not the assessed staging population above. Restricted by policy reflects a Policy Evaluation decision. Tiles may overlap; they are not partitions.',
+    'Lifecycle state over materialized platform contractors — not the assessed staging population above. Restricted by policy reflects a Policy Evaluation decision. Tiles may overlap; they are not partitions.',
   workforceResolutionFootnote:
     `Resolve imported workers against suppliers, ${INTERNAL_ACCOUNTABILITY_LABELS.role.toLowerCase()}s, and operational records — not digital identity correlation (that belongs to IGA).`,
   assessmentFootnote:

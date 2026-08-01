@@ -114,8 +114,8 @@ npm run docker:reset:connector-demo:migration
 
 First discovery should show: **Matched to hidden comparison worker 6 · No worker match 3 · Conflict / possible match 1**.
 
-Login: `governance.ops@contractor-cms.com` / `GovOps123!`  
-Remediation close: `governance.reviewer@contractor-cms.com` / `GovReview123!`
+Login: `workforce.import@ewp.demo` / `GovOps123!`
+Remediation close: `governance.reviewer@ewp.demo` / `GovReview123!`
 
 Do **not** set `SEED_GOVERNANCE_FIXTURES=true` or `SEED_DEMO_OPERATIONAL_DATA=true` for this UAT.
 
@@ -381,7 +381,7 @@ Restriction applies because **CMS governance state failed** (unsponsored), **not
 
 **Question:** Can humans govern resolution without auto-mutation?
 
-Login: `governance.reviewer@contractor-cms.com` / `GovReview123!`
+Login: `governance.reviewer@ewp.demo` / `GovReview123!`
 
 ### Validate workflow
 

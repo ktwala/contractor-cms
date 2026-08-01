@@ -571,7 +571,7 @@ export function WorkforceImportGovernanceTab({
                   population={
                     label === WORKFORCE_OPERATIONAL_METRICS.restricted
                       ? POLICY_EVALUATION_LABELS.restrictedByPolicy
-                      : 'CMS registry lifecycle view'
+                      : 'Platform registry lifecycle view'
                   }
                 />
               ))}

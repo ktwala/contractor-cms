@@ -40,7 +40,7 @@ When `SPONSOR_ACCOUNTABILITY_INBOX_ENABLED=true` (default **off**):
 - `AccessContext.sponsorEmployeeId` row scope on contractors/engagements
 - `/api/v1/sponsor-tasks` and `/sponsor-tasks` UI
 - Sidebar labels: **Sponsored contractors**, **My sponsored engagements**, **My sponsor tasks**
-- Demo user `sponsor@contractor-cms.com` seeded only when flag is true at seed time
+- Demo user `sponsor@ewp.demo` seeded only when flag is true at seed time
 
 ```bash
 # Enable demo inbox locally
@@ -60,7 +60,7 @@ Profile exposes `sponsorAccountabilityInboxEnabled` for the frontend.
 
 ## Demo / test scaffolding
 
-`sponsor@contractor-cms.com` exists **only** when both:
+`sponsor@ewp.demo` exists **only** when both:
 
 1. `SPONSOR_ACCOUNTABILITY_INBOX_ENABLED=true` on backend at runtime, and  
 2. Same flag when running `npm run db:seed`

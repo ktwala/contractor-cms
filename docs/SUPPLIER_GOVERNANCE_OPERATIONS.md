@@ -128,7 +128,7 @@ Requires `suppliers:read`. `pending_evidence` applies in-memory evidence evaluat
 **Approve** → `PATCH /suppliers/:id/status` `{ "targetStatus": "ACTIVE" }`  
 **Reject** → `{ "targetStatus": "SUSPENDED", "reason": "..." }` (reason required)
 
-Demo operator: `governance.ops@contractor-cms.com` / `GovOps123!` (`GOVERNANCE_OPERATIONS_ADMIN` includes `suppliers:approve` and `suppliers:suspend`).
+Demo operator: `workforce.import@ewp.demo` / `GovOps123!` (`GOVERNANCE_OPERATIONS_ADMIN` includes `suppliers:approve` and `suppliers:suspend`).
 
 After role bundle changes, **re-seed** and **log out / log in** so JWT `effectivePermissions` refresh.
 

@@ -1,8 +1,8 @@
 {
-  "name": "contractor-cms",
+  "name": "external-workforce-platform",
   "version": "1.0.0",
   "private": true,
-  "description": "Contractor Management System - Independent SaaS Platform",
+  "description": "External Workforce Platform — Independent SaaS Platform",
   "scripts": {
     "backend:dev": "cd backend && npm run start:dev",
     "backend:build": "cd backend && npm run build",
@@ -32,6 +32,7 @@
     "rbac:check": "cd backend && npm run test:unit",
     "rbac:verify": "cd backend && npx ts-node scripts/generate-permissions.ts && git diff --exit-code ../frontend/lib/permissions.generated.ts src/core/auth/permissions.catalog.json",
     "drift:extid": "npx --yes ts-node scripts/extid-drift-check.ts",
+    "drift:forms": "npx --yes ts-node scripts/cms-forms-drift-check.ts",
     "drift:cms-forms": "npx --yes ts-node scripts/cms-forms-drift-check.ts",
     "drift:supplier-portal": "npx --yes ts-node scripts/supplier-portal-drift-check.ts",
     "drift:authority": "npx --yes ts-node scripts/authority-drift-check.ts",

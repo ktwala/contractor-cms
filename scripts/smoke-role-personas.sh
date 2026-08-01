@@ -195,7 +195,7 @@ echo "Reseed first: cd backend && npm run db:seed"
 echo
 
 echo "── Legacy demo users (updated role bundles on same emails) ──"
-run_persona "CMS_ADMIN" "CMS Admin" "ops.admin@ewp.demo" "Admin123!"
+run_persona "CMS_ADMIN" "Platform Administrator" "ops.admin@ewp.demo" "Admin123!"
 run_persona "FINANCE_USER" "Finance User" "finance@ewp.demo" "Finance123!"
 run_persona "CONTRACTOR_MANAGER" "Contractor Manager" "ops.manager@ewp.demo" "Manager123!"
 run_persona "CONTRACTOR" "Contractor" "external.worker@ewp.demo" "Contractor123!"

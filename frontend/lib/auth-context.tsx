@@ -17,7 +17,7 @@ export interface User {
   supplierId?: string | null;
   /** PR-HCM-SPONSOR-USERS-1 — HCM employee ref; enables sponsor row scope when sponsor reads are granted */
   externalId?: string | null;
-  /** PR-SPONSOR-REFERENCE-ONLY-1 — CMS sponsor inbox + row scope (default off in production) */
+  /** PR-SPONSOR-REFERENCE-ONLY-1 — Platform sponsor inbox + row scope (default off in production) */
   responsibleManagerAccountabilityInboxEnabled?: boolean;
   /** PR-CMS-AUTHORITY-1 — tenant upstream authority modes */
   tenantAuthority?: TenantAuthorityProfile;

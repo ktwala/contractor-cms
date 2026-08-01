@@ -13,9 +13,9 @@
 
 > **Demo super-user is not a production role.**
 
-`governance.ops@contractor-cms.com` (`GOVERNANCE_OPERATIONS_ADMIN`) is a **UAT composite** — connector ops, supplier approvals, drift visibility, and partial contractor registry access in one login. That convenience must not be mistaken for a production job description or least-privilege bundle.
+`workforce.import@ewp.demo` (`GOVERNANCE_OPERATIONS_ADMIN`) is a **UAT composite** — connector ops, supplier approvals, drift visibility, and partial contractor registry access in one login. That convenience must not be mistaken for a production job description or least-privilege bundle.
 
-`admin@contractor-cms.com` (`CMS_ADMIN`, `*:*`) is **tenant/platform break-glass** — not governance operations and not a day-to-day persona.
+`ops.admin@ewp.demo` (`CMS_ADMIN`, `*:*`) is **tenant/platform break-glass** — not governance operations and not a day-to-day persona.
 
 Production assigns **narrow roles** from §3. Demo maps those roles to seeded accounts in §6–7.
 
@@ -354,17 +354,17 @@ Retain **`contractor-migration:read`** for dashboards, telemetry, drift list, cu
 
 | Demo account | Password | Seeded role | Maps to target persona | Production? |
 |--------------|----------|-------------|------------------------|-------------|
-| `governance.ops@contractor-cms.com` | `GovOps123!` | `GOVERNANCE_OPERATIONS_ADMIN` | **Composite** — Integration + partial Reviewer + partial Contractor Manager + oversight | **No** — UAT only |
-| `governance.reviewer@contractor-cms.com` | `GovReview123!` | `GOVERNANCE_REVIEWER` | Drift/remediation workflow tester (today incorrectly includes bootstrap manage) | **No** — rename/split in 3b |
-| `contractor.ops@contractor-cms.com` | `ContractorOps123!` | `CONTRACTOR_OPERATIONS_USER` | Partial Contractor Manager (read/update only) | **No** |
-| `governance.viewer@contractor-cms.com` | `GovView123!` | `GOVERNANCE_VIEWER` | Governance Auditor (partial) | **No** |
-| `manager@contractor-cms.com` | `Manager123!` | `CONTRACTOR_MANAGER` | Legacy all-in-one — **anti-pattern** for production | **No** |
-| `admin@contractor-cms.com` | `Admin123!` | `CMS_ADMIN` | CMS Admin | Break-glass / lab only |
-| `finance@contractor-cms.com` | `Finance123!` | `FINANCE_USER` | Finance Admin | Yes (finance domain) |
-| `supplier.portal@contractor-cms.com` | `SupplierPortal123!` | `SUPPLIER_ADMIN` | Supplier Admin (portal) | Yes (external) |
-| `supplier.admin@contractor-cms.com` | `SupplierAdmin123!` | `SUPPLIER_ADMIN` | Supplier Admin | Yes (external) |
-| `supplier.manager@contractor-cms.com` | `SupplierManager123!` | `SUPPLIER_MANAGER` | Supplier Manager | Yes (external) |
-| `sponsor@contractor-cms.com` | `Sponsor123!` | `SPONSOR` | Sponsor / Business Owner (inbox demo) | Optional — off by default |
+| `workforce.import@ewp.demo` | `GovOps123!` | `GOVERNANCE_OPERATIONS_ADMIN` | **Composite** — Integration + partial Reviewer + partial Contractor Manager + oversight | **No** — UAT only |
+| `governance.reviewer@ewp.demo` | `GovReview123!` | `GOVERNANCE_REVIEWER` | Drift/remediation workflow tester | **No** — rename/split in 3b |
+| `engagement.ops@ewp.demo` | `ContractorOps123!` | `CONTRACTOR_OPERATIONS_USER` | Partial Contractor Manager (read/update only) | **No** |
+| `governance.viewer@ewp.demo` | `GovView123!` | `GOVERNANCE_VIEWER` | Governance Auditor (partial) | **No** |
+| `ops.manager@ewp.demo` | `Manager123!` | `CONTRACTOR_MANAGER` | Legacy all-in-one — **anti-pattern** for production | **No** |
+| `ops.admin@ewp.demo` | `Admin123!` | `CMS_ADMIN` | Platform Administrator | Break-glass / lab only |
+| `finance@ewp.demo` | `Finance123!` | `FINANCE_USER` | Finance Admin | Yes (finance domain) |
+| `supplier.portal@ewp.demo` | `SupplierPortal123!` | `SUPPLIER_ADMIN` | Supplier Admin (portal) | Yes (external) |
+| `supplier.admin@ewp.demo` | `SupplierAdmin123!` | `SUPPLIER_ADMIN` | Supplier Admin | Yes (external) |
+| `supplier.manager@ewp.demo` | `SupplierManager123!` | `SUPPLIER_MANAGER` | Supplier Manager | Yes (external) |
+| `sponsor@ewp.demo` | `Sponsor123!` | `SPONSOR` | Sponsor / Business Owner (inbox demo) | Optional — off by default |
 
 **Canonical connector UAT entry:** `governance.ops@` — documented in [`CONNECTOR_DEMO_UAT.md`](../CONNECTOR_DEMO_UAT.md). Label clearly in UI/docs: *“Demo governance composite — not a production role.”*
 
