@@ -1,7 +1,7 @@
 {
-  "name": "payroll-platform",
+  "name": "hubsec-workforce-platform",
   "version": "0.2.1",
-  "description": "Multi-country payroll platform (Lesotho + South Africa) with maker-checker approvals, effective-dated records, and country packs",
+  "description": "Multi-country workforce, payroll and compliance platform",
   "main": "dist/main.js",
   "scripts": {
     "docker:up": "docker compose up -d",
@@ -65,9 +65,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "http://local_proxy@127.0.0.1:27991/git/ktwala/payroll-platform"
+    "url": "http://local_proxy@127.0.0.1:27991/git/ktwala/hubsec-workforce-platform"
   },
   "keywords": [
+    "workforce",
     "payroll",
     "lesotho",
     "south-africa",

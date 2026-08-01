@@ -1,6 +1,6 @@
 # HCM Lifecycle Sign-Off Checklist
 
-Termination → Rehire → Manager change. Use with **hr@demo.payroll** (or any role with `employee:write`).
+Termination → Rehire → Manager change. Use with **hr@demo.workforce** (or any role with `employee:write`).
 
 ---
 
@@ -44,7 +44,7 @@ Termination → Rehire → Manager change. Use with **hr@demo.payroll** (or any 
 
 ## 4) RBAC
 
-- [ ] **Login as payrollclerk@demo.payroll**
+- [ ] **Login as payrollclerk@demo.workforce**
 - [ ] **Verify:**
   - Buttons for Terminate / Rehire / Change Manager are **not visible**
   - Direct PATCH attempts return **403** + **PERMISSION_DENIED** audit
@@ -62,14 +62,14 @@ Termination → Rehire → Manager change. Use with **hr@demo.payroll** (or any 
 
 | Email                 | Password | Purpose                          |
 |-----------------------|----------|----------------------------------|
-| hr@demo.payroll       | admin123 | HCM flows (employee:write)       |
-| payrollclerk@demo.payroll | admin123 | RBAC verification (no employee access) |
+| hr@demo.workforce       | admin123 | HCM flows (employee:write)       |
+| payrollclerk@demo.workforce | admin123 | RBAC verification (no employee access) |
 
 ---
 
 ## 6) HR Export (IGA Preview)
 
-- [ ] **Login as tenantadmin@demo.payroll** (has hr:read)
+- [ ] **Login as tenantadmin@demo.workforce** (has hr:read)
 - [ ] **Navigate to Integrations → HR Export (IGA)**
 - [ ] **Verify:**
   - Table shows employee_no, updated_at, manager_employee_no, effective_from, effective_to

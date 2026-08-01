@@ -2,7 +2,7 @@
 
 ## 1. Scope
 
-This implementation adds a **CTC Optimiser** feature to the payroll platform so authorised users can generate, compare, explain, approve, and apply compensation structures using the **same payroll computation pipeline** used for real payroll calculations.
+This implementation adds a **CTC Optimiser** feature to the Hubsec Workforce Platform so authorised users can generate, compare, explain, approve, and apply compensation structures using the **same payroll computation pipeline** used for real payroll calculations.
 
 The design assumes the existing platform patterns already in use:
 - NestJS backend

@@ -46,7 +46,7 @@ npm run db:seed
 npm run demo:seed   # optional: demo users + sample data
 ```
 
-Then: **Login** → Demo users (`admin@demo.payroll` / `admin123`)
+Then: **Login** → Demo users (`admin@demo.workforce` / `admin123`)
 
 ---
 

@@ -11,7 +11,7 @@
 ## Default Test User (Created by Seed)
 
 ### Admin User
-- **Email**: `admin@demo.payroll`
+- **Email**: `admin@demo.workforce`
 - **Password Hash**: `$2b$10$demo_hash_not_for_production` (placeholder - not a real hash)
 - **Role**: `ADMIN`
 - **Name**: Demo Admin
@@ -172,7 +172,7 @@ To test with different roles:
    ```typescript
    const payrollManager = await prisma.user.create({
      data: {
-       email: 'manager@demo.payroll',
+       email: 'manager@demo.workforce',
        passwordHash: '$2b$10$...', // proper hash
        firstName: 'Payroll',
        lastName: 'Manager',

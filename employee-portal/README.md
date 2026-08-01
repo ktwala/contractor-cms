@@ -31,7 +31,7 @@ A modern, responsive self-service portal for employees to access their payroll i
 ## 📋 Prerequisites
 
 - Node.js 18+ and npm
-- Payroll Platform API running (default: http://localhost:3000)
+- Hubsec Workforce Platform API running (default: http://localhost:3000)
 
 ## 🛠️ Installation
 
@@ -253,7 +253,7 @@ docker run -p 80:80 employee-portal
 
 ## 📝 License
 
-This project is part of the Payroll Platform.
+This project is part of the Hubsec Workforce Platform.
 
 ## 🤝 Support
 

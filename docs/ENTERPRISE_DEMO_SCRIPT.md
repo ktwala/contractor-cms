@@ -10,7 +10,7 @@ Use this as the narrative for an Enterprise operating-model demo. **Before every
 
 - Backend and admin portal running.
 - Database seeded (`npm run db:seed` with valid `DATABASE_URL`).
-- Log in as **tenantadmin@demo.payroll** or **hr@demo.payroll** for the main flow (or **admin@demo.payroll** for full access).
+- Log in as **tenantadmin@demo.workforce** or **hr@demo.workforce** for the main flow (or **admin@demo.workforce** for full access).
 
 ---
 
@@ -80,9 +80,9 @@ Use this as the narrative for an Enterprise operating-model demo. **Before every
 
 ## Optional deep dive (+5–10 min)
 
-- **RBAC proof:** Log in as **payrollclerk@demo.payroll**, go to Employees (or call `GET /v1/employees`). Show **403** and that only the right personas (e.g. tenant admin, HR) can manage employees.
+- **RBAC proof:** Log in as **payrollclerk@demo.workforce**, go to Employees (or call `GET /v1/employees`). Show **403** and that only the right personas (e.g. tenant admin, HR) can manage employees.
 - **Audit:** Where available, show PERMISSION_DENIED or access events in audit logs for the 403 case.
-- **API:** Use Postman or curl with **tenantadmin@demo.payroll** or **hr@demo.payroll** and run `GET /v1/employees`, `POST /v1/employees`, `GET /v1/employees/:id/employments`, `POST /v1/employees/:id/employments` to show the same permissions as the UI.
+- **API:** Use Postman or curl with **tenantadmin@demo.workforce** or **hr@demo.workforce** and run `GET /v1/employees`, `POST /v1/employees`, `GET /v1/employees/:id/employments`, `POST /v1/employees/:id/employments` to show the same permissions as the UI.
 
 ---
 
@@ -90,10 +90,10 @@ Use this as the narrative for an Enterprise operating-model demo. **Before every
 
 | Persona | Email | Password | Use in demo |
 |--------|--------|----------|-------------|
-| Tenant Admin | tenantadmin@demo.payroll | admin123 | Main walkthrough; employees + governance |
-| HR | hr@demo.payroll | admin123 | Same as above; HCM-only role |
-| Payroll Clerk | payrollclerk@demo.payroll | admin123 | Deep dive: 403 on Employees |
-| Full access | admin@demo.payroll | admin123 | Break-glass / full demo |
+| Tenant Admin | tenantadmin@demo.workforce | admin123 | Main walkthrough; employees + governance |
+| HR | hr@demo.workforce | admin123 | Same as above; HCM-only role |
+| Payroll Clerk | payrollclerk@demo.workforce | admin123 | Deep dive: 403 on Employees |
+| Full access | admin@demo.workforce | admin123 | Break-glass / full demo |
 
 ---
 

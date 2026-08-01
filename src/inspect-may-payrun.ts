@@ -4,7 +4,7 @@ import { Pool } from 'pg';
 
 async function main() {
   const pool = new Pool({
-    connectionString: process.env.DATABASE_URL || "postgresql://payroll:payroll_secret@localhost:5432/payroll_platform",
+    connectionString: process.env.DATABASE_URL || "postgresql://workforce:workforce_secret@localhost:5432/workforce_platform",
   });
   const adapter = new PrismaPg(pool);
   const prisma = new PrismaClient({ adapter });

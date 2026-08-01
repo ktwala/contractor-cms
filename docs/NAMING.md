@@ -44,17 +44,19 @@ Local development: Admin (3001), Employee Portal (3000).
 
 ## Technical Note (Product vs Codebase)
 
-The codebase and Docker containers use the project slug `payroll-platform` for directories, package names, and service names. This is intentional and need not change—the canonical *product* naming above applies to user-facing documentation and branding.
+The codebase and Docker containers use the project slug `hubsec-workforce-platform` for the repository, package name, and service identifiers. The technical prefix `workforce` is used for container names, networks, and metric namespaces.
+
+The term `payroll` is retained in module names, database tables, and API routes where it accurately describes payroll-specific business logic (e.g. `src/modules/payroll/`, payrun lifecycle, payroll containers).
 
 | Layer | Name |
 |-------|------|
 | Product | Hubsec Workforce Platform |
 | Admin UI | Hubsec Workforce Admin |
 | Employee UI | Hubsec Workforce Employee Portal |
-| Codebase | payroll-platform |
-
-Mature products separate product identity from technical identifiers (e.g. Workday → workday-core, Okta → okta-core).
+| Repository | hubsec-workforce-platform |
+| Technical prefix | workforce |
+| Payroll module | payroll (domain-specific, retained) |
 
 ---
 
-*Last updated: March 2026*
+*Last updated: August 2026*

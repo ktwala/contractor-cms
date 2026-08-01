@@ -1,6 +1,6 @@
 # Monitoring Setup Guide
 
-This guide explains how to set up and use the Prometheus and Grafana monitoring stack for the Payroll Platform.
+This guide explains how to set up and use the Prometheus and Grafana monitoring stack for the Hubsec Workforce Platform.
 
 ## Overview
 
@@ -40,7 +40,7 @@ The Prometheus configuration is in `monitoring/prometheus.yml`:
 
 ```yaml
 scrape_configs:
-  - job_name: 'payroll-platform'
+  - job_name: 'workforce-platform'
     metrics_path: '/metrics'
     static_configs:
       - targets: ['host.docker.internal:3000']
@@ -58,32 +58,32 @@ scrape_configs:
 The application exposes the following metrics:
 
 ### HTTP Metrics
-- `payroll_platform_http_request_duration_seconds` - Request duration histogram
-- `payroll_platform_http_requests_total` - Total HTTP requests counter
-- `payroll_platform_http_errors_total` - HTTP errors counter
+- `workforce_platform_http_request_duration_seconds` - Request duration histogram
+- `workforce_platform_http_requests_total` - Total HTTP requests counter
+- `workforce_platform_http_errors_total` - HTTP errors counter
 
 ### Application Metrics
-- `payroll_platform_active_connections` - Active connections gauge
-- `payroll_platform_database_connections` - Database connections gauge
-- `payroll_platform_cache_hits_total` - Cache hits counter
-- `payroll_platform_cache_misses_total` - Cache misses counter
+- `workforce_platform_active_connections` - Active connections gauge
+- `workforce_platform_database_connections` - Database connections gauge
+- `workforce_platform_cache_hits_total` - Cache hits counter
+- `workforce_platform_cache_misses_total` - Cache misses counter
 
 ### Business Metrics
-- `payroll_platform_payrun_calculations_total` - Payrun calculations counter
-- `payroll_platform_payrun_errors_total` - Payrun errors counter
-- `payroll_platform_employees_total` - Employee count gauge
-- `payroll_platform_active_payruns` - Active payruns gauge
+- `workforce_platform_payrun_calculations_total` - Payrun calculations counter
+- `workforce_platform_payrun_errors_total` - Payrun errors counter
+- `workforce_platform_employees_total` - Employee count gauge
+- `workforce_platform_active_payruns` - Active payruns gauge
 
 ### Performance Metrics
-- `payroll_platform_response_time_seconds` - Response time histogram
-- `payroll_platform_database_query_duration_seconds` - Database query duration histogram
+- `workforce_platform_response_time_seconds` - Response time histogram
+- `workforce_platform_database_query_duration_seconds` - Database query duration histogram
 
 ### Default Metrics (Node.js)
-- `payroll_platform_process_cpu_user_seconds_total`
-- `payroll_platform_process_cpu_system_seconds_total`
-- `payroll_platform_process_resident_memory_bytes`
-- `payroll_platform_nodejs_heap_size_total_bytes`
-- `payroll_platform_nodejs_heap_size_used_bytes`
+- `workforce_platform_process_cpu_user_seconds_total`
+- `workforce_platform_process_cpu_system_seconds_total`
+- `workforce_platform_process_resident_memory_bytes`
+- `workforce_platform_nodejs_heap_size_total_bytes`
+- `workforce_platform_nodejs_heap_size_used_bytes`
 - And more...
 
 ## Creating Dashboards in Grafana
@@ -103,42 +103,42 @@ Go to http://localhost:3001 and login with `admin`/`admin`.
 
 #### Request Rate
 ```promql
-rate(payroll_platform_http_requests_total[5m])
+rate(workforce_platform_http_requests_total[5m])
 ```
 
 #### Request Duration (95th percentile)
 ```promql
-histogram_quantile(0.95, rate(payroll_platform_http_request_duration_seconds_bucket[5m]))
+histogram_quantile(0.95, rate(workforce_platform_http_request_duration_seconds_bucket[5m]))
 ```
 
 #### Error Rate
 ```promql
-rate(payroll_platform_http_errors_total[5m])
+rate(workforce_platform_http_errors_total[5m])
 ```
 
 #### Error Percentage
 ```promql
-(rate(payroll_platform_http_errors_total[5m]) / rate(payroll_platform_http_requests_total[5m])) * 100
+(rate(workforce_platform_http_errors_total[5m]) / rate(workforce_platform_http_requests_total[5m])) * 100
 ```
 
 #### Memory Usage
 ```promql
-payroll_platform_process_resident_memory_bytes
+workforce_platform_process_resident_memory_bytes
 ```
 
 #### CPU Usage
 ```promql
-rate(payroll_platform_process_cpu_user_seconds_total[5m]) + rate(payroll_platform_process_cpu_system_seconds_total[5m])
+rate(workforce_platform_process_cpu_user_seconds_total[5m]) + rate(workforce_platform_process_cpu_system_seconds_total[5m])
 ```
 
 #### Active Connections
 ```promql
-payroll_platform_active_connections
+workforce_platform_active_connections
 ```
 
 #### Payrun Calculations
 ```promql
-rate(payroll_platform_payrun_calculations_total[5m])
+rate(workforce_platform_payrun_calculations_total[5m])
 ```
 
 ## Development Setup

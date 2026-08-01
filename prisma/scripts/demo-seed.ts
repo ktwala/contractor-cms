@@ -2,7 +2,7 @@
  * Hubsec Workforce Platform - Demo Data Seed
  *
  * Creates demo/sandbox data for development and testing:
- * - Demo users (admin@demo.payroll, hr@demo.payroll, etc.)
+ * - Demo users (admin@demo.workforce, hr@demo.workforce, etc.)
  * - Legal entity, pay group, pay periods
  * - Pay items, tax tables, statutory configs
  * - Sample employees
@@ -92,7 +92,7 @@ async function main() {
   // Demo users
   const demoUser = await prisma.user.create({
     data: {
-      email: 'admin@demo.payroll',
+      email: 'admin@demo.workforce',
       passwordHash: DEMO_PASSWORD_HASH,
       firstName: 'Demo',
       lastName: 'Admin',
@@ -102,7 +102,7 @@ async function main() {
 
   const integrationUser = await prisma.user.create({
     data: {
-      email: 'iga@demo.payroll',
+      email: 'iga@demo.workforce',
       passwordHash: DEMO_PASSWORD_HASH,
       firstName: 'IGA',
       lastName: 'Connector',
@@ -162,7 +162,7 @@ async function main() {
 
   const tenantAdminUser = await prisma.user.create({
     data: {
-      email: 'tenantadmin@demo.payroll',
+      email: 'tenantadmin@demo.workforce',
       passwordHash: DEMO_PASSWORD_HASH,
       firstName: 'Tenant',
       lastName: 'Admin',
@@ -171,7 +171,7 @@ async function main() {
   });
   const hrAdminUser = await prisma.user.create({
     data: {
-      email: 'hr@demo.payroll',
+      email: 'hr@demo.workforce',
       passwordHash: DEMO_PASSWORD_HASH,
       firstName: 'HR',
       lastName: 'Officer',
@@ -180,7 +180,7 @@ async function main() {
   });
   const payrollClerkUser = await prisma.user.create({
     data: {
-      email: 'payrollclerk@demo.payroll',
+      email: 'payrollclerk@demo.workforce',
       passwordHash: DEMO_PASSWORD_HASH,
       firstName: 'Payroll',
       lastName: 'Clerk',
@@ -516,7 +516,7 @@ async function main() {
   console.log(`   • Pay Group: ${payGroup.name}`);
   console.log(`   • ${periods.length} Pay Periods (2025)`);
   console.log(`   • ${employeeData.length} Employees`);
-  console.log('   • Demo users: admin@demo.payroll, tenantadmin@demo.payroll, hr@demo.payroll, payrollclerk@demo.payroll (password: admin123)');
+  console.log('   • Demo users: admin@demo.workforce, tenantadmin@demo.workforce, hr@demo.workforce, payrollclerk@demo.workforce (password: admin123)');
   await ensureRecruitmentTalentDemoUsers(prisma, legalEntity.id);
   console.log('\n🚀 Ready for payroll processing!\n');
 }

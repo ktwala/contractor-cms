@@ -82,9 +82,9 @@ async function bootstrap() {
   // Swagger Documentation - Temporarily disabled due to circular dependency in DTOs
   // TODO: Fix circular dependency in ImportPreviewResponseDto/ImportResultDto errors property
   // const config = new DocumentBuilder()
-  //   .setTitle('Payroll Platform API (Lesotho + South Africa)')
+  //   .setTitle('Hubsec Workforce Platform API (Lesotho + South Africa)')
   //   .setDescription(
-  //     `Multi-country payroll MVP (LS + ZA) with core payrun lifecycle, legal entities, employments,
+  //     `Multi-country workforce platform (LS + ZA) with core payrun lifecycle, legal entities, employments,
   //     effective-dated records, maker-checker approvals (change requests), generalized tax tables,
   //     statutory exports, adjustment payruns, and RBAC permission annotations.`,
   //   )
@@ -120,7 +120,7 @@ async function bootstrap() {
 
   console.log(`
     ╔═══════════════════════════════════════════════════════════════╗
-    ║         Payroll Platform API - Lesotho + South Africa         ║
+    ║     Hubsec Workforce Platform API - Lesotho + South Africa     ║
     ╠═══════════════════════════════════════════════════════════════╣
     ║  Server running on: http://localhost:${port}                     ║
     ║  Swagger docs:      (temporarily disabled)                       ║

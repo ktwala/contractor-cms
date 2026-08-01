@@ -1,6 +1,6 @@
 # Storage System Documentation
 
-Complete guide to the payroll platform's storage system with support for SeaweedFS, AWS S3, Azure Blob Storage, and local filesystem.
+Complete guide to the Hubsec Workforce Platform's storage system with support for SeaweedFS, AWS S3, Azure Blob Storage, and local filesystem.
 
 ## Table of Contents
 

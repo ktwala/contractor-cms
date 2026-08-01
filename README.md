@@ -684,7 +684,7 @@ npm or yarn
 1. **Clone the repository**
 ```bash
 git clone <repository-url>
-cd payroll-platform
+cd hubsec-workforce-platform
 ```
 
 2. **Install dependencies**
@@ -812,7 +812,7 @@ See [TEST_DOCUMENTATION.md](./TEST_DOCUMENTATION.md) for comprehensive testing g
 ## 📁 Project Structure
 
 ```
-payroll-platform/
+hubsec-workforce-platform/
 ├── src/
 │   ├── modules/
 │   │   ├── auth/              # Authentication & authorization

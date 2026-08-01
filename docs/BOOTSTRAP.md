@@ -69,7 +69,7 @@ npm run db:seed
 npm run demo:seed
 ```
 
-**Result:** Demo users (`admin@demo.payroll`, `hr@demo.payroll`, etc.) with password `admin123`, plus sample employees and payroll setup.
+**Result:** Demo users (`admin@demo.workforce`, `hr@demo.workforce`, etc.) with password `admin123`, plus sample employees and payroll setup.
 
 ---
 
@@ -181,7 +181,7 @@ Uses `docker-compose.yml` as-is. The app container runs `db:seed` and `demo:seed
 docker compose up -d
 ```
 
-**Result:** Demo users (`admin@demo.payroll` / `admin123`) and sample data. Ready for local development.
+**Result:** Demo users (`admin@demo.workforce` / `admin123`) and sample data. Ready for local development.
 
 ---
 

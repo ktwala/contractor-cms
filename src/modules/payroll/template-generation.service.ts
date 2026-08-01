@@ -9,7 +9,7 @@ export class TemplateGenerationService {
   async generateSupplementalTemplate(): Promise<Buffer> {
     const refData = await this.payrollService.getReferenceData();
     const workbook = new ExcelJS.Workbook();
-    workbook.creator = 'Payroll Platform';
+    workbook.creator = 'Hubsec Workforce Platform';
     workbook.created = new Date();
 
     // --- README Sheet ---
@@ -179,7 +179,7 @@ export class TemplateGenerationService {
   /** Tenant-facing opening balances workbook (structure matches import validation). */
   async generateOpeningBalancesTemplate(): Promise<Buffer> {
     const workbook = new ExcelJS.Workbook();
-    workbook.creator = 'Payroll Platform';
+    workbook.creator = 'Hubsec Workforce Platform';
     workbook.created = new Date();
 
     const readme = workbook.addWorksheet('README');

@@ -76,12 +76,12 @@ async function main() {
   console.log('API Base:', API_BASE);
   console.log('');
 
-  // Demo seed users: admin@demo.payroll (GLOBAL+LE), tenantadmin@demo.payroll (LE), hr@demo.payroll, payrollclerk@demo.payroll, iga@demo.payroll
+  // Demo seed users: admin@demo.workforce (GLOBAL+LE), tenantadmin@demo.workforce (LE), hr@demo.workforce, payrollclerk@demo.workforce, iga@demo.workforce
   const rolesToTest: RoleExpectation[] = [
     {
       role: 'TENANT_ADMIN (GLOBAL)',
       scope: 'GLOBAL',
-      email: 'admin@demo.payroll',
+      email: 'admin@demo.workforce',
       password: 'admin123',
       visibleWidgets: ['Setup Progress', 'Workforce Snapshot', 'Payroll Snapshot', 'Compliance Snapshot', 'Data Imports', 'HR Export Readiness', 'Pending Approvals'],
       hiddenWidgets: [],
@@ -89,7 +89,7 @@ async function main() {
     {
       role: 'TENANT_ADMIN (LEGAL_ENTITY)',
       scope: 'LEGAL_ENTITY',
-      email: 'tenantadmin@demo.payroll',
+      email: 'tenantadmin@demo.workforce',
       password: 'admin123',
       visibleWidgets: ['Setup Progress', 'Workforce Snapshot', 'Data Imports', 'HR Export Readiness', 'Pending Approvals'],
       hiddenWidgets: ['Payroll Snapshot', 'Compliance Snapshot'],
@@ -98,7 +98,7 @@ async function main() {
     {
       role: 'PAYROLL_CLERK',
       scope: 'LEGAL_ENTITY',
-      email: 'payrollclerk@demo.payroll',
+      email: 'payrollclerk@demo.workforce',
       password: 'admin123',
       visibleWidgets: ['Setup Progress', 'Workforce Snapshot', 'Payroll Snapshot'],
       hiddenWidgets: ['Compliance Snapshot', 'Data Imports', 'HR Export Readiness', 'Pending Approvals'],
@@ -107,7 +107,7 @@ async function main() {
     {
       role: 'HR_ADMIN',
       scope: 'LEGAL_ENTITY',
-      email: 'hr@demo.payroll',
+      email: 'hr@demo.workforce',
       password: 'admin123',
       visibleWidgets: ['Setup Progress', 'Workforce Snapshot', 'HR Export Readiness'],
       hiddenWidgets: ['Payroll Snapshot', 'Compliance Snapshot', 'Data Imports', 'Pending Approvals'],
@@ -116,7 +116,7 @@ async function main() {
     {
       role: 'INTEGRATION_IGA',
       scope: 'GLOBAL',
-      email: 'iga@demo.payroll',
+      email: 'iga@demo.workforce',
       password: 'admin123',
       visibleWidgets: ['Setup Progress', 'HR Export Readiness'],
       hiddenWidgets: ['Workforce Snapshot', 'Payroll Snapshot', 'Compliance Snapshot', 'Data Imports', 'Pending Approvals'],

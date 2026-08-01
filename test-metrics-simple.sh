@@ -46,7 +46,7 @@ echo "Test 3: Checking for custom metrics..."
 CHECKS=0
 PASSED=0
 
-if echo "$METRICS" | grep -q "payroll_platform_http_request_duration_seconds"; then
+if echo "$METRICS" | grep -q "workforce_platform_http_request_duration_seconds"; then
     echo "  ✅ HTTP request duration metric found"
     PASSED=$((PASSED + 1))
 else
@@ -54,7 +54,7 @@ else
 fi
 CHECKS=$((CHECKS + 1))
 
-if echo "$METRICS" | grep -q "payroll_platform_http_requests_total"; then
+if echo "$METRICS" | grep -q "workforce_platform_http_requests_total"; then
     echo "  ✅ HTTP requests total metric found"
     PASSED=$((PASSED + 1))
 else
@@ -62,7 +62,7 @@ else
 fi
 CHECKS=$((CHECKS + 1))
 
-if echo "$METRICS" | grep -q "payroll_platform_process_cpu"; then
+if echo "$METRICS" | grep -q "workforce_platform_process_cpu"; then
     echo "  ✅ Node.js process CPU metric found"
     PASSED=$((PASSED + 1))
 else
@@ -70,7 +70,7 @@ else
 fi
 CHECKS=$((CHECKS + 1))
 
-if echo "$METRICS" | grep -q "payroll_platform_process_resident_memory_bytes"; then
+if echo "$METRICS" | grep -q "workforce_platform_process_resident_memory_bytes"; then
     echo "  ✅ Node.js memory metric found"
     PASSED=$((PASSED + 1))
 else
@@ -81,7 +81,7 @@ CHECKS=$((CHECKS + 1))
 # Test 4: Make some API calls and check if metrics increment
 echo ""
 echo "Test 4: Testing metrics collection..."
-INITIAL_COUNT=$(echo "$METRICS" | grep "payroll_platform_http_requests_total" | head -1 | awk '{print $2}' | cut -d'.' -f1 || echo "0")
+INITIAL_COUNT=$(echo "$METRICS" | grep "workforce_platform_http_requests_total" | head -1 | awk '{print $2}' | cut -d'.' -f1 || echo "0")
 
 # Make a few API calls
 curl -s http://localhost:3000/api > /dev/null
@@ -89,7 +89,7 @@ curl -s http://localhost:3000/metrics > /dev/null
 sleep 1
 
 NEW_METRICS=$(curl -s http://localhost:3000/metrics)
-NEW_COUNT=$(echo "$NEW_METRICS" | grep "payroll_platform_http_requests_total" | head -1 | awk '{print $2}' | cut -d'.' -f1 || echo "0")
+NEW_COUNT=$(echo "$NEW_METRICS" | grep "workforce_platform_http_requests_total" | head -1 | awk '{print $2}' | cut -d'.' -f1 || echo "0")
 
 if [ "$NEW_COUNT" -gt "$INITIAL_COUNT" ]; then
     echo "  ✅ Metrics are incrementing (was $INITIAL_COUNT, now $NEW_COUNT)"

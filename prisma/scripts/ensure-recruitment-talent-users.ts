@@ -1,5 +1,5 @@
 /**
- * Upserts talent.*@demo.payroll users + HR_ADMIN for admin-portal entry + Playwright live authz.
+ * Upserts talent.*@demo.workforce users + HR_ADMIN for admin-portal entry + Playwright live authz.
  * Safe to re-run. Requires DEMO-ZA-001 and roles from `npm run db:seed`.
  *
  * Run: `npm run demo:seed:recruitment-users`
@@ -29,15 +29,15 @@ export async function ensureRecruitmentTalentDemoUsers(prisma: PrismaClient, leg
     lastName: string;
     talentRoleId: string;
   }> = [
-    { email: 'talent.recruiter@demo.payroll', firstName: 'Talent', lastName: 'Recruiter', talentRoleId: recruiterRole.id },
+    { email: 'talent.recruiter@demo.workforce', firstName: 'Talent', lastName: 'Recruiter', talentRoleId: recruiterRole.id },
     {
-      email: 'talent.hiring.manager@demo.payroll',
+      email: 'talent.hiring.manager@demo.workforce',
       firstName: 'Talent',
       lastName: 'HiringManager',
       talentRoleId: hiringManagerRole.id,
     },
-    { email: 'talent.interviewer@demo.payroll', firstName: 'Talent', lastName: 'Interviewer', talentRoleId: interviewerRole.id },
-    { email: 'talent.hrops@demo.payroll', firstName: 'Talent', lastName: 'HROps', talentRoleId: hrOpsRole.id },
+    { email: 'talent.interviewer@demo.workforce', firstName: 'Talent', lastName: 'Interviewer', talentRoleId: interviewerRole.id },
+    { email: 'talent.hrops@demo.workforce', firstName: 'Talent', lastName: 'HROps', talentRoleId: hrOpsRole.id },
   ];
 
   for (const u of talentUsers) {
@@ -75,7 +75,7 @@ export async function ensureRecruitmentTalentDemoUsers(prisma: PrismaClient, leg
   }
 
   console.log(
-    '✅ Talent E2E users (password admin123): talent.recruiter@demo.payroll, talent.hiring.manager@demo.payroll, talent.interviewer@demo.payroll, talent.hrops@demo.payroll',
+    '✅ Talent E2E users (password admin123): talent.recruiter@demo.workforce, talent.hiring.manager@demo.workforce, talent.interviewer@demo.workforce, talent.hrops@demo.workforce',
   );
 }
 

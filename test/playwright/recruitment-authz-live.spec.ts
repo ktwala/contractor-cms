@@ -3,7 +3,7 @@
  *
  * Prereqs:
  *   - API + DB: `npm run db:seed`, demo legal entity (`npm run demo:seed` when allowed), then
- *     `npm run demo:seed:recruitment-users` (creates talent.*@demo.payroll — password admin123).
+ *     `npm run demo:seed:recruitment-users` (creates talent.*@demo.workforce — password admin123).
  *   - Admin portal running (default http://localhost:3001).
  *
  * Run:
@@ -20,10 +20,10 @@ const API_V1 = `${(process.env.E2E_API_ORIGIN ?? 'http://localhost:4000').replac
 const DEMO_PASSWORD = 'admin123';
 
 const LIVE_USERS = {
-  recruiter: 'talent.recruiter@demo.payroll',
-  hiringManager: 'talent.hiring.manager@demo.payroll',
-  interviewer: 'talent.interviewer@demo.payroll',
-  hrops: 'talent.hrops@demo.payroll',
+  recruiter: 'talent.recruiter@demo.workforce',
+  hiringManager: 'talent.hiring.manager@demo.workforce',
+  interviewer: 'talent.interviewer@demo.workforce',
+  hrops: 'talent.hrops@demo.workforce',
 } as const;
 
 async function loginToAdminPortal(page: Page, email: string, password: string) {
@@ -70,7 +70,7 @@ test.describe('Live recruitment authz (real login + API)', () => {
   test.beforeEach(() => {
     test.skip(
       process.env.RECRUITMENT_LIVE_E2E !== '1',
-      'Set RECRUITMENT_LIVE_E2E=1 and run admin + API; use npm run demo:seed:recruitment-users for talent.*@demo.payroll.',
+      'Set RECRUITMENT_LIVE_E2E=1 and run admin + API; use npm run demo:seed:recruitment-users for talent.*@demo.workforce.',
     );
   });
 

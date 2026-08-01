@@ -1,7 +1,7 @@
 apiVersion: 1
 
 providers:
-  - name: 'Payroll Platform'
+  - name: 'Hubsec Workforce Platform'
     orgId: 1
     folder: ''
     type: file

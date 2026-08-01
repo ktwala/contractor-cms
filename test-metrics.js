@@ -28,10 +28,10 @@ const req = http.request(options, (res) => {
     
     // Check for key metrics
     const checks = [
-      { name: 'HTTP Request Duration', pattern: /payroll_platform_http_request_duration_seconds/ },
-      { name: 'HTTP Requests Total', pattern: /payroll_platform_http_requests_total/ },
-      { name: 'Process CPU', pattern: /payroll_platform_process_cpu/ },
-      { name: 'Memory', pattern: /payroll_platform_process_resident_memory_bytes/ },
+      { name: 'HTTP Request Duration', pattern: /workforce_platform_http_request_duration_seconds/ },
+      { name: 'HTTP Requests Total', pattern: /workforce_platform_http_requests_total/ },
+      { name: 'Process CPU', pattern: /workforce_platform_process_cpu/ },
+      { name: 'Memory', pattern: /workforce_platform_process_resident_memory_bytes/ },
     ];
 
     console.log('\n✅ Metrics Found:');

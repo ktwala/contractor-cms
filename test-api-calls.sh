@@ -24,18 +24,18 @@ echo ""
 # Get metrics and check for our test calls
 METRICS=$(curl -s http://localhost:3000/metrics)
 
-if echo "$METRICS" | grep -q "payroll_platform_http_requests_total"; then
+if echo "$METRICS" | grep -q "workforce_platform_http_requests_total"; then
   echo "  ✓ HTTP request metrics found"
   echo ""
   echo "  Sample HTTP metrics:"
-  echo "$METRICS" | grep "payroll_platform_http_requests_total" | head -5 | sed 's/^/    /'
+  echo "$METRICS" | grep "workforce_platform_http_requests_total" | head -5 | sed 's/^/    /'
 else
   echo "  ✗ HTTP request metrics not found"
 fi
 
 echo ""
 echo "3. Checking for default Node.js metrics..."
-if echo "$METRICS" | grep -q "payroll_platform_process"; then
+if echo "$METRICS" | grep -q "workforce_platform_process"; then
   echo "  ✓ Node.js process metrics found"
 else
   echo "  ✗ Node.js process metrics not found"

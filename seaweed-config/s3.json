@@ -17,11 +17,11 @@
       ]
     },
     {
-      "name": "payroll-service",
+      "name": "workforce-service",
       "credentials": [
         {
-          "accessKey": "payroll",
-          "secretKey": "payroll-secret-key-change-me"
+          "accessKey": "workforce",
+          "secretKey": "workforce-secret-key-change-me"
         }
       ],
       "actions": [

@@ -47,7 +47,7 @@ export const winstonConfig = {
   level: process.env.LOG_LEVEL || (process.env.NODE_ENV === 'production' ? 'info' : 'debug'),
   // Global default metadata
   defaultMeta: {
-    service: 'payroll-platform',
+    service: 'workforce-platform',
     environment: process.env.NODE_ENV || 'development',
   },
 };

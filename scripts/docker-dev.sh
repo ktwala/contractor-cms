@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Docker development helper script for Payroll Platform
+# Docker development helper script for Hubsec Workforce Platform
 
 set -e
 
@@ -21,7 +21,7 @@ log_error() { echo -e "${RED}[ERROR]${NC} $1"; }
 
 case "$1" in
   start)
-    log_info "Starting Payroll Platform..."
+    log_info "Starting Hubsec Workforce Platform..."
     docker compose up -d
     log_info "Waiting for services to be ready..."
     sleep 5
@@ -31,13 +31,13 @@ case "$1" in
     ;;
 
   stop)
-    log_info "Stopping Payroll Platform..."
+    log_info "Stopping Hubsec Workforce Platform..."
     docker compose down
     log_info "Services stopped."
     ;;
 
   restart)
-    log_info "Restarting Payroll Platform..."
+    log_info "Restarting Hubsec Workforce Platform..."
     docker compose restart
     ;;
 
@@ -52,7 +52,7 @@ case "$1" in
 
   db)
     log_info "Connecting to PostgreSQL..."
-    docker compose exec postgres psql -U payroll -d payroll_platform
+    docker compose exec postgres psql -U workforce -d workforce_platform
     ;;
 
   seed)
@@ -118,7 +118,7 @@ case "$1" in
     ;;
 
   *)
-    echo "Payroll Platform Docker Helper"
+    echo "Hubsec Workforce Platform Docker Helper"
     echo ""
     echo "Usage: $0 <command>"
     echo ""

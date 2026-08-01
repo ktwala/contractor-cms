@@ -23,7 +23,7 @@ Metrics:           http://localhost:3000/metrics
 ### Option 1: Browser Test
 1. Open browser: http://localhost:3000/metrics
 2. You should see Prometheus-formatted metrics
-3. Look for metrics starting with `payroll_platform_`
+3. Look for metrics starting with `workforce_platform_`
 
 ### Option 2: Command Line Test
 ```bash
@@ -31,7 +31,7 @@ Metrics:           http://localhost:3000/metrics
 curl http://localhost:3000/metrics | head -20
 
 # Test 2: Check for our metrics
-curl http://localhost:3000/metrics | grep "payroll_platform_http_requests_total"
+curl http://localhost:3000/metrics | grep "workforce_platform_http_requests_total"
 
 # Test 3: Run automated test
 ./test-metrics-simple.sh
@@ -47,21 +47,21 @@ node test-metrics.js
 When you access http://localhost:3000/metrics, you should see:
 
 ```
-# HELP payroll_platform_http_request_duration_seconds Duration of HTTP requests in seconds
-# TYPE payroll_platform_http_request_duration_seconds histogram
-payroll_platform_http_request_duration_seconds_bucket{method="GET",route="/metrics",status_code="200",le="0.005"} 1
+# HELP workforce_platform_http_request_duration_seconds Duration of HTTP requests in seconds
+# TYPE workforce_platform_http_request_duration_seconds histogram
+workforce_platform_http_request_duration_seconds_bucket{method="GET",route="/metrics",status_code="200",le="0.005"} 1
 
-# HELP payroll_platform_http_requests_total Total number of HTTP requests
-# TYPE payroll_platform_http_requests_total counter
-payroll_platform_http_requests_total{method="GET",route="/metrics",status_code="200"} 5
+# HELP workforce_platform_http_requests_total Total number of HTTP requests
+# TYPE workforce_platform_http_requests_total counter
+workforce_platform_http_requests_total{method="GET",route="/metrics",status_code="200"} 5
 
-# HELP payroll_platform_process_cpu_user_seconds_total Total user CPU time spent in seconds.
-# TYPE payroll_platform_process_cpu_user_seconds_total counter
-payroll_platform_process_cpu_user_seconds_total 0.123
+# HELP workforce_platform_process_cpu_user_seconds_total Total user CPU time spent in seconds.
+# TYPE workforce_platform_process_cpu_user_seconds_total counter
+workforce_platform_process_cpu_user_seconds_total 0.123
 
-# HELP payroll_platform_process_resident_memory_bytes Resident memory size in bytes.
-# TYPE payroll_platform_process_resident_memory_bytes gauge
-payroll_platform_process_resident_memory_bytes 45678901
+# HELP workforce_platform_process_resident_memory_bytes Resident memory size in bytes.
+# TYPE workforce_platform_process_resident_memory_bytes gauge
+workforce_platform_process_resident_memory_bytes 45678901
 ```
 
 ## Verification Checklist

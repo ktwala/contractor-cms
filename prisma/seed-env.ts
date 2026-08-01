@@ -16,7 +16,7 @@ export function loadRepoEnvForPrismaSeeds(): PoolConfig {
   if (!url) {
     throw new Error(
       'DATABASE_URL is not set. Copy .env.example to .env at the repo root. ' +
-        'Local Docker Postgres: postgresql://payroll:payroll_secret@localhost:5432/payroll_platform?schema=public',
+        'Local Docker Postgres: postgresql://workforce:workforce_secret@localhost:5432/workforce_platform?schema=public',
     );
   }
 

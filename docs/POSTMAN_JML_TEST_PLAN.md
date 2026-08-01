@@ -16,7 +16,7 @@ This is the Postman-based equivalent of **scripts/jml-integration-test.sh**. Sam
 
 2. **Environment**
    - Select environment **IGA-HCM-Local** (top-right).
-   - Set **baseUrl** if needed (default `http://localhost:3000`). Admin/IGA credentials are pre-filled for seed data (`admin@demo.payroll` / `iga@demo.payroll`, password `admin123`).
+   - Set **baseUrl** if needed (default `http://localhost:3000`). Admin/IGA credentials are pre-filled for seed data (`admin@demo.workforce` / `iga@demo.workforce`, password `admin123`).
 
 3. **Run**
    - Server must be up; DB seeded (legal entity, pay group, admin + iga users).
@@ -55,7 +55,7 @@ npm install -g newman
 Run the collection with the environment and optional reporters:
 
 ```bash
-cd /path/to/payroll-platform
+cd /path/to/hubsec-workforce-platform
 newman run postman/JML-IGA-HCM-Test-Plan.postman_collection.json \
   -e postman/IGA-HCM-Local.postman_environment.json
 ```

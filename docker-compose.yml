@@ -2,17 +2,17 @@ services:
   # PostgreSQL Database
   postgres:
     image: postgres:15-alpine
-    container_name: payroll-db
+    container_name: workforce-db
     environment:
-      POSTGRES_USER: payroll
-      POSTGRES_PASSWORD: payroll_secret
-      POSTGRES_DB: payroll_platform
+      POSTGRES_USER: workforce
+      POSTGRES_PASSWORD: workforce_secret
+      POSTGRES_DB: workforce_platform
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U payroll -d payroll_platform" ]
+      test: [ "CMD-SHELL", "pg_isready -U workforce -d workforce_platform" ]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -20,7 +20,7 @@ services:
   # Redis (for caching and job queues)
   redis:
     image: redis:7-alpine
-    container_name: payroll-redis
+    container_name: workforce-redis
     ports:
       - "6379:6379"
     volumes:
@@ -34,7 +34,7 @@ services:
   # SeaweedFS Master Server
   seaweedfs-master:
     image: chrislusf/seaweedfs:latest
-    container_name: payroll-seaweedfs-master
+    container_name: workforce-seaweedfs-master
     ports:
       - "9333:9333"
     command: "master -ip=seaweedfs-master -ip.bind=0.0.0.0 -mdir=/data -defaultReplication=000"
@@ -51,7 +51,7 @@ services:
   # SeaweedFS Volume Server
   seaweedfs-volume:
     image: chrislusf/seaweedfs:latest
-    container_name: payroll-seaweedfs-volume
+    container_name: workforce-seaweedfs-volume
     ports:
       - "8080:8080"
     command: "volume -mserver=seaweedfs-master:9333 -dir=/data -max=100 -ip=seaweedfs-volume -ip.bind=0.0.0.0 -port=8080"
@@ -65,7 +65,7 @@ services:
   # SeaweedFS Filer (file/directory structure)
   seaweedfs-filer:
     image: chrislusf/seaweedfs:latest
-    container_name: payroll-seaweedfs-filer
+    container_name: workforce-seaweedfs-filer
     ports:
       - "8888:8888"
     command: "filer -master=seaweedfs-master:9333 -ip=seaweedfs-filer -ip.bind=0.0.0.0"
@@ -87,7 +87,7 @@ services:
   # SeaweedFS S3 Gateway
   seaweedfs-s3:
     image: chrislusf/seaweedfs:latest
-    container_name: payroll-seaweedfs-s3
+    container_name: workforce-seaweedfs-s3
     ports:
       - "8333:8333"
     command: "s3 -filer=seaweedfs-filer:8888 -ip.bind=0.0.0.0 -config=/etc/seaweedfs/s3.json"
@@ -110,13 +110,13 @@ services:
       context: .
       dockerfile: Dockerfile
       target: development
-    container_name: payroll-app
+    container_name: workforce-app
     ports:
       - "4000:4000"
     environment:
       NODE_ENV: development
       DEPLOYMENT_MODE: ${DEPLOYMENT_MODE:-development}
-      DATABASE_URL: postgresql://payroll:payroll_secret@postgres:5432/payroll_platform?schema=public
+      DATABASE_URL: postgresql://workforce:workforce_secret@postgres:5432/workforce_platform?schema=public
       REDIS_URL: redis://redis:6379
       JWT_SECRET: dev-jwt-secret-change-in-production
       JWT_EXPIRATION: 24h
@@ -126,7 +126,7 @@ services:
       STORAGE_PROVIDER: seaweedfs
       SEAWEED_ENDPOINT: http://seaweedfs-s3:8333
       SEAWEED_VOLUME_ENDPOINT: http://seaweedfs-volume:8080
-      SEAWEED_BUCKET: payroll-files
+      SEAWEED_BUCKET: workforce-files
       SEAWEED_ACCESS_KEY: admin
       SEAWEED_SECRET_KEY: admin
     depends_on:
@@ -163,9 +163,9 @@ services:
   # Database Admin UI (optional)
   pgadmin:
     image: dpage/pgadmin4:latest
-    container_name: payroll-pgadmin
+    container_name: workforce-pgadmin
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@payroll.local
+      PGADMIN_DEFAULT_EMAIL: admin@workforce.local
       PGADMIN_DEFAULT_PASSWORD: admin
       PGADMIN_CONFIG_SERVER_MODE: 'False'
     ports:
@@ -180,7 +180,7 @@ services:
     build:
       context: ./employee-portal
       dockerfile: Dockerfile
-    container_name: payroll-employee-portal
+    container_name: workforce-employee-portal
     ports:
       - "3000:3000"
     environment:
@@ -198,7 +198,7 @@ services:
     build:
       context: ./admin-portal
       dockerfile: Dockerfile
-    container_name: payroll-admin-portal
+    container_name: workforce-admin-portal
     ports:
       - "3001:3001"
     environment:
@@ -222,4 +222,4 @@ volumes:
 
 networks:
   default:
-    name: payroll-network
+    name: workforce-network

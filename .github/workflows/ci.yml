@@ -14,9 +14,9 @@ jobs:
       postgres:
         image: postgres:15-alpine
         env:
-          POSTGRES_USER: payroll
-          POSTGRES_PASSWORD: payroll_secret
-          POSTGRES_DB: payroll_platform
+          POSTGRES_USER: workforce
+          POSTGRES_PASSWORD: workforce_secret
+          POSTGRES_DB: workforce_platform
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -40,7 +40,7 @@ jobs:
       - name: Generate Prisma Client
         run: npm run db:generate
         env:
-          DATABASE_URL: postgresql://payroll:payroll_secret@localhost:5432/payroll_platform?schema=public
+          DATABASE_URL: postgresql://workforce:workforce_secret@localhost:5432/workforce_platform?schema=public
 
       - name: Run linter
         run: npm run lint
@@ -95,38 +95,38 @@ jobs:
       - name: Apply database migrations (PR-PAYROLL-CONTAINER-2 linkage verify)
         run: npm run db:migrate:prod
         env:
-          DATABASE_URL: postgresql://payroll:payroll_secret@localhost:5432/payroll_platform?schema=public
+          DATABASE_URL: postgresql://workforce:workforce_secret@localhost:5432/workforce_platform?schema=public
 
       - name: Verify payroll container period linkage (PR-PAYROLL-CONTAINER-2)
         run: npm run verify:payroll-container-period-linkage
         env:
-          DATABASE_URL: postgresql://payroll:payroll_secret@localhost:5432/payroll_platform?schema=public
+          DATABASE_URL: postgresql://workforce:workforce_secret@localhost:5432/workforce_platform?schema=public
 
       - name: Run unit tests
         run: npm run test:cov
         env:
-          DATABASE_URL: postgresql://payroll:payroll_secret@localhost:5432/payroll_platform?schema=public
+          DATABASE_URL: postgresql://workforce:workforce_secret@localhost:5432/workforce_platform?schema=public
           NODE_ENV: test
 
       - name: Recruitment permission drift check
         run: npx jest "src/modules/recruitment/__tests__/recruitment-permission-drift" --no-coverage --verbose
         env:
-          DATABASE_URL: postgresql://payroll:payroll_secret@localhost:5432/payroll_platform?schema=public
+          DATABASE_URL: postgresql://workforce:workforce_secret@localhost:5432/workforce_platform?schema=public
 
       - name: Recruitment permission registry consistency
         run: npx jest "src/modules/recruitment/__tests__/recruitment-permission-registry" --no-coverage --verbose
         env:
-          DATABASE_URL: postgresql://payroll:payroll_secret@localhost:5432/payroll_platform?schema=public
+          DATABASE_URL: postgresql://workforce:workforce_secret@localhost:5432/workforce_platform?schema=public
 
       - name: Recruitment authz behavior verification
         run: npx jest "src/modules/recruitment/__tests__/recruitment-authz-behavior" --no-coverage --verbose
         env:
-          DATABASE_URL: postgresql://payroll:payroll_secret@localhost:5432/payroll_platform?schema=public
+          DATABASE_URL: postgresql://workforce:workforce_secret@localhost:5432/workforce_platform?schema=public
 
       - name: CTC Optimiser permission drift check
         run: npx jest "src/modules/ctc-optimiser/__tests__/ctc-permission-drift" --no-coverage --verbose
         env:
-          DATABASE_URL: postgresql://payroll:payroll_secret@localhost:5432/payroll_platform?schema=public
+          DATABASE_URL: postgresql://workforce:workforce_secret@localhost:5432/workforce_platform?schema=public
 
       - name: Upload coverage reports
         uses: codecov/codecov-action@v3
@@ -139,14 +139,14 @@ jobs:
       - name: Run E2E tests
         run: npm run test:e2e
         env:
-          DATABASE_URL: postgresql://payroll:payroll_secret@localhost:5432/payroll_platform?schema=public
+          DATABASE_URL: postgresql://workforce:workforce_secret@localhost:5432/workforce_platform?schema=public
           NODE_ENV: test
           JWT_SECRET: test-jwt-secret
 
       - name: Build application
         run: npm run build
         env:
-          DATABASE_URL: postgresql://payroll:payroll_secret@localhost:5432/payroll_platform?schema=public
+          DATABASE_URL: postgresql://workforce:workforce_secret@localhost:5432/workforce_platform?schema=public
 
   frontend-tests:
     runs-on: ubuntu-latest
@@ -181,7 +181,7 @@ jobs:
 
   # Blocking: real API + admin + migrated DB (pay groups + pay items from seed + CI legal entity).
   # Depends on lint-and-test so drift + unit coverage already passed before this heavier job runs.
-  payroll-import-e2e:
+  workforce-import-e2e:
     needs: lint-and-test
     runs-on: ubuntu-latest
 
@@ -189,9 +189,9 @@ jobs:
       postgres:
         image: postgres:15-alpine
         env:
-          POSTGRES_USER: payroll
-          POSTGRES_PASSWORD: payroll_secret
-          POSTGRES_DB: payroll_platform
+          POSTGRES_USER: workforce
+          POSTGRES_PASSWORD: workforce_secret
+          POSTGRES_DB: workforce_platform
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -201,10 +201,10 @@ jobs:
           - 5432:5432
 
     env:
-      DATABASE_URL: postgresql://payroll:payroll_secret@localhost:5432/payroll_platform?schema=public
-      JWT_SECRET: ci-payroll-playwright-jwt-secret
+      DATABASE_URL: postgresql://workforce:workforce_secret@localhost:5432/workforce_platform?schema=public
+      JWT_SECRET: ci-workforce-playwright-jwt-secret
       ENCRYPTION_MASTER_KEY: 'ci-test-master-key-at-least-32-characters-long'
-      ENCRYPTION_SALT: 'ci-payroll-encryption-salt-v1'
+      ENCRYPTION_SALT: 'ci-workforce-encryption-salt-v1'
       CI: 'true'
       PLAYWRIGHT_ADMIN_ORIGIN: http://127.0.0.1:3001
 
@@ -251,8 +251,8 @@ jobs:
           mkdir -p storage
           export PORT=4000
           export NODE_ENV=production
-          nohup node dist/main.js > /tmp/payroll-api-ci.log 2>&1 &
-          echo $! > /tmp/payroll-api-ci.pid
+          nohup node dist/main.js > /tmp/workforce-api-ci.log 2>&1 &
+          echo $! > /tmp/workforce-api-ci.pid
           for i in $(seq 1 60); do
             if curl -sf "http://127.0.0.1:${PORT}/v1/bootstrap/status" > /dev/null; then
               echo "API is up"
@@ -260,14 +260,14 @@ jobs:
             fi
             if [ "$i" -eq 60 ]; then
               echo "API failed to start"
-              cat /tmp/payroll-api-ci.log || true
+              cat /tmp/workforce-api-ci.log || true
               exit 1
             fi
             sleep 2
           done
           cd admin-portal
-          nohup npx vite preview --host 127.0.0.1 --port 3001 > /tmp/payroll-admin-ci.log 2>&1 &
-          echo $! > /tmp/payroll-admin-ci.pid
+          nohup npx vite preview --host 127.0.0.1 --port 3001 > /tmp/workforce-admin-ci.log 2>&1 &
+          echo $! > /tmp/workforce-admin-ci.pid
           for i in $(seq 1 60); do
             if curl -sf "http://127.0.0.1:3001/" > /dev/null; then
               echo "Admin preview is up"
@@ -275,7 +275,7 @@ jobs:
             fi
             if [ "$i" -eq 60 ]; then
               echo "Admin preview failed to start"
-              cat /tmp/payroll-admin-ci.log || true
+              cat /tmp/workforce-admin-ci.log || true
               exit 1
             fi
             sleep 2
@@ -297,17 +297,17 @@ jobs:
       - name: Collect server logs for artifact
         if: failure()
         run: |
-          cp /tmp/payroll-api-ci.log payroll-api-ci.log 2>/dev/null || true
-          cp /tmp/payroll-admin-ci.log payroll-admin-ci.log 2>/dev/null || true
+          cp /tmp/workforce-api-ci.log workforce-api-ci.log 2>/dev/null || true
+          cp /tmp/workforce-admin-ci.log workforce-admin-ci.log 2>/dev/null || true
 
-      - name: Upload payroll Playwright failure assets
+      - name: Upload workforce Playwright failure assets
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: payroll-import-e2e-failures
+          name: workforce-import-e2e-failures
           path: |
             test-results/
             playwright-report/
-            payroll-api-ci.log
-            payroll-admin-ci.log
+            workforce-api-ci.log
+            workforce-admin-ci.log
           retention-days: 14

@@ -14,11 +14,11 @@ Verified for each role:
 
 | Role | Scope | User | Visible Widgets | Hidden Widgets |
 |------|-------|------|-----------------|----------------|
-| TENANT_ADMIN (GLOBAL) | GLOBAL | admin@demo.payroll | All 7 | — |
-| TENANT_ADMIN (LEGAL_ENTITY) | LEGAL_ENTITY | tenantadmin@demo.payroll | Setup, Workforce, Data Imports, HR Export, Pending | Payroll, Compliance |
-| PAYROLL_CLERK | LEGAL_ENTITY | payrollclerk@demo.payroll | Setup, Workforce, Payroll | Compliance, Data Imports, HR Export, Pending |
-| HR_ADMIN | LEGAL_ENTITY | hr@demo.payroll | Setup, Workforce, HR Export Readiness | Payroll, Compliance, Data Imports, Pending |
-| INTEGRATION_IGA | GLOBAL | iga@demo.payroll | Setup, HR Export | Workforce, Payroll, Compliance, Data Imports, Pending |
+| TENANT_ADMIN (GLOBAL) | GLOBAL | admin@demo.workforce | All 7 | — |
+| TENANT_ADMIN (LEGAL_ENTITY) | LEGAL_ENTITY | tenantadmin@demo.workforce | Setup, Workforce, Data Imports, HR Export, Pending | Payroll, Compliance |
+| PAYROLL_CLERK | LEGAL_ENTITY | payrollclerk@demo.workforce | Setup, Workforce, Payroll | Compliance, Data Imports, HR Export, Pending |
+| HR_ADMIN | LEGAL_ENTITY | hr@demo.workforce | Setup, Workforce, HR Export Readiness | Payroll, Compliance, Data Imports, Pending |
+| INTEGRATION_IGA | GLOBAL | iga@demo.workforce | Setup, HR Export | Workforce, Payroll, Compliance, Data Imports, Pending |
 
 ## Findings
 

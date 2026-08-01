@@ -10,7 +10,7 @@ export class LoginResponseDto {
   @ApiProperty({
     example: {
       user_id: 'uuid-here',
-      email: 'admin@demo.payroll',
+      email: 'admin@demo.workforce',
       first_name: 'Demo',
       last_name: 'Admin',
       roles: ['TENANT_ADMIN', 'PAYROLL_CLERK'],

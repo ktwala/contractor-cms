@@ -1,6 +1,6 @@
 # Leave Management - Country Entitlements Reference
 
-This document outlines statutory leave entitlements for supported countries in the payroll platform.
+This document outlines statutory leave entitlements for supported countries in the Hubsec Workforce Platform.
 Use this as a reference when configuring leave policies or adding new country support.
 
 ---

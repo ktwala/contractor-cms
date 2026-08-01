@@ -1,4 +1,4 @@
-# Payroll Platform - Current Status Review
+# Hubsec Workforce Platform - Current Status Review
 
 **Date**: January 2025  
 **Status**: Development in Progress
@@ -7,7 +7,7 @@
 
 ## 🎯 Executive Summary
 
-The payroll platform is a comprehensive multi-country payroll management system with extensive features. The core infrastructure is in place, but there are several critical issues preventing full functionality, particularly around authentication and Docker setup.
+The Hubsec Workforce Platform is a comprehensive multi-country workforce management system with extensive features. The core infrastructure is in place, but there are several critical issues preventing full functionality, particularly around authentication and Docker setup.
 
 ---
 
@@ -199,10 +199,10 @@ docker-compose logs app --tail 50
 ### Step 3: Verify Database & Seed Data ⚡
 ```bash
 # Connect to database container
-docker-compose exec postgres psql -U payroll -d payroll_platform
+docker-compose exec postgres psql -U workforce -d workforce_platform
 
 # Verify admin user exists
-SELECT email, first_name, last_name FROM users WHERE email = 'admin@demo.payroll';
+SELECT email, first_name, last_name FROM users WHERE email = 'admin@demo.workforce';
 
 # If needed, run seed
 docker-compose exec app npm run db:seed
@@ -211,7 +211,7 @@ docker-compose exec app npm run db:seed
 ### Step 4: Test Login Flow ⚡
 1. Navigate to http://localhost:3000/login (Employee Portal)
 2. Use credentials:
-   - Email: `admin@demo.payroll`
+   - Email: `admin@demo.workforce`
    - Password: `admin123`
 3. Verify successful login and token storage
 4. Test `/auth/me` endpoint with token
@@ -226,7 +226,7 @@ docker-compose exec app npm run db:seed
 ## 📝 Test Credentials
 
 ### Admin User
-- **Email**: `admin@demo.payroll`
+- **Email**: `admin@demo.workforce`
 - **Password**: `admin123` (bcrypt hash: `$2b$10$I8FQ5uXGDSVQ9QnLF1rYkewFIRNYCh0knNblp6i1caqEMg4uaJnWa`)
 - **Role**: ADMIN
 - **Permissions**: All permissions

@@ -8,20 +8,20 @@
 
 1. Run the seed:
    ```bash
-   DATABASE_URL="postgresql://payroll:payroll_secret@localhost:5432/payroll_platform?schema=public" npm run db:seed
+   DATABASE_URL="postgresql://workforce:workforce_secret@localhost:5432/workforce_platform?schema=public" npm run db:seed
    ```
    (Or use your `.env` and run `npm run db:seed`.)
 2. Confirm it completes with no errors (no unique-constraint or connection failures).
 3. Log in to the admin portal as each persona (password **admin123** for all):
-   - **tenantadmin@demo.payroll**
-   - **hr@demo.payroll**
-   - **payrollclerk@demo.payroll**
+   - **tenantadmin@demo.workforce**
+   - **hr@demo.workforce**
+   - **payrollclerk@demo.workforce**
 
 ---
 
 ## B) Tenant Admin quick run (~2 min)
 
-1. Log in as **tenantadmin@demo.payroll** (or **hr@demo.payroll**).
+1. Log in as **tenantadmin@demo.workforce** (or **hr@demo.workforce**).
 2. Open **/enterprise/employees**.
    - The list should load with no “employee:read” or permission-error banner.
 3. Click **Add Employee** and create one employee (required fields + optional employment).
@@ -33,7 +33,7 @@
 
 ## C) Payroll Clerk negative test (~1 min)
 
-1. Log in as **payrollclerk@demo.payroll**.
+1. Log in as **payrollclerk@demo.workforce**.
 2. Open **/enterprise/employees**.
    - You should see a **friendly “not allowed”** message:  
      *“You don’t have access to Employee Records. Contact your Tenant Admin.”*  

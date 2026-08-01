@@ -14,7 +14,7 @@ Migration: `prisma/migrations/20260301120000_add_employment_updated_at/migration
 ## Sign-off 2: Integration principal + hr:read
 
 - **Permission** `hr:read` and role **INTEGRATION_IGA** (GLOBAL) are seeded.
-- **Integration user** (seeded): `iga@demo.payroll` / `admin123` — change password in production.
+- **Integration user** (seeded): `iga@demo.workforce` / `admin123` — change password in production.
 - **Sign-off:** Log in as that user; `GET /v1/hr/employees` returns **200**. Without `hr:read`, the same request returns **403** and audit logs **PERMISSION_DENIED**.
 
 ## P0 implemented

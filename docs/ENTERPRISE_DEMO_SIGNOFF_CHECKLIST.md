@@ -8,15 +8,15 @@ RBAC v1.1 + UI hardening. Use this to verify the Enterprise demo path before cus
 
 - [ ] **Run seed** — `npm run db:seed` (with `DATABASE_URL` set) completes successfully with no unique-constraint or other errors.
 - [ ] **Login as TENANT_ADMIN (or HR) persona**  
-  Use **tenantadmin@demo.payroll** or **hr@demo.payroll** (password: **admin123**). Then:
+  Use **tenantadmin@demo.workforce** or **hr@demo.workforce** (password: **admin123**). Then:
   - `GET /v1/employees` → **200**
   - `POST /v1/employees` (valid body) → **201**
   - `GET /v1/employees/:id/employments` → **200**
   - `POST /v1/employees/:id/employments` (valid body) → **201**
 - [ ] **Login as role without employee permissions**  
-  Use **payrollclerk@demo.payroll** (password: **admin123**). Then:
+  Use **payrollclerk@demo.workforce** (password: **admin123**). Then:
   - `GET /v1/employees` → **403** and a **PERMISSION_DENIED** audit event is recorded.
-- [ ] **UI** — For **tenantadmin@demo.payroll** or **hr@demo.payroll**, the Employees list and Add Employee flow work; no spurious RBAC error on the Employees page.
+- [ ] **UI** — For **tenantadmin@demo.workforce** or **hr@demo.workforce**, the Employees list and Add Employee flow work; no spurious RBAC error on the Employees page.
 
 ---
 
@@ -61,10 +61,10 @@ RBAC v1.1 + UI hardening. Use this to verify the Enterprise demo path before cus
 
 | Email | Password | Role(s) | Purpose |
 |-------|----------|--------|--------|
-| admin@demo.payroll | admin123 | ADMIN (GLOBAL) + TENANT_ADMIN, PAYROLL_CLERK, SARS_OFFICER | Full access / break-glass |
-| tenantadmin@demo.payroll | admin123 | TENANT_ADMIN (LE) | Governance; employees + employments allowed |
-| hr@demo.payroll | admin123 | HR_ADMIN (LE) | HCM lifecycle; employees + employments only |
-| payrollclerk@demo.payroll | admin123 | PAYROLL_CLERK (LE) | Payrun prep; no employee/employment permissions → 403 on /employees |
-| iga@demo.payroll | admin123 | INTEGRATION_IGA (GLOBAL) | HR export API only (hr:read) |
+| admin@demo.workforce | admin123 | ADMIN (GLOBAL) + TENANT_ADMIN, PAYROLL_CLERK, SARS_OFFICER | Full access / break-glass |
+| tenantadmin@demo.workforce | admin123 | TENANT_ADMIN (LE) | Governance; employees + employments allowed |
+| hr@demo.workforce | admin123 | HR_ADMIN (LE) | HCM lifecycle; employees + employments only |
+| payrollclerk@demo.workforce | admin123 | PAYROLL_CLERK (LE) | Payrun prep; no employee/employment permissions → 403 on /employees |
+| iga@demo.workforce | admin123 | INTEGRATION_IGA (GLOBAL) | HR export API only (hr:read) |
 
 All LE-scoped users are scoped to the seeded demo legal entity.

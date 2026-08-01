@@ -1,6 +1,6 @@
 # End-to-End Testing Documentation
 
-This document provides comprehensive information about the E2E testing setup for the Payroll Platform.
+This document provides comprehensive information about the E2E testing setup for the Hubsec Workforce Platform.
 
 ## Overview
 

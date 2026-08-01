@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document describes the implementation of field-level encryption for sensitive data in the payroll platform, specifically bank account numbers.
+This document describes the implementation of field-level encryption for sensitive data in the Hubsec Workforce Platform, specifically bank account numbers.
 
 ## Architecture
 

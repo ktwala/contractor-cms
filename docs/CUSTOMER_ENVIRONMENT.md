@@ -11,7 +11,7 @@ To clear all data and prepare for a fresh customer:
 ### Local (with DATABASE_URL)
 
 ```bash
-DATABASE_URL="postgresql://payroll:payroll_secret@localhost:5432/payroll_platform" npm run db:reset-for-customer
+DATABASE_URL="postgresql://workforce:workforce_secret@localhost:5432/workforce_platform" npm run db:reset-for-customer
 ```
 
 ### Docker
@@ -75,7 +75,7 @@ docker compose up -d
 npm run db:seed && npm run demo:seed
 ```
 
-Login: `admin@demo.payroll` / `admin123`.
+Login: `admin@demo.workforce` / `admin123`.
 
 See [BOOTSTRAP.md](BOOTSTRAP.md) for full details.
 
