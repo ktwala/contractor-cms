@@ -1,6 +1,6 @@
 import { WorkerClassification } from '@prisma/client';
 
-/** Display order for CMS contractor forms (registry requires explicit choice). */
+/** Display order for external-worker forms (registry requires explicit choice). */
 export const WORKER_CLASSIFICATION_OPTIONS: Array<{
   value: WorkerClassification;
   label: string;

@@ -2,7 +2,7 @@
  * PR-EXTID-SCHEMA-1D — EXTID / substrate drift enforcement (no RBAC, HCM, IGA events, or UI).
  *
  * Encodes selected G-EXTID-* gates from docs/business/IMPLEMENTATION_DRIFT_GATES.md:
- * - G-EXTID-02: forbid IGA_PROVISIONED as CMS / workforce lifecycle token in schema, code, migrations
+ * - G-EXTID-02: forbid IGA_PROVISIONED as platform / workforce lifecycle token in schema, code, migrations
  * - Structural: sponsor accountability only on ContractorEngagement; not on Contractor or Supplier
  * - EXTID additive columns must remain present on Contractor / ContractorEngagement
  * - Every Prisma migration directory must contain migration.sql that is not git-ignored and is tracked
@@ -58,14 +58,14 @@ function getPrismaModelBody(schema: string, modelName: string): string {
 }
 
 // ---------------------------------------------------------------------------
-// G-EXTID-02 — IGA_PROVISIONED must not appear as CMS lifecycle / substrate token
+// G-EXTID-02 — IGA_PROVISIONED must not appear as platform lifecycle / substrate token
 // ---------------------------------------------------------------------------
 const IGA_PROVISIONED = /\bIGA_PROVISIONED\b/;
 
 function assertNoIgaProvisioned(filePath: string, content: string) {
   if (IGA_PROVISIONED.test(content)) {
     reportError(
-      `G-EXTID-02: forbidden token IGA_PROVISIONED in ${path.relative(projectRoot, filePath)} — do not use as CMS workforce lifecycle or integration-plane state`,
+      `G-EXTID-02: forbidden token IGA_PROVISIONED in ${path.relative(projectRoot, filePath)} — do not use as platform workforce lifecycle or integration-plane state`,
     );
   }
 }

@@ -170,9 +170,9 @@ export class ContractorsService {
       { organizationId: targetOrgId }
     );
 
-    // PR-CTR-CMS-AUTHORITY-1 — CMS-native creation provenance.
-    // CMS is the contractor authority after bootstrap. This event distinguishes contractors
-    // created directly in CMS from those materialized via HCM import.
+    // PR-CTR-CMS-AUTHORITY-1 — platform-native creation provenance.
+    // EWP is the external-worker authority after bootstrap. This event distinguishes contractors
+    // created directly in the platform from those materialized via HCM import.
     // missingResponsibleManagerAtCreation=true signals that a governance scan will raise MISSING_RESPONSIBLE_MANAGER
     // until the operator assigns a sponsor via an engagement.
     const hasLegacySource = !!(contractor as any).legacySourcePersonId;

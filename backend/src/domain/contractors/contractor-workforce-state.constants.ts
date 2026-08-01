@@ -14,7 +14,7 @@ export const WORKFORCE_TRANSITION_REASON_REQUIRED =
 export const WORKFORCE_TRANSITION_AUTHORITY_NOTE_REQUIRED =
   'WORKFORCE_TRANSITION_AUTHORITY_NOTE_REQUIRED';
 
-/** PR-WORKFORCE-BLACKLIST-1 — CMS workforce block sources (not MTN disciplinary workflow). */
+/** PR-WORKFORCE-BLACKLIST-1 — platform workforce block sources (not MTN disciplinary workflow). */
 export const WORKFORCE_BLACKLIST_SOURCE_STATES: readonly ContractorWorkforceState[] = [
   ContractorWorkforceState.NOMINATED,
   ContractorWorkforceState.PENDING_APPROVAL,

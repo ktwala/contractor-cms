@@ -1,5 +1,5 @@
 /**
- * PR-CTR-2C — sole entry point for HCM → CMS operational writes (GOV-CTR-1).
+ * PR-CTR-2C — sole entry point for HCM → platform operational writes (GOV-CTR-1).
  * Implementation: PR-CTR-5 (CTR issuance) + PR-CTR-4 (validation engine).
  */
 

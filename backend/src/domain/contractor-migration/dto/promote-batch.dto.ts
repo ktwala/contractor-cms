@@ -11,7 +11,7 @@ export class PromoteBatchDto {
   publishToIga?: boolean;
 
   @ApiPropertyOptional({
-    description: 'Preflight promote without writing operational CMS rows',
+    description: 'Preflight promote without writing operational workforce rows',
     default: false,
   })
   @IsOptional()

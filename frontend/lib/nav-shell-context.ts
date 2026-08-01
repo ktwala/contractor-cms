@@ -16,7 +16,7 @@ export function isSupplierPortalRoute(path: string): boolean {
 
 /**
  * PR-SHELL-NAV-CONTEXT-1 — navigation shell follows actor context, not URL prefix.
- * Internal CMS operators keep the full menu even when visiting `/supplier-portal/*`.
+ * Internal platform operators keep the full menu even when visiting `/supplier-portal/*`.
  */
 export function resolveNavShell(
   can: (permission: Permission) => boolean,

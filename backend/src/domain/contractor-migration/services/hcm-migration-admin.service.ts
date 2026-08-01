@@ -10,7 +10,7 @@ import type { PromoteBatchDto } from '../dto/promote-batch.dto';
 import { HcmMigrationWorkshopService } from './hcm-migration-workshop.service';
 
 /**
- * PR-CTR-6 — governed admin surface for migration batches (no direct ETL to CMS).
+ * PR-CTR-6 — governed admin surface for migration batches (no direct ETL to the operational platform).
  * PR-CMS-INT-3 — bootstrap ingest routes through contractor source adapter boundary.
  */
 @Injectable()

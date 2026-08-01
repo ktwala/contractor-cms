@@ -11,7 +11,7 @@ import type {
 
 /**
  * PR-CTR-3 — staging-only HCM ingest (file first, Oracle REST second).
- * Does not validate, promote, or touch operational CMS tables.
+ * Does not validate, promote, or touch operational workforce tables.
  */
 @Injectable()
 export class HcmContractorExtractAdapter {

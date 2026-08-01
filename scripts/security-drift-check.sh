@@ -81,8 +81,8 @@ fi
 echo "Checking supplier portal terminology (warn-only)..."
 (cd backend && npx --yes ts-node ../scripts/supplier-portal-terminology-drift-check.ts) || true
 
-# 7b. CMS forms — no supplier modal placeholder / RNaN drift (PR-CMS-FORMS-1A)
-echo "Checking CMS forms drift (supplier placeholder, RNaN)..."
+# 7b. EWP forms — no supplier modal placeholder / RNaN drift (PR-CMS-FORMS-1A)
+echo "Checking EWP forms drift (supplier placeholder, RNaN)..."
 if ! (cd backend && npx --yes ts-node ../scripts/cms-forms-drift-check.ts); then
   DRIFT_FOUND=1
 fi

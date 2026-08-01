@@ -69,13 +69,13 @@ for (const root of SCAN_ROOTS) {
   }
 }
 
-console.log('CMS forms drift check (PR-CMS-FORMS-1A)...\n');
+console.log('EWP forms drift check (PR-CMS-FORMS-1A)...\n');
 
 if (errors.length === 0) {
   console.log('✅ No supplier form placeholder or RNaN drift detected.');
   process.exit(0);
 }
 
-console.error(`❌ ${errors.length} CMS forms drift error(s):\n`);
+console.error(`❌ ${errors.length} EWP forms drift error(s):\n`);
 errors.forEach((e: string) => console.error(`  - ${e}\n`));
 process.exit(1);

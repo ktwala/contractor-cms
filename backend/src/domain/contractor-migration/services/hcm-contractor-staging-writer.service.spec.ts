@@ -118,7 +118,7 @@ describe('HcmContractorStagingWriterService (PR-CTR-3)', () => {
     expect(prisma.contractorMigrationBatch.create).not.toHaveBeenCalled();
   });
 
-  it('does not write operational CMS tables', async () => {
+  it('does not write operational workforce tables', async () => {
     await writer.writeRecords(
       {
         organizationId: ORG,

@@ -141,7 +141,7 @@ export class ContractorMigrationAdminController {
   @Post('batches/:id/promote')
   @Permissions(PERMISSIONS.CONTRACTORS.BOOTSTRAP)
   @ApiOperation({
-    summary: 'Promote PASSED staging rows to operational CMS (controlled path only)',
+    summary: 'Promote PASSED staging rows to the operational workforce (controlled path only)',
   })
   promoteBatch(
     @CurrentAccessContext() accessContext: AccessContext,

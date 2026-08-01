@@ -84,7 +84,7 @@ export function deriveWorkforceTransitionLabel(
 
 /** PR-WORKFORCE-HCM-HISTORY-1 — default operator-facing reason for promote/materialize. */
 export const HCM_BOOTSTRAP_WORKFORCE_HISTORY_REASON =
-  'HCM bootstrap materialization into CMS operational workforce';
+  'HCM bootstrap materialization into EWP operational workforce';
 
 export type HcmBootstrapHistoryMetadataInput = {
   stagingId: string;
