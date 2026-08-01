@@ -4,7 +4,7 @@ import type {
   ContractorPersonType,
   GovernanceRiskTier,
   IgaIntegrationPlaneStatus,
-  SponsorAccountabilityStatus,
+  ResponsibleManagerAccountabilityStatus,
   WorkerArchetypeKind,
 } from '@prisma/client';
 import {
@@ -17,7 +17,7 @@ import {
 /** Minimal contractor row slice used to build IGA-facing events (substrate-aligned). */
 export interface IgaEventContractorSlice {
   id: string;
-  supplierId: string;
+  supplierId: string | null;
   externalPersonId: string | null;
   personType: ContractorPersonType | null;
   workerArchetype: WorkerArchetypeKind | null;
@@ -28,8 +28,8 @@ export interface IgaEventContractorSlice {
 
 export interface IgaEventEngagementSponsorSlice {
   id: string;
-  sponsorEmployeeId: string | null;
-  sponsorStatus: SponsorAccountabilityStatus | null;
+  responsibleManagerEmployeeId: string | null;
+  responsibleManagerStatus: ResponsibleManagerAccountabilityStatus | null;
 }
 
 export interface BuildExternalPersonLifecycleEventInput {
@@ -74,8 +74,8 @@ export class IgaEventBuilder {
       personType: this.serializeEnum(contractor.personType),
       workerArchetype: this.serializeEnum(contractor.workerArchetype),
       supplierId: contractor.supplierId,
-      sponsorEmployeeId: eng?.sponsorEmployeeId ?? null,
-      sponsorStatus: this.serializeEnum(eng?.sponsorStatus),
+      responsibleManagerEmployeeId: eng?.responsibleManagerEmployeeId ?? null,
+      responsibleManagerStatus: this.serializeEnum(eng?.responsibleManagerStatus),
       accessIntent: this.serializeEnum(contractor.accessIntent),
       riskTier: this.serializeEnum(contractor.riskTier),
       igaIntegrationStatus: String(contractor.igaIntegrationStatus),
@@ -118,22 +118,52 @@ export class IgaEventBuilder {
     };
   }
 
+  buildExternalPersonSuspended(
+    input: BuildExternalPersonLifecycleEventInput,
+  ): IgaOutboundExternalWorkforceEventV1 {
+    const body = this.buildPayload(
+      IgaEventType.EXTERNAL_PERSON_SUSPENDED,
+      input.contractor,
+      input.engagement,
+    );
+    return {
+      version: IGA_EVENT_CONTRACT_VERSION,
+      source: IGA_EVENT_SOURCE,
+      ...body,
+    };
+  }
+
+  buildExternalPersonTerminated(
+    input: BuildExternalPersonLifecycleEventInput,
+  ): IgaOutboundExternalWorkforceEventV1 {
+    const body = this.buildPayload(
+      IgaEventType.EXTERNAL_PERSON_TERMINATED,
+      input.contractor,
+      input.engagement,
+    );
+    return {
+      version: IGA_EVENT_CONTRACT_VERSION,
+      source: IGA_EVENT_SOURCE,
+      ...body,
+    };
+  }
+
   /**
-   * `EXTERNAL_PERSON_SPONSOR_ASSIGNED` — requires a non-empty primary sponsor id on the engagement slice.
+   * `EXTERNAL_PERSON_RESPONSIBLE_MANAGER_ASSIGNED` — requires a non-empty primary sponsor id on the engagement slice.
    */
   buildSponsorAssigned(input: BuildSponsorAssignedEventInput): IgaOutboundExternalWorkforceEventV1 {
-    const sid = input.engagement.sponsorEmployeeId?.trim();
+    const sid = input.engagement.responsibleManagerEmployeeId?.trim();
     if (!sid) {
       throw new BadRequestException(
-        'EXTERNAL_PERSON_SPONSOR_ASSIGNED requires sponsorEmployeeId (primary sponsor reference)',
+        'EXTERNAL_PERSON_RESPONSIBLE_MANAGER_ASSIGNED requires responsibleManagerEmployeeId (primary sponsor reference)',
       );
     }
     const engagement: IgaEventEngagementSponsorSlice = {
       ...input.engagement,
-      sponsorEmployeeId: sid,
+      responsibleManagerEmployeeId: sid,
     };
     const body = this.buildPayload(
-      IgaEventType.EXTERNAL_PERSON_SPONSOR_ASSIGNED,
+      IgaEventType.EXTERNAL_PERSON_RESPONSIBLE_MANAGER_ASSIGNED,
       input.contractor,
       engagement,
     );

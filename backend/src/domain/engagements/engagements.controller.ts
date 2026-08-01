@@ -100,11 +100,13 @@ export class EngagementsController {
     type: EngagementResponseDto,
   })
   async update(
+    @CurrentAccessContext() accessContext: AccessContext,
     @CurrentUser('organizationId') organizationId: string,
     @Param('id') id: string,
     @Body() updateEngagementDto: UpdateEngagementDto,
   ): Promise<EngagementResponseDto> {
     return this.engagementsService.update(
+      accessContext,
       organizationId,
       id,
       updateEngagementDto,

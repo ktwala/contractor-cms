@@ -1,0 +1,24 @@
+[
+  {
+    "person_id": "hcm-ws-active-001",
+    "person_number": "PN-WS-001",
+    "first_name": "Workshop",
+    "last_name": "Active",
+    "email": "workshop.active@example.com",
+    "worker_type": "Contingent Worker",
+    "start_date": "2024-01-01",
+    "sponsor_employee_id": "cms:emp:sponsor-demo",
+    "assignment_status": "Active",
+    "vendor_name": "Demo Supplier Ltd"
+  },
+  {
+    "person_id": "hcm-ws-missing-sponsor",
+    "person_number": "PN-WS-002",
+    "first_name": "No",
+    "last_name": "Sponsor",
+    "email": "workshop.no-sponsor@example.com",
+    "worker_type": "Contingent Worker",
+    "start_date": "2024-02-01",
+    "assignment_status": "Active"
+  }
+]

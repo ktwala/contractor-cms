@@ -13,6 +13,8 @@ Following our proven methodology (Visibility → Policy → Enforcement → Auto
 ## Defined Scope
 This ADR governs the rules dictating an individual Contractor's system validity, eligibility to bill, and operational status.
 
+**Workforce state machine:** See [`ADR-011-Contractor-Workforce-Administration-Plane.md`](./ADR-011-Contractor-Workforce-Administration-Plane.md) — this ADR covers **PDP maturation** (visibility → enforcement), not the canonical workforce transition model.
+
 *Out of Scope: Automated suspension logic, NATS orchestration, or identity provider offboarding (until policy is finalized).*
 
 ---

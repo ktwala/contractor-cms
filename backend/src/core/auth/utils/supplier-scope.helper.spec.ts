@@ -12,7 +12,9 @@ describe('supplier-scope.helper', () => {
     actorOrganizationId: 'org1',
     targetOrganizationId: 'org1',
     isGlobalAccess: false,
+    effectivePermissions: new Set(['supplier-profile:read']),
     supplierScopeId: 'sup-demo',
+    responsibleManagerEmployeeId: null,
   };
 
   const unscoped: AccessContext = {

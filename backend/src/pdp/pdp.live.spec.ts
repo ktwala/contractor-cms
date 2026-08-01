@@ -9,6 +9,7 @@ const mockPrisma = {
   supplier: { findUnique: jest.fn() },
   contractor: { findUnique: jest.fn() },
   contractorEngagement: { findMany: jest.fn() },
+  contractorGovernanceRemediation: { findFirst: jest.fn().mockResolvedValue(null) },
 } as unknown as PrismaClient;
 
 describe('PDP Core Engine v1.1 - Live Data Shadow Evaluation', () => {
@@ -24,7 +25,14 @@ describe('PDP Core Engine v1.1 - Live Data Shadow Evaluation', () => {
   });
 
   it('Test Case 1: Valid transaction → evaluated ALLOW', async () => {
-    (mockPrisma.supplier.findUnique as jest.Mock).mockResolvedValue({ status: 'ACTIVE' });
+    (mockPrisma.supplier.findUnique as jest.Mock).mockResolvedValue({
+      status: 'ACTIVE',
+      organization: { supplierAuthorityMode: 'ORACLE_ONLY' },
+      sourceSystem: 'ORACLE_SUPPLIER_SAAS',
+      externalSupplierId: 'oracle-1',
+      sourceSyncStatus: 'SYNCED',
+      documents: []
+    });
     (mockPrisma.contractor.findUnique as jest.Mock).mockResolvedValue({ isActive: true, accessExpiresAt: new Date('2099-01-01') });
     (mockPrisma.contractorEngagement.findMany as jest.Mock).mockResolvedValue([
       { contract: { endDate: new Date('2099-01-01') } }
@@ -42,7 +50,14 @@ describe('PDP Core Engine v1.1 - Live Data Shadow Evaluation', () => {
   });
 
   it('Test Case 2: Expired supplier → evaluated HOLD', async () => {
-    (mockPrisma.supplier.findUnique as jest.Mock).mockResolvedValue({ status: 'SUSPENDED' });
+    (mockPrisma.supplier.findUnique as jest.Mock).mockResolvedValue({
+      status: 'SUSPENDED',
+      organization: { supplierAuthorityMode: 'ORACLE_ONLY' },
+      sourceSystem: 'ORACLE_SUPPLIER_SAAS',
+      externalSupplierId: 'oracle-1',
+      sourceSyncStatus: 'SYNCED',
+      documents: []
+    });
 
     const context: PdpContext = {
       supplierId: 'sup-1',
@@ -55,7 +70,14 @@ describe('PDP Core Engine v1.1 - Live Data Shadow Evaluation', () => {
   });
 
   it('Test Case 3: Missing PO on Invoice → evaluated BLOCK', async () => {
-    (mockPrisma.supplier.findUnique as jest.Mock).mockResolvedValue({ status: 'ACTIVE' });
+    (mockPrisma.supplier.findUnique as jest.Mock).mockResolvedValue({
+      status: 'ACTIVE',
+      organization: { supplierAuthorityMode: 'ORACLE_ONLY' },
+      sourceSystem: 'ORACLE_SUPPLIER_SAAS',
+      externalSupplierId: 'oracle-1',
+      sourceSyncStatus: 'SYNCED',
+      documents: []
+    });
     (mockPrisma.contractor.findUnique as jest.Mock).mockResolvedValue({ isActive: true });
     (mockPrisma.contractorEngagement.findMany as jest.Mock).mockResolvedValue([]);
 
@@ -72,7 +94,14 @@ describe('PDP Core Engine v1.1 - Live Data Shadow Evaluation', () => {
   });
 
   it('Test Case 4: Late pre-expiry timesheet → evaluated APPROVAL_REQUIRED', async () => {
-    (mockPrisma.supplier.findUnique as jest.Mock).mockResolvedValue({ status: 'ACTIVE' });
+    (mockPrisma.supplier.findUnique as jest.Mock).mockResolvedValue({
+      status: 'ACTIVE',
+      organization: { supplierAuthorityMode: 'ORACLE_ONLY' },
+      sourceSystem: 'ORACLE_SUPPLIER_SAAS',
+      externalSupplierId: 'oracle-1',
+      sourceSyncStatus: 'SYNCED',
+      documents: []
+    });
     (mockPrisma.contractor.findUnique as jest.Mock).mockResolvedValue({ isActive: true });
     (mockPrisma.contractorEngagement.findMany as jest.Mock).mockResolvedValue([
       { contract: { endDate: new Date('2099-01-01') } }
@@ -94,7 +123,14 @@ describe('PDP Core Engine v1.1 - Live Data Shadow Evaluation', () => {
   });
 
   it('Test Case 5: Post-expiry labor → evaluated BLOCK', async () => {
-    (mockPrisma.supplier.findUnique as jest.Mock).mockResolvedValue({ status: 'ACTIVE' });
+    (mockPrisma.supplier.findUnique as jest.Mock).mockResolvedValue({
+      status: 'ACTIVE',
+      organization: { supplierAuthorityMode: 'ORACLE_ONLY' },
+      sourceSystem: 'ORACLE_SUPPLIER_SAAS',
+      externalSupplierId: 'oracle-1',
+      sourceSyncStatus: 'SYNCED',
+      documents: []
+    });
     (mockPrisma.contractor.findUnique as jest.Mock).mockResolvedValue({ isActive: true });
     
     // Contract ended last year

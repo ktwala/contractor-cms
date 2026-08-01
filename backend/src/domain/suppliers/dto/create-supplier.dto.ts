@@ -10,6 +10,11 @@ import {
 import { SupplierType } from '@prisma/client';
 
 export class CreateSupplierDto {
+  @ApiPropertyOptional({ description: 'Target organization (required for org-scoped create)' })
+  @IsOptional()
+  @IsString()
+  organizationId?: string;
+
   @ApiProperty({ enum: SupplierType })
   @IsEnum(SupplierType)
   type: SupplierType;
@@ -82,9 +87,17 @@ export class CreateSupplierDto {
   @IsString()
   postalCode?: string;
 
-  @ApiProperty()
+  @ApiProperty({ description: 'ISO 3166-1 alpha-2 jurisdiction / address country' })
   @IsString()
   country: string;
+
+  @ApiPropertyOptional({
+    description:
+      'Governance jurisdiction (ISO 3166-1 alpha-2). Defaults from country. Supported: ZA, LS.',
+  })
+  @IsOptional()
+  @IsString()
+  countryCode?: string;
 
   // Banking
   @ApiPropertyOptional()

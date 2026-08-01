@@ -1,12 +1,30 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import DashboardLayout from '@/components/dashboard-layout';
 import { api } from '@/lib/api';
-import { Plus, Edit, Trash2, Search } from 'lucide-react';
+import Link from 'next/link';
+import { Plus, Edit, Trash2, Search, ExternalLink } from 'lucide-react';
 import RequirePermission from '@/components/RequirePermission';
 import { PERMISSIONS } from '@/lib/permissions.generated';
 import { useAuth } from '@/lib/auth-context';
+import SupplierFormModal from '@/components/suppliers/SupplierFormModal';
+import { formatSupplierDisplayName } from '@/lib/supplier-display';
+import SupplierGovernanceDashboard from '@/components/suppliers/SupplierGovernanceDashboard';
+import { SUPPLIER_GOVERNANCE_BUCKET_FILTER_LABELS } from '@/lib/supplier-governance-navigation';
+import {
+  canCreateSupplierMaster,
+  isOracleSupplierAuthority,
+  supplierMasterCreateLabel,
+} from '@/lib/tenant-authority';
+import {
+  OPERATIONAL_TRUST_LABELS,
+  oracleProcurementLabel,
+  operationalTrustLabel,
+  operationalTrustBadgeClass,
+} from '@/lib/operational-trust-labels';
+import { useOperationalTrustChanged } from '@/lib/operational-trust-events';
 
 interface Supplier {
   id: string;
@@ -14,35 +32,60 @@ interface Supplier {
   firstName?: string;
   lastName?: string;
   companyName?: string;
+  tradingName?: string;
   email: string;
   phone?: string;
   status: string;
   taxNumber?: string;
+  externalSupplierId?: string | null;
 }
 
 export default function SuppliersPage() {
+  const searchParams = useSearchParams();
+  const governanceBucket = searchParams.get('governanceBucket');
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
-  const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
-  const { can } = useAuth();
+  const [modalSupplierId, setModalSupplierId] = useState<string | null>(null);
+  const { can, user } = useAuth();
+  const showCreateSupplier =
+    can(PERMISSIONS.SUPPLIERS.CREATE) &&
+    canCreateSupplierMaster(user?.tenantAuthority);
+  const showGovernanceDashboard =
+    user?.tenantAuthority?.supplierAuthorityMode === 'HYBRID' ||
+    isOracleSupplierAuthority(user?.tenantAuthority);
 
-  useEffect(() => {
-    loadSuppliers();
-  }, []);
-
-  const loadSuppliers = async () => {
+  const loadSuppliers = useCallback(async () => {
     try {
-      const response = await api.getSuppliers({ page: 1, limit: 100 });
+      setLoading(true);
+      const response = await api.getSuppliers({
+        page: 1,
+        limit: 100,
+        ...(governanceBucket ? { governanceBucket } : {}),
+      });
       setSuppliers(response.data);
-    } catch (err: any) {
+      setError('');
+    } catch {
       setError('Failed to load suppliers');
     } finally {
       setLoading(false);
     }
-  };
+  }, [governanceBucket]);
+
+  useEffect(() => {
+    void loadSuppliers();
+  }, [loadSuppliers]);
+
+  useOperationalTrustChanged((detail) => {
+    setSuppliers((prev) =>
+      prev.map((s) =>
+        s.id === detail.supplierId ? { ...s, status: detail.currentState } : s,
+      ),
+    );
+    void loadSuppliers();
+  });
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this supplier?')) return;
@@ -84,18 +127,22 @@ export default function SuppliersPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Suppliers</h1>
-            <p className="text-gray-600 mt-1">Manage your supplier network</p>
+            <p className="text-gray-600 mt-1">
+              {user?.tenantAuthority?.supplierAuthorityMode === 'ORACLE_ONLY'
+                ? 'Oracle-approved supplier inventory — Operational Trust managed in EWP'
+                : 'Manage your supplier network'}
+            </p>
           </div>
-          {can(PERMISSIONS.SUPPLIERS.CREATE) && (
+          {showCreateSupplier && (
             <button
               onClick={() => {
-                setEditingSupplier(null);
+                setModalSupplierId(null);
                 setShowModal(true);
               }}
               className="btn btn-primary flex items-center"
             >
               <Plus className="w-4 h-4 mr-2" />
-              Add Supplier
+              {supplierMasterCreateLabel(user?.tenantAuthority)}
             </button>
           )}
         </div>
@@ -103,6 +150,31 @@ export default function SuppliersPage() {
         {error && (
           <div className="bg-red-50 border border-red-400 text-red-700 px-4 py-3 rounded">
             {error}
+          </div>
+        )}
+
+        {showGovernanceDashboard && (
+          <SupplierGovernanceDashboard className="card p-4" />
+        )}
+
+        {governanceBucket && (
+          <div className="flex flex-wrap items-center gap-3 text-sm">
+            <span className="inline-flex items-center rounded-full bg-indigo-50 text-indigo-800 px-3 py-1 font-medium">
+              Filter:{' '}
+              {SUPPLIER_GOVERNANCE_BUCKET_FILTER_LABELS[governanceBucket] ??
+                governanceBucket}
+            </span>
+            <Link href="/suppliers" className="text-indigo-600 hover:text-indigo-800">
+              Clear filter
+            </Link>
+            {governanceBucket === 'pending_evidence' && (
+              <Link
+                href="/suppliers/approvals"
+                className="text-indigo-600 hover:text-indigo-800"
+              >
+                Open operational trust queue →
+              </Link>
+            )}
           </div>
         )}
 
@@ -141,9 +213,20 @@ export default function SuppliersPage() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Phone
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
+                    {showGovernanceDashboard ? (
+                      <>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          {OPERATIONAL_TRUST_LABELS.oracleColumn}
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          {OPERATIONAL_TRUST_LABELS.operationalTrustColumn}
+                        </th>
+                      </>
+                    ) : (
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Status
+                      </th>
+                    )}
                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Actions
                     </th>
@@ -151,10 +234,7 @@ export default function SuppliersPage() {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {filteredSuppliers.map((supplier) => {
-                    const name =
-                      supplier.type === 'COMPANY'
-                        ? supplier.companyName
-                        : `${supplier.firstName} ${supplier.lastName}`;
+                    const name = formatSupplierDisplayName(supplier);
 
                     return (
                       <tr key={supplier.id} className="hover:bg-gray-50">
@@ -175,22 +255,46 @@ export default function SuppliersPage() {
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {supplier.phone || '-'}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span
-                            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                              supplier.status === 'ACTIVE'
-                                ? 'bg-green-100 text-green-800'
-                                : 'bg-gray-100 text-gray-800'
-                            }`}
-                          >
-                            {supplier.status}
-                          </span>
-                        </td>
+                        {showGovernanceDashboard ? (
+                          <>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                {oracleProcurementLabel(supplier.externalSupplierId)}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span
+                                className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${operationalTrustBadgeClass(supplier.status)}`}
+                              >
+                                {operationalTrustLabel(supplier.status)}
+                              </span>
+                            </td>
+                          </>
+                        ) : (
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span
+                              className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                supplier.status === 'ACTIVE'
+                                  ? 'bg-green-100 text-green-800'
+                                  : 'bg-gray-100 text-gray-800'
+                              }`}
+                            >
+                              {supplier.status}
+                            </span>
+                          </td>
+                        )}
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          <Link
+                            href={`/suppliers/${supplier.id}`}
+                            className="text-gray-600 hover:text-gray-900 mr-4 inline-flex"
+                            title="View supplier"
+                          >
+                            <ExternalLink className="w-4 h-4" />
+                          </Link>
                           {can(PERMISSIONS.SUPPLIERS.UPDATE) && (
                             <button
                               onClick={() => {
-                                setEditingSupplier(supplier);
+                                setModalSupplierId(supplier.id);
                                 setShowModal(true);
                               }}
                               className="text-primary-600 hover:text-primary-900 mr-4"
@@ -221,27 +325,27 @@ export default function SuppliersPage() {
         </div>
       </div>
 
-      {/* Modal Placeholder */}
-      {showModal && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full">
-            <h3 className="text-lg font-medium mb-4">
-              {editingSupplier ? 'Edit Supplier' : 'Add Supplier'}
-            </h3>
-            <p className="text-gray-600 mb-4">
-              Supplier form would go here. Use react-hook-form for full implementation.
-            </p>
-            <div className="flex justify-end space-x-2">
-              <button onClick={() => setShowModal(false)} className="btn btn-secondary">
-                Cancel
-              </button>
-              <button onClick={() => setShowModal(false)} className="btn btn-primary">
-                Save
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <SupplierFormModal
+        isOpen={showModal}
+        supplierId={modalSupplierId}
+        onClose={() => {
+          setShowModal(false);
+          setModalSupplierId(null);
+        }}
+        onSaved={(saved) => {
+          const row = saved as unknown as Supplier;
+          setSuppliers((prev) => {
+            const idx = prev.findIndex((s) => s.id === row.id);
+            if (idx >= 0) {
+              const next = [...prev];
+              next[idx] = { ...next[idx], ...row };
+              return next;
+            }
+            return [row, ...prev];
+          });
+          void loadSuppliers();
+        }}
+      />
       </DashboardLayout>
     </RequirePermission>
   );

@@ -13,6 +13,7 @@ import {
   ContractResponseDto,
 } from './dto/contract-response.dto';
 import { AccessContext } from '../../core/auth/interfaces/access-context.interface';
+import { assertSupplierOperationalTrustGranted } from '../suppliers/supplier-operational-trust.util';
 
 @Injectable()
 export class ContractsService {
@@ -36,6 +37,11 @@ export class ContractsService {
     if (!supplier) {
       throw new NotFoundException('Supplier not found in your organization');
     }
+
+    assertSupplierOperationalTrustGranted({
+      status: supplier.status,
+      supplierName: supplier.tradingName ?? supplier.companyName ?? undefined,
+    });
 
     // Check for duplicate contract number within organization
     const existingContract = await this.prisma.supplierContract.findFirst({
@@ -287,6 +293,11 @@ export class ContractsService {
       if (!newSupplier) {
         throw new NotFoundException('New supplier not found in your organization');
       }
+
+      assertSupplierOperationalTrustGranted({
+        status: newSupplier.status,
+        supplierName: newSupplier.tradingName ?? newSupplier.companyName ?? undefined,
+      });
     }
 
     // Check for contract number conflict if number is being changed

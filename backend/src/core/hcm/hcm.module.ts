@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
-import { HcmSponsorLookupService } from './hcm-sponsor-lookup.service';
+import { HcmResponsibleManagerLookupService } from './hcm-responsible-manager-lookup.service';
 
 @Module({
-  providers: [HcmSponsorLookupService],
-  exports: [HcmSponsorLookupService],
+  providers: [HcmResponsibleManagerLookupService],
+  exports: [HcmResponsibleManagerLookupService],
 })
 export class HcmModule {}

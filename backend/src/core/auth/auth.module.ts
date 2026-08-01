@@ -11,24 +11,22 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { ApiKeyStrategy } from './strategies/api-key.strategy';
 import { DatabaseModule } from '../database/database.module';
 import { OrgContextResolverService } from './guards/org-context-resolver.service';
+import { AuthorityModule } from '../authority/authority.module';
 
 @Global()
 @Module({
   imports: [
     DatabaseModule,
+    AuthorityModule,
     PassportModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => {
-        const secret = configService.get<string>('jwt.secret');
-        console.log('JwtModule initialized with secret:', secret);
-        return {
-          secret,
-          signOptions: {
-            expiresIn: configService.get<any>('jwt.expiresIn'),
-          },
-        };
-      },
+      useFactory: async (configService: ConfigService) => ({
+        secret: configService.get<string>('jwt.secret'),
+        signOptions: {
+          expiresIn: configService.get<any>('jwt.expiresIn'),
+        },
+      }),
       inject: [ConfigService],
     }),
   ],

@@ -1,0 +1,111 @@
+[
+  {
+    "person_id": "HCM-WORKER-DEMO-001",
+    "person_number": "PN-DEMO-001",
+    "display_name": "Demo Worker High 01",
+    "email": "demo.worker.high01@demo.local",
+    "worker_type": "CWK",
+    "assignment_status": "active",
+    "supplier": "Demo Supplier Ltd",
+    "fixture": "HCM-WORKER-DEMO-001",
+    "scenario": "clean_high_confidence"
+  },
+  {
+    "person_id": "HCM-WORKER-DEMO-002",
+    "person_number": "PN-DEMO-002",
+    "display_name": "Demo Worker High 02",
+    "email": "demo.worker.high02@demo.local",
+    "worker_type": "CWK",
+    "assignment_status": "active",
+    "supplier": "Demo Supplier Ltd",
+    "fixture": "HCM-WORKER-DEMO-002",
+    "scenario": "clean_high_confidence"
+  },
+  {
+    "person_id": "HCM-WORKER-DEMO-003",
+    "person_number": "PN-DEMO-003",
+    "display_name": "Demo Worker High 03",
+    "email": "demo.worker.high03@demo.local",
+    "worker_type": "CWK",
+    "assignment_status": "active",
+    "supplier": "Demo Supplier Ltd",
+    "fixture": "HCM-WORKER-DEMO-003",
+    "scenario": "clean_high_confidence"
+  },
+  {
+    "person_id": "HCM-WORKER-DEMO-004",
+    "person_number": "PN-DEMO-004",
+    "display_name": "Demo Worker High 04",
+    "email": "demo.worker.high04@demo.local",
+    "worker_type": "CWK",
+    "assignment_status": "active",
+    "supplier": "Demo Supplier Ltd",
+    "fixture": "HCM-WORKER-DEMO-004",
+    "scenario": "clean_high_confidence"
+  },
+  {
+    "person_id": "HCM-WORKER-DEMO-005",
+    "person_number": "PN-DEMO-005",
+    "display_name": "Demo Worker Low 05",
+    "email": "demo.worker.low05@demo.local",
+    "worker_type": "CWK",
+    "assignment_status": "active",
+    "supplier": "Demo Supplier Ltd",
+    "fixture": "HCM-WORKER-DEMO-005",
+    "scenario": "low_confidence_email_only"
+  },
+  {
+    "person_id": "HCM-WORKER-DEMO-006",
+    "person_number": "PN-DEMO-006",
+    "display_name": "Demo Worker Low 06",
+    "email": "demo.worker.low06@demo.local",
+    "worker_type": "CWK",
+    "assignment_status": "active",
+    "supplier": "Demo Supplier Ltd",
+    "fixture": "HCM-WORKER-DEMO-006",
+    "scenario": "low_confidence_email_only"
+  },
+  {
+    "person_id": "HCM-WORKER-DEMO-007",
+    "person_number": "PN-DEMO-007",
+    "display_name": "Demo Worker Conflict 07",
+    "email": "demo.worker.conflict07@demo.local",
+    "worker_type": "CWK",
+    "assignment_status": "active",
+    "supplier": "Demo Supplier Ltd",
+    "fixture": "HCM-WORKER-DEMO-007",
+    "scenario": "manual_review_identity_conflict"
+  },
+  {
+    "person_id": "HCM-WORKER-DEMO-008",
+    "person_number": "PN-DEMO-008",
+    "display_name": "Demo Worker Unsponsored 08",
+    "email": "demo.worker.unsponsored08@demo.local",
+    "worker_type": "CWK",
+    "assignment_status": "active",
+    "supplier": "Demo Supplier Ltd",
+    "fixture": "HCM-WORKER-DEMO-008",
+    "scenario": "unsponsored_operational_governance"
+  },
+  {
+    "person_id": "HCM-WORKER-DEMO-009",
+    "person_number": "PN-DEMO-009",
+    "display_name": "Demo Worker No Supplier",
+    "email": "demo.worker.nosup09@demo.local",
+    "worker_type": "CWK",
+    "assignment_status": "active",
+    "fixture": "HCM-WORKER-DEMO-009",
+    "scenario": "missing_supplier_link"
+  },
+  {
+    "person_id": "HCM-WORKER-DEMO-010",
+    "person_number": "PN-DEMO-010",
+    "display_name": "Demo Worker Ended",
+    "email": "demo.worker.ended10@demo.local",
+    "worker_type": "CWK",
+    "assignment_status": "inactive",
+    "supplier": "Demo Supplier Ltd",
+    "fixture": "HCM-WORKER-DEMO-010",
+    "scenario": "ended_inactive_worker"
+  }
+]

@@ -16,7 +16,7 @@ export class FinancialRuleEvaluator {
     if (engagements.length === 0) return { decision: 'ALLOW' };
 
     const engagement = engagements[0];
-    const contractEndDate = engagement.contract.endDate;
+    const contractEndDate = engagement.contract?.endDate;
 
     if (contractEndDate) {
       if (context.transactionDate > contractEndDate) {

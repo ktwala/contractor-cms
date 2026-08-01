@@ -20,6 +20,7 @@ export const API_ENDPOINT_CONTRACTS = [
   { pattern: /^\/analytics\/contractors/, scope: 'global' },
   { pattern: /^\/analytics\/projects/, scope: 'global' },
   { pattern: /^\/audit/, scope: 'global' },
+  { pattern: /^\/pdp/, scope: 'global' },
   { pattern: /^\/users/, scope: 'global' },
   { pattern: /^\/roles/, scope: 'global' },
   { pattern: /^\/organizations/, scope: 'global' },

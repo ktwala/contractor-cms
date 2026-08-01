@@ -1,0 +1,2 @@
+-- MISSING_RESPONSIBLE_MANAGER enum value is created in 20260526100000_contractor_source_drift
+-- (this migration predates that enum and must remain a no-op for ordering).

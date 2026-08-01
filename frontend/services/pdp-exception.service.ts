@@ -1,3 +1,5 @@
+import { api } from '@/lib/api';
+
 export interface PdpExceptionRequest {
   id: string;
   evaluationId: string;
@@ -22,60 +24,47 @@ export interface CreateExceptionDto {
   justification: string;
 }
 
-const API_BASE = '/api/v1/pdp/exceptions';
-
-function getAuthHeaders() {
-  const token = localStorage.getItem('auth_token');
-  return {
-    'Content-Type': 'application/json',
-    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-  };
+function formatApiError(err: unknown, fallback: string): string {
+  if (err && typeof err === 'object' && 'response' in err) {
+    const data = (err as { response?: { data?: { message?: string | string[] } } }).response?.data;
+    const message = data?.message;
+    if (Array.isArray(message)) return message.join(', ');
+    if (typeof message === 'string' && message.trim()) return message;
+  }
+  if (err instanceof Error && err.message) return err.message;
+  return fallback;
 }
 
 export const pdpExceptionService = {
   async listExceptions(status?: string): Promise<PdpExceptionRequest[]> {
-    const url = status ? `${API_BASE}?status=${status}` : API_BASE;
-    const res = await fetch(url, { headers: getAuthHeaders() });
-    if (!res.ok) throw new Error('Failed to fetch exceptions');
-    return res.json();
+    try {
+      return (await api.listPdpExceptions(status)) as PdpExceptionRequest[];
+    } catch (err) {
+      throw new Error(formatApiError(err, 'Failed to fetch exceptions'));
+    }
   },
 
   async createException(dto: CreateExceptionDto): Promise<PdpExceptionRequest> {
-    const res = await fetch(API_BASE, {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify(dto)
-    });
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.message || 'Failed to create exception request');
+    try {
+      return (await api.createPdpException(dto)) as PdpExceptionRequest;
+    } catch (err) {
+      throw new Error(formatApiError(err, 'Failed to create exception request'));
     }
-    return res.json();
   },
 
   async approveException(id: string, notes: string, expiresAt: string): Promise<PdpExceptionRequest> {
-    const res = await fetch(`${API_BASE}/${id}/approve`, {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify({ approvalNotes: notes, expiresAt })
-    });
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.message || 'Failed to approve exception');
+    try {
+      return (await api.approvePdpException(id, notes, expiresAt)) as PdpExceptionRequest;
+    } catch (err) {
+      throw new Error(formatApiError(err, 'Failed to approve exception'));
     }
-    return res.json();
   },
 
   async rejectException(id: string, notes: string): Promise<PdpExceptionRequest> {
-    const res = await fetch(`${API_BASE}/${id}/reject`, {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify({ approvalNotes: notes })
-    });
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.message || 'Failed to reject exception');
+    try {
+      return (await api.rejectPdpException(id, notes)) as PdpExceptionRequest;
+    } catch (err) {
+      throw new Error(formatApiError(err, 'Failed to reject exception'));
     }
-    return res.json();
-  }
+  },
 };

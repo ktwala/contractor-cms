@@ -16,9 +16,22 @@ export class OrgContextResolverService {
     if (lookup === 'Contractor') {
       const row = await this.prisma.contractor.findUnique({
         where: { id },
-        select: { supplier: { select: { organizationId: true } } },
+        select: {
+          organizationId: true,
+          supplier: { select: { organizationId: true } },
+        },
       });
-      return row?.supplier?.organizationId ?? null;
+      return row?.organizationId ?? row?.supplier?.organizationId ?? null;
+    }
+
+    if (lookup === 'Timesheet') {
+      const row = await this.prisma.timesheet.findUnique({
+        where: { id },
+        select: {
+          contractor: { select: { supplier: { select: { organizationId: true } } } },
+        },
+      });
+      return row?.contractor?.supplier?.organizationId ?? null;
     }
 
     const modelName = lookup.toLowerCase();

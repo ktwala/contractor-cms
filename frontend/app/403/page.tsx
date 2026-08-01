@@ -13,7 +13,7 @@ export default function ForbiddenPage() {
           href="/dashboard"
           className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700"
         >
-          Return to Dashboard
+          Return to Overview
         </Link>
       </div>
     </div>

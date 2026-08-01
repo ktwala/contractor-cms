@@ -1,12 +1,20 @@
-import { PartialType } from '@nestjs/swagger';
-import { CreateSupplierDto } from './create-supplier.dto';
-import { IsEnum, IsOptional } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { SupplierStatus } from '@prisma/client';
+import { PartialType } from '@nestjs/swagger';
+import { IsEnum, IsOptional, IsString } from 'class-validator';
+import { SupplierSourceSystem } from '@prisma/client';
+import { CreateSupplierDto } from './create-supplier.dto';
 
+/** Profile fields only — use PATCH /suppliers/:id/status for lifecycle transitions. */
 export class UpdateSupplierDto extends PartialType(CreateSupplierDto) {
-  @ApiPropertyOptional({ enum: SupplierStatus })
+  /** Rejected when supplier is Oracle-linked (PR-CMS-DATA-2). */
+  @ApiPropertyOptional({ enum: SupplierSourceSystem })
   @IsOptional()
-  @IsEnum(SupplierStatus)
-  status?: SupplierStatus;
+  @IsEnum(SupplierSourceSystem)
+  sourceSystem?: SupplierSourceSystem;
+
+  /** Rejected when supplier is Oracle-linked (PR-CMS-DATA-2). */
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  externalSupplierId?: string;
 }

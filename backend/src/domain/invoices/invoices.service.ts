@@ -21,6 +21,7 @@ import { Prisma } from '@prisma/client';
 import { AccessContext } from '../../core/auth/interfaces/access-context.interface';
 
 import { AuditService } from '../../core/audit/audit.service';
+import { redactInvoiceRecord } from '../../core/auth/utils/finance-visibility.helper';
 
 @Injectable()
 export class InvoicesService {
@@ -28,6 +29,16 @@ export class InvoicesService {
     private readonly prisma: PrismaService,
     private readonly auditService: AuditService,
   ) {}
+
+  private presentInvoice(
+    accessContext: AccessContext,
+    invoice: unknown,
+  ): InvoiceResponseDto {
+    return redactInvoiceRecord(
+      invoice as Record<string, unknown>,
+      accessContext.effectivePermissions,
+    ) as unknown as InvoiceResponseDto;
+  }
 
   async create(
     accessContext: AccessContext,
@@ -143,7 +154,7 @@ export class InvoicesService {
       },
     });
 
-    return invoice as any;
+    return this.presentInvoice(accessContext, invoice);
   }
 
   async generateFromTimesheets(
@@ -208,6 +219,11 @@ export class InvoicesService {
     }
 
     const supplierId = supplierIds[0];
+    if (!supplierId) {
+      throw new BadRequestException(
+        'All timesheets must belong to a supplier-linked contractor',
+      );
+    }
 
     // Calculate period range
     const allDates = timesheets.flatMap((ts) => [ts.periodStart, ts.periodEnd]);
@@ -356,7 +372,7 @@ export class InvoicesService {
     ]);
 
     return {
-      data: invoices as any,
+      data: invoices.map((invoice) => this.presentInvoice(accessContext, invoice)),
       total,
       page,
       limit,
@@ -408,7 +424,7 @@ export class InvoicesService {
       throw new NotFoundException('Invoice not found');
     }
 
-    return invoice as any;
+    return this.presentInvoice(accessContext, invoice);
   }
 
   async update(
@@ -548,7 +564,7 @@ export class InvoicesService {
       },
     });
 
-    return invoice as any;
+    return this.presentInvoice(accessContext, invoice);
   }
 
   async remove(accessContext: AccessContext, id: string): Promise<void> {
@@ -640,7 +656,7 @@ export class InvoicesService {
       { organizationId: invoice.organizationId }
     );
 
-    return updatedInvoice as any;
+    return this.presentInvoice(accessContext, updatedInvoice);
   }
 
   async approve(
@@ -705,7 +721,7 @@ export class InvoicesService {
       { organizationId: invoice.organizationId }
     );
 
-    return updatedInvoice as any;
+    return this.presentInvoice(accessContext, updatedInvoice);
   }
 
   async reject(
@@ -770,7 +786,7 @@ export class InvoicesService {
       { organizationId: invoice.organizationId }
     );
 
-    return updatedInvoice as any;
+    return this.presentInvoice(accessContext, updatedInvoice);
   }
 
   async markPaid(
@@ -834,7 +850,7 @@ export class InvoicesService {
       { organizationId: invoice.organizationId }
     );
 
-    return updatedInvoice as any;
+    return this.presentInvoice(accessContext, updatedInvoice);
   }
 
   async cancel(accessContext: AccessContext, id: string): Promise<InvoiceResponseDto> {
@@ -855,7 +871,7 @@ export class InvoicesService {
       throw new BadRequestException('Cannot cancel a paid invoice');
     }
 
-    return this.prisma.invoice.update({
+    const cancelled = await this.prisma.invoice.update({
       where: { id },
       data: {
         status: 'CANCELLED',
@@ -880,6 +896,8 @@ export class InvoicesService {
           },
         },
       },
-    }) as any;
+    });
+
+    return this.presentInvoice(accessContext, cancelled);
   }
 }

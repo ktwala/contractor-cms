@@ -4,7 +4,7 @@ import {
   ContractorPersonType,
   GovernanceRiskTier,
   IgaIntegrationPlaneStatus,
-  SponsorAccountabilityStatus,
+  ResponsibleManagerAccountabilityStatus,
   WorkerArchetypeKind,
 } from '@prisma/client';
 import { IgaEventBuilder } from './iga-event.builder';
@@ -50,8 +50,8 @@ describe('IgaEventBuilder', () => {
     expect(ev.externalPersonId).toBe('ext-person-1');
     expect(ev.igaIntegrationStatus).toBe('IGA_UNKNOWN');
     expect(ev.engagementId).toBeNull();
-    expect(ev.sponsorEmployeeId).toBeNull();
-    expect(ev.sponsorStatus).toBeNull();
+    expect(ev.responsibleManagerEmployeeId).toBeNull();
+    expect(ev.responsibleManagerStatus).toBeNull();
   });
 
   it('allows null externalPersonId and null sponsor when engagement omitted', () => {
@@ -60,7 +60,7 @@ describe('IgaEventBuilder', () => {
       contractor: { ...contractorBase, externalPersonId: null },
     });
     expect(ev.externalPersonId).toBeNull();
-    expect(ev.sponsorEmployeeId).toBeNull();
+    expect(ev.responsibleManagerEmployeeId).toBeNull();
     expect(ev.eventType).toBe(IgaEventType.EXTERNAL_PERSON_UPDATED);
   });
 
@@ -70,24 +70,24 @@ describe('IgaEventBuilder', () => {
       contractor: contractorBase,
       engagement: {
         id: 'eng-1',
-        sponsorEmployeeId: 'sponsor-emp-1',
-        sponsorStatus: SponsorAccountabilityStatus.SPONSOR_ASSIGNED,
+        responsibleManagerEmployeeId: 'sponsor-emp-1',
+        responsibleManagerStatus: ResponsibleManagerAccountabilityStatus.RESPONSIBLE_MANAGER_ASSIGNED,
       },
     });
     expect(ev.engagementId).toBe('eng-1');
-    expect(ev.sponsorEmployeeId).toBe('sponsor-emp-1');
-    expect(ev.sponsorStatus).toBe('SPONSOR_ASSIGNED');
+    expect(ev.responsibleManagerEmployeeId).toBe('sponsor-emp-1');
+    expect(ev.responsibleManagerStatus).toBe('RESPONSIBLE_MANAGER_ASSIGNED');
   });
 
-  it('buildSponsorAssigned throws when sponsorEmployeeId is missing', () => {
+  it('buildSponsorAssigned throws when responsibleManagerEmployeeId is missing', () => {
     const builder = new IgaEventBuilder();
     expect(() =>
       builder.buildSponsorAssigned({
         contractor: contractorBase,
         engagement: {
           id: 'eng-1',
-          sponsorEmployeeId: null,
-          sponsorStatus: null,
+          responsibleManagerEmployeeId: null,
+          responsibleManagerStatus: null,
         },
       }),
     ).toThrow(BadRequestException);
@@ -96,25 +96,25 @@ describe('IgaEventBuilder', () => {
         contractor: contractorBase,
         engagement: {
           id: 'eng-1',
-          sponsorEmployeeId: '   ',
-          sponsorStatus: null,
+          responsibleManagerEmployeeId: '   ',
+          responsibleManagerStatus: null,
         },
       }),
     ).toThrow(BadRequestException);
   });
 
-  it('buildSponsorAssigned requires sponsor and sets EXTERNAL_PERSON_SPONSOR_ASSIGNED', () => {
+  it('buildSponsorAssigned requires sponsor and sets EXTERNAL_PERSON_RESPONSIBLE_MANAGER_ASSIGNED', () => {
     const builder = new IgaEventBuilder();
     const ev = builder.buildSponsorAssigned({
       contractor: contractorBase,
       engagement: {
         id: 'eng-1',
-        sponsorEmployeeId: '  hcm:1  ',
-        sponsorStatus: SponsorAccountabilityStatus.SPONSOR_ASSIGNED,
+        responsibleManagerEmployeeId: '  hcm:1  ',
+        responsibleManagerStatus: ResponsibleManagerAccountabilityStatus.RESPONSIBLE_MANAGER_ASSIGNED,
       },
     });
-    expect(ev.eventType).toBe(IgaEventType.EXTERNAL_PERSON_SPONSOR_ASSIGNED);
-    expect(ev.sponsorEmployeeId).toBe('hcm:1');
+    expect(ev.eventType).toBe(IgaEventType.EXTERNAL_PERSON_RESPONSIBLE_MANAGER_ASSIGNED);
+    expect(ev.responsibleManagerEmployeeId).toBe('hcm:1');
     expect(ev.engagementId).toBe('eng-1');
   });
 

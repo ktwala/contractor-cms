@@ -1,0 +1,4 @@
+-- PR-CMS-OPERATIONS-1B — supplier document metadata fields
+
+ALTER TABLE "SupplierDocument" ADD COLUMN IF NOT EXISTS "notes" TEXT;
+ALTER TABLE "SupplierDocument" ADD COLUMN IF NOT EXISTS "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;

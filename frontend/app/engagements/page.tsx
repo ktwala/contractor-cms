@@ -10,7 +10,16 @@ import StatusBadge from '@/components/ui/status-badge';
 import { api } from '@/lib/api';
 import { useToast } from '@/lib/toast';
 import { Plus, Edit, Trash2, Search, Briefcase } from 'lucide-react';
-import { format } from 'date-fns';
+import {
+  safeFormatDate,
+  safeIsoDatePart,
+  safeLower,
+  safeString,
+} from '@/lib/safe-string';
+import {
+  formatCurrencyDisplay,
+  formatEngagementTitleDisplay,
+} from '@/lib/display-format';
 import RequirePermission from '@/components/RequirePermission';
 import { PERMISSIONS } from '@/lib/permissions.generated';
 import { useAuth } from '@/lib/auth-context';
@@ -84,8 +93,8 @@ export default function EngagementsPage() {
         contractId: engagement.contractId,
         title: engagement.title,
         description: engagement.description || '',
-        startDate: engagement.startDate.split('T')[0],
-        endDate: engagement.endDate ? engagement.endDate.split('T')[0] : '',
+        startDate: safeIsoDatePart(engagement.startDate),
+        endDate: safeIsoDatePart(engagement.endDate),
         rate: engagement.rate.toString(),
         rateType: engagement.rateType,
         currency: engagement.currency,
@@ -157,19 +166,14 @@ export default function EngagementsPage() {
   };
 
   const filteredEngagements = engagements.filter((engagement) => {
-    const searchLower = searchTerm.toLowerCase();
+    const searchLower = safeLower(searchTerm);
+    const title = safeString(engagement.title);
+    const contractNumber = safeString(engagement.contract?.contractNumber);
     return (
-      engagement.title.toLowerCase().includes(searchLower) ||
-      engagement.contract?.contractNumber.toLowerCase().includes(searchLower)
+      safeLower(title).includes(searchLower) ||
+      safeLower(contractNumber).includes(searchLower)
     );
   });
-
-  const formatCurrency = (amount: number, currency: string) => {
-    return new Intl.NumberFormat('en-ZA', {
-      style: 'currency',
-      currency: currency,
-    }).format(amount);
-  };
 
   if (loading) {
     return (
@@ -248,7 +252,7 @@ export default function EngagementsPage() {
                   {filteredEngagements.map((engagement) => (
                     <tr key={engagement.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4">
-                        <div className="text-sm font-medium text-gray-900">{engagement.title}</div>
+                        <div className="text-sm font-medium text-gray-900">{formatEngagementTitleDisplay(engagement.title)}</div>
                         {engagement.description && (
                           <div className="text-sm text-gray-500 truncate max-w-xs">
                             {engagement.description}
@@ -259,7 +263,7 @@ export default function EngagementsPage() {
                         {engagement.contract && (
                           <>
                             <div className="text-sm text-gray-900">
-                              {engagement.contract.contractNumber}
+                              {engagement.contract.contractNumber || '—'}
                             </div>
                             {engagement.contract.contractor && (
                               <div className="text-sm text-gray-500">
@@ -271,18 +275,18 @@ export default function EngagementsPage() {
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <div>{format(new Date(engagement.startDate), 'MMM dd, yyyy')}</div>
+                        <div>{safeFormatDate(engagement.startDate, 'MMM dd, yyyy')}</div>
                         {engagement.endDate && (
                           <div className="text-xs text-gray-400">
-                            to {format(new Date(engagement.endDate), 'MMM dd, yyyy')}
+                            to {safeFormatDate(engagement.endDate, 'MMM dd, yyyy')}
                           </div>
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">
-                          {formatCurrency(engagement.rate, engagement.currency)}
+                          {formatCurrencyDisplay(engagement.rate, engagement.currency || 'ZAR')}
                         </div>
-                        <div className="text-xs text-gray-500">{engagement.rateType}</div>
+                        <div className="text-xs text-gray-500">{engagement.rateType || '—'}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <StatusBadge status={engagement.status} />

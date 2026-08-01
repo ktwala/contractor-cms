@@ -1,0 +1,58 @@
+import { HcmQuarantineReasonCode } from '@prisma/client';
+
+/** PR-CTR-2B — structured validation failure codes (stored in validationErrorsJson). */
+export const HCM_VALIDATION_REASON = {
+  MISSING_SOURCE_PERSON_ID: 'MISSING_SOURCE_PERSON_ID',
+  MISSING_SOURCE_PERSON_NUMBER: 'MISSING_SOURCE_PERSON_NUMBER',
+  UNSUPPORTED_WORKER_TYPE: 'UNSUPPORTED_WORKER_TYPE',
+  MISSING_START_DATE: 'MISSING_START_DATE',
+  INVALID_DATE_RANGE: 'INVALID_DATE_RANGE',
+  MISSING_RESPONSIBLE_MANAGER: 'MISSING_RESPONSIBLE_MANAGER',
+  RESPONSIBLE_MANAGER_NOT_FOUND: 'RESPONSIBLE_MANAGER_NOT_FOUND',
+  RESPONSIBLE_MANAGER_INACTIVE: 'RESPONSIBLE_MANAGER_INACTIVE',
+  DUPLICATE_SOURCE_PERSON: 'DUPLICATE_SOURCE_PERSON',
+  DUPLICATE_EMAIL: 'DUPLICATE_EMAIL',
+  EMPLOYEE_CONTRACTOR_COLLISION: 'EMPLOYEE_CONTRACTOR_COLLISION',
+  OVERLAPPING_ENGAGEMENT: 'OVERLAPPING_ENGAGEMENT',
+  MISSING_EMAIL: 'MISSING_EMAIL',
+  INVALID_STATUS: 'INVALID_STATUS',
+} as const;
+
+export type HcmValidationReasonCode =
+  (typeof HCM_VALIDATION_REASON)[keyof typeof HCM_VALIDATION_REASON];
+
+export type HcmValidationSeverity = 'ERROR' | 'WARN';
+
+export interface HcmValidationIssue {
+  code: HcmValidationReasonCode;
+  severity: HcmValidationSeverity;
+  sourceField?: string;
+  message: string;
+  remediationHint: string;
+}
+
+export function mapValidationCodeToQuarantineReason(
+  code: HcmValidationReasonCode,
+): HcmQuarantineReasonCode {
+  switch (code) {
+    case HCM_VALIDATION_REASON.MISSING_RESPONSIBLE_MANAGER:
+    case HCM_VALIDATION_REASON.RESPONSIBLE_MANAGER_NOT_FOUND:
+      return HcmQuarantineReasonCode.MISSING_RESPONSIBLE_MANAGER;
+    case HCM_VALIDATION_REASON.RESPONSIBLE_MANAGER_INACTIVE:
+      return HcmQuarantineReasonCode.INACTIVE_RESPONSIBLE_MANAGER;
+    case HCM_VALIDATION_REASON.DUPLICATE_SOURCE_PERSON:
+    case HCM_VALIDATION_REASON.DUPLICATE_EMAIL:
+      return HcmQuarantineReasonCode.DUPLICATE_IDENTITY;
+    case HCM_VALIDATION_REASON.EMPLOYEE_CONTRACTOR_COLLISION:
+      return HcmQuarantineReasonCode.EMPLOYEE_COLLISION;
+    case HCM_VALIDATION_REASON.OVERLAPPING_ENGAGEMENT:
+      return HcmQuarantineReasonCode.OVERLAPPING_ENGAGEMENT;
+    case HCM_VALIDATION_REASON.UNSUPPORTED_WORKER_TYPE:
+      return HcmQuarantineReasonCode.WORKER_TYPE_MISMATCH;
+    case HCM_VALIDATION_REASON.INVALID_DATE_RANGE:
+    case HCM_VALIDATION_REASON.MISSING_START_DATE:
+      return HcmQuarantineReasonCode.INVALID_DATES;
+    default:
+      return HcmQuarantineReasonCode.OTHER;
+  }
+}

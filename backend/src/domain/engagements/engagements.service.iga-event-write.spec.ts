@@ -1,12 +1,13 @@
 import { Test } from '@nestjs/testing';
 import {
   IgaIntegrationPlaneStatus,
-  SponsorAccountabilityStatus,
+  ResponsibleManagerAccountabilityStatus,
 } from '@prisma/client';
 import { EngagementsService } from './engagements.service';
 import { PrismaService } from '../../core/database/prisma.service';
-import { HcmSponsorLookupService } from '../../core/hcm/hcm-sponsor-lookup.service';
-import { IgaWorkforceEventWriter } from '../../core/iga/iga-workforce-event-writer.service';
+import { HcmResponsibleManagerLookupService } from '../../core/hcm/hcm-responsible-manager-lookup.service';
+import { AccessIntegrationPublishService } from '../access-integration/access-integration-publish.service';
+import { AccessContext } from '../../core/auth/interfaces/access-context.interface';
 
 describe('EngagementsService IGA event writes (PR-IGA-EVENT-WRITE-1)', () => {
   let service: EngagementsService;
@@ -26,6 +27,15 @@ describe('EngagementsService IGA event writes (PR-IGA-EVENT-WRITE-1)', () => {
   };
 
   const orgId = 'org-1';
+  const accessContext: AccessContext = {
+    actorUserId: 'mgr-1',
+    actorOrganizationId: orgId,
+    targetOrganizationId: orgId,
+    isGlobalAccess: false,
+    effectivePermissions: new Set(['engagements:create']),
+    supplierScopeId: null,
+    responsibleManagerEmployeeId: null,
+  };
 
   beforeEach(async () => {
     persistSponsorAssigned = jest.fn().mockResolvedValue(undefined);
@@ -33,14 +43,14 @@ describe('EngagementsService IGA event writes (PR-IGA-EVENT-WRITE-1)', () => {
     const createdEngagement = {
       id: 'eng-1',
       contractorId: 'c-1',
-      sponsorEmployeeId: 'hcm:sponsor-1',
-      sponsorStatus: SponsorAccountabilityStatus.SPONSOR_ASSIGNED,
+      responsibleManagerEmployeeId: 'hcm:sponsor-1',
+      responsibleManagerStatus: ResponsibleManagerAccountabilityStatus.RESPONSIBLE_MANAGER_ASSIGNED,
     };
 
     txEngagementCreate = jest.fn().mockResolvedValue(createdEngagement);
     txEngagementUpdate = jest.fn().mockResolvedValue({
       ...createdEngagement,
-      sponsorEmployeeId: 'hcm:sponsor-2',
+      responsibleManagerEmployeeId: 'hcm:sponsor-2',
     });
 
     const tx = {
@@ -49,8 +59,8 @@ describe('EngagementsService IGA event writes (PR-IGA-EVENT-WRITE-1)', () => {
         update: txEngagementUpdate,
         findUniqueOrThrow: jest.fn().mockResolvedValue({
           id: 'eng-1',
-          sponsorEmployeeId: 'hcm:sponsor-1',
-          sponsorStatus: SponsorAccountabilityStatus.SPONSOR_ASSIGNED,
+          responsibleManagerEmployeeId: 'hcm:sponsor-1',
+          responsibleManagerStatus: ResponsibleManagerAccountabilityStatus.RESPONSIBLE_MANAGER_ASSIGNED,
           contractor: contractorRow,
           contract: { id: 'ct-1' },
           project: null,
@@ -71,11 +81,14 @@ describe('EngagementsService IGA event writes (PR-IGA-EVENT-WRITE-1)', () => {
         findFirst: jest.fn().mockResolvedValue({
           id: 'eng-1',
           contractorId: 'c-1',
-          sponsorEmployeeId: null,
-          sponsorDelegateEmployeeId: null,
-          sponsorStatus: null,
+          responsibleManagerEmployeeId: 'hcm:sponsor-1',
+          responsibleManagerDelegateEmployeeId: null,
+          responsibleManagerStatus: ResponsibleManagerAccountabilityStatus.RESPONSIBLE_MANAGER_ASSIGNED,
           startDate: new Date('2026-01-01'),
           endDate: null,
+          contractor: contractorRow,
+          contract: { id: 'ct-1', contractNumber: 'C-1', title: 'T', contractType: 'TIME_AND_MATERIALS', status: 'ACTIVE' },
+          project: null,
         }),
       },
       $transaction: jest.fn(async (fn: (t: typeof tx) => Promise<unknown>) => fn(tx)),
@@ -86,12 +99,12 @@ describe('EngagementsService IGA event writes (PR-IGA-EVENT-WRITE-1)', () => {
         EngagementsService,
         { provide: PrismaService, useValue: prisma },
         {
-          provide: HcmSponsorLookupService,
-          useValue: { assertSponsorReferencesAllowed: jest.fn() },
+          provide: HcmResponsibleManagerLookupService,
+          useValue: { assertResponsibleManagerReferencesAllowed: jest.fn() },
         },
         {
-          provide: IgaWorkforceEventWriter,
-          useValue: { persistSponsorAssigned: persistSponsorAssigned },
+          provide: AccessIntegrationPublishService,
+          useValue: { publishSponsorAssigned: persistSponsorAssigned },
         },
       ],
     }).compile();
@@ -99,7 +112,7 @@ describe('EngagementsService IGA event writes (PR-IGA-EVENT-WRITE-1)', () => {
     service = moduleRef.get(EngagementsService);
   });
 
-  it('create with sponsor writes SPONSOR_ASSIGNED outbox event', async () => {
+  it('create with sponsor writes RESPONSIBLE_MANAGER_ASSIGNED outbox event', async () => {
     await service.create(orgId, {
       contractorId: 'c-1',
       contractId: 'ct-1',
@@ -107,45 +120,45 @@ describe('EngagementsService IGA event writes (PR-IGA-EVENT-WRITE-1)', () => {
       startDate: '2026-01-01',
       rateType: 'HOURLY',
       rateAmount: 100,
-      sponsorEmployeeId: 'hcm:sponsor-1',
+      responsibleManagerEmployeeId: 'hcm:sponsor-1',
     } as any);
 
     expect(persistSponsorAssigned).toHaveBeenCalledTimes(1);
     expect(persistSponsorAssigned.mock.calls[0][1]).toMatchObject({
       id: 'eng-1',
-      sponsorEmployeeId: 'hcm:sponsor-1',
+      responsibleManagerEmployeeId: 'hcm:sponsor-1',
     });
     expect(persistSponsorAssigned.mock.calls[0][2]).toBe(orgId);
   });
 
-  it('update changing primary sponsor writes SPONSOR_ASSIGNED outbox event', async () => {
-    await service.update(orgId, 'eng-1', {
-      sponsorEmployeeId: 'hcm:sponsor-2',
+  it('update changing primary sponsor writes RESPONSIBLE_MANAGER_ASSIGNED outbox event', async () => {
+    await service.update(accessContext, orgId, 'eng-1', {
+      responsibleManagerEmployeeId: 'hcm:sponsor-2',
     } as any);
 
     expect(persistSponsorAssigned).toHaveBeenCalledTimes(1);
   });
 
-  it('update without sponsor change does not write SPONSOR_ASSIGNED', async () => {
+  it('update without sponsor change does not write RESPONSIBLE_MANAGER_ASSIGNED', async () => {
     const prisma = (service as any).prisma;
     prisma.contractorEngagement.findFirst.mockResolvedValue({
       id: 'eng-1',
       contractorId: 'c-1',
-      sponsorEmployeeId: 'hcm:sponsor-1',
-      sponsorDelegateEmployeeId: null,
-      sponsorStatus: SponsorAccountabilityStatus.SPONSOR_ASSIGNED,
+      responsibleManagerEmployeeId: 'hcm:sponsor-1',
+      responsibleManagerDelegateEmployeeId: null,
+      responsibleManagerStatus: ResponsibleManagerAccountabilityStatus.RESPONSIBLE_MANAGER_ASSIGNED,
       startDate: new Date('2026-01-01'),
       endDate: null,
     });
     txEngagementUpdate.mockResolvedValue({
       id: 'eng-1',
       contractorId: 'c-1',
-      sponsorEmployeeId: 'hcm:sponsor-1',
-      sponsorStatus: SponsorAccountabilityStatus.SPONSOR_ACTIVE,
+      responsibleManagerEmployeeId: 'hcm:sponsor-1',
+      responsibleManagerStatus: ResponsibleManagerAccountabilityStatus.RESPONSIBLE_MANAGER_ACTIVE,
     });
 
-    await service.update(orgId, 'eng-1', {
-      sponsorStatus: SponsorAccountabilityStatus.SPONSOR_ACTIVE,
+    await service.update(accessContext, orgId, 'eng-1', {
+      responsibleManagerStatus: ResponsibleManagerAccountabilityStatus.RESPONSIBLE_MANAGER_ACTIVE,
     } as any);
 
     expect(persistSponsorAssigned).not.toHaveBeenCalled();

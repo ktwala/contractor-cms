@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Param,
   Patch,
   Post,
   Query,
@@ -17,7 +18,12 @@ import { AccessContext } from '../../core/auth/interfaces/access-context.interfa
 import { SupplierPortalUpdateProfileDto } from './dto/supplier-portal-update-profile.dto';
 import { SupplierPortalCreateContractorDto } from './dto/supplier-portal-create-contractor.dto';
 import { QueryTimesheetDto } from '../timesheets/dto/query-timesheet.dto';
-import { SUPPLIER_PORTAL_CONTRACTOR_PERMISSIONS } from '../../core/auth/permissions.constants';
+import { QuerySupplierPortalInvoicesDto } from './dto/query-supplier-portal-invoices.dto';
+import { CreateSupplierDocumentDto } from '../suppliers/dto/create-supplier-document.dto';
+import {
+  PERMISSIONS,
+  SUPPLIER_PORTAL_CONTRACTOR_PERMISSIONS,
+} from '../../core/auth/permissions.constants';
 import { SupplierPortalService } from './supplier-portal.service';
 import { SupplierPortalScopeGuard } from './guards/supplier-portal-scope.guard';
 
@@ -47,6 +53,52 @@ export class SupplierPortalController {
     return this.supplierPortalService.updateProfile(accessContext, dto);
   }
 
+  @Get('evidence-checklist')
+  @Permissions(PERMISSIONS.SUPPLIER_ONBOARDING.READ)
+  @RequiresOrgContext({ type: 'currentUser' })
+  @ApiOperation({ summary: 'Jurisdiction onboarding evidence checklist (own supplier)' })
+  getEvidenceChecklist(@CurrentAccessContext() accessContext: AccessContext) {
+    return this.supplierPortalService.getEvidenceChecklist(accessContext);
+  }
+
+  @Get('documents')
+  @Permissions(PERMISSIONS.SUPPLIER_DOCUMENTS.READ)
+  @RequiresOrgContext({ type: 'currentUser' })
+  @ApiOperation({ summary: 'List own supplier onboarding documents (metadata)' })
+  listDocuments(@CurrentAccessContext() accessContext: AccessContext) {
+    return this.supplierPortalService.listDocuments(accessContext);
+  }
+
+  @Post('documents')
+  @Permissions(PERMISSIONS.SUPPLIER_DOCUMENTS.MANAGE)
+  @RequiresOrgContext({ type: 'currentUser' })
+  @ApiOperation({ summary: 'Register onboarding document metadata for own supplier' })
+  createDocument(
+    @CurrentAccessContext() accessContext: AccessContext,
+    @Body() dto: CreateSupplierDocumentDto,
+  ) {
+    return this.supplierPortalService.createDocument(accessContext, dto);
+  }
+
+  @Post('submit-for-approval')
+  @Permissions(PERMISSIONS.SUPPLIER_ONBOARDING.SUBMIT)
+  @RequiresOrgContext({ type: 'currentUser' })
+  @ApiOperation({
+    summary:
+      'Submit supplier for operations approval when evidence is complete (cannot self-approve)',
+  })
+  submitForApproval(@CurrentAccessContext() accessContext: AccessContext) {
+    return this.supplierPortalService.submitForApproval(accessContext);
+  }
+
+  @Get('contracts')
+  @Permissions(...SUPPLIER_PORTAL_CONTRACTOR_PERMISSIONS.READ)
+  @RequiresOrgContext({ type: 'currentUser' })
+  @ApiOperation({ summary: 'Active supplier contracts for nomination placement intent' })
+  listContracts(@CurrentAccessContext() accessContext: AccessContext) {
+    return this.supplierPortalService.listContracts(accessContext);
+  }
+
   @Get('contractors')
   @Permissions(...SUPPLIER_PORTAL_CONTRACTOR_PERMISSIONS.READ)
   @RequiresOrgContext({ type: 'currentUser' })
@@ -63,10 +115,40 @@ export class SupplierPortalController {
     );
   }
 
+  @Get('contractors/:id/workforce-history')
+  @Permissions(...SUPPLIER_PORTAL_CONTRACTOR_PERMISSIONS.READ)
+  @RequiresOrgContext({ type: 'currentUser' })
+  @ApiOperation({
+    summary: 'Supplier-scoped workforce timeline (read-only business narrative)',
+    description:
+      'PR-SUPPLIER-PORTAL-WORKFORCE-TIMELINE-1 — suppliers may view workforce history for their workers; they may not advance workforce state.',
+  })
+  getContractorWorkforceHistory(
+    @CurrentAccessContext() accessContext: AccessContext,
+    @Param('id') id: string,
+  ) {
+    return this.supplierPortalService.getContractorWorkforceHistory(accessContext, id);
+  }
+
+  @Get('contractors/:id')
+  @Permissions(...SUPPLIER_PORTAL_CONTRACTOR_PERMISSIONS.READ)
+  @RequiresOrgContext({ type: 'currentUser' })
+  @ApiOperation({ summary: 'Supplier-scoped contractor detail (read-only)' })
+  getContractor(
+    @CurrentAccessContext() accessContext: AccessContext,
+    @Param('id') id: string,
+  ) {
+    return this.supplierPortalService.getContractor(accessContext, id);
+  }
+
   @Post('contractors')
   @Permissions(...SUPPLIER_PORTAL_CONTRACTOR_PERMISSIONS.CREATE)
   @RequiresOrgContext({ type: 'currentUser' })
-  @ApiOperation({ summary: 'Add a supplier-scoped contractor' })
+  @ApiOperation({
+    summary: 'Nominate a supplier-scoped contractor (workforce intake at NOMINATED)',
+    description:
+      'PR-SUPPLIER-PORTAL-WORKFORCE-NOMINATE-1 — supplier portal can nominate; it cannot activate.',
+  })
   createContractor(
     @CurrentAccessContext() accessContext: AccessContext,
     @Body() dto: SupplierPortalCreateContractorDto,
@@ -83,5 +165,33 @@ export class SupplierPortalController {
     @Query() query: QueryTimesheetDto,
   ) {
     return this.supplierPortalService.listTimesheets(accessContext, query);
+  }
+
+  @Get('invoices')
+  @Permissions(PERMISSIONS.SUPPLIER_INVOICES.READ)
+  @RequiresOrgContext({ type: 'currentUser' })
+  @ApiOperation({
+    summary:
+      'Read-only invoices for active supplier membership (no supplierId parameter; amounts redacted without finance grants)',
+  })
+  listInvoices(
+    @CurrentAccessContext() accessContext: AccessContext,
+    @Query() query: QuerySupplierPortalInvoicesDto,
+  ) {
+    return this.supplierPortalService.listInvoices(accessContext, query);
+  }
+
+  @Get('dashboard')
+  @Permissions(
+    'supplier-profile:read',
+    'supplier-contractors:read',
+    'supplier-timesheets:read',
+  )
+  @RequiresOrgContext({ type: 'currentUser' })
+  @ApiOperation({
+    summary: 'Supplier portal dashboard aggregates (membership-scoped)',
+  })
+  getDashboard(@CurrentAccessContext() accessContext: AccessContext) {
+    return this.supplierPortalService.getDashboard(accessContext);
   }
 }

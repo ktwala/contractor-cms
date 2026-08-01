@@ -68,6 +68,17 @@ The following is the exhaustive list of governed audit events.
 | `SUPPLIER_CREATED` | INFO | Suppliers Service | New supplier entity onboarded. |
 | `SUPPLIER_UPDATED` | INFO | Suppliers Service | Supplier profile modified. |
 | `SUPPLIER_DELETED` | HIGH | Suppliers Service | Supplier permanently deleted. |
+| `SUPPLIER_STATUS_CHANGED` | INFO | Suppliers Service | Governed lifecycle status transition. |
+| `SUPPLIER_SUBMITTED_FOR_APPROVAL` | INFO | Suppliers Service | Supplier submitted for approval (`DRAFT → PENDING_APPROVAL`). |
+| `SUPPLIER_APPROVED` | INFO | Suppliers Service | Supplier approved (`→ ACTIVE`). |
+| `SUPPLIER_REJECTED` | WARNING | Suppliers Service | Supplier rejected (`PENDING_APPROVAL → SUSPENDED`). |
+| `SUPPLIER_SUSPENDED` | WARNING | Suppliers Service | Supplier suspended. |
+| `SUPPLIER_OFFBOARDED` | WARNING | Suppliers Service | Supplier offboarded (not terminated). |
+| `SUPPLIER_ARCHIVED` | INFO | Suppliers Service | Supplier archived after offboarding. |
+| `SUPPLIER_DOCUMENT_ADDED` | INFO | Supplier Documents Service | Onboarding evidence document metadata registered. |
+| `SUPPLIER_DOCUMENT_UPDATED` | INFO | Supplier Documents Service | Onboarding evidence document metadata updated. |
+| `SUPPLIER_DOCUMENT_EXPIRED` | WARNING | Supplier Documents Service | Required evidence document past expiry (on add/update). |
+| `SUPPLIER_SOURCE_ORACLE_IMPORTED` | INFO | Oracle Supplier Import Service | Mock/file Oracle supplier extract written to staging. |
 | `CONTRACTOR_CREATED` | INFO | Contractors Service | New contractor identity created. |
 | `CONTRACTOR_UPDATED` | INFO | Contractors Service | Contractor details modified. |
 | `CONTRACTOR_DELETED` | HIGH | Contractors Service | Contractor permanently deleted. |

@@ -1,6 +1,6 @@
 'use client';
 
-import { PdpActivationConsole } from '@/pages/settings/PdpActivationConsole';
+import { PdpActivationConsole } from '@/components/pdp/PdpActivationConsole';
 import { useAuth } from '@/lib/auth-context';
 import { PERMISSIONS } from '@/lib/permissions.generated';
 

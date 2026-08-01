@@ -13,7 +13,9 @@ RUN npx prisma generate
 # Copy the rest of the source
 COPY . .
 
+RUN chmod +x docker-entrypoint.sh
+
 EXPOSE 3000
 
-# Dev mode with hot-reload
+ENTRYPOINT ["./docker-entrypoint.sh"]
 CMD ["npm", "run", "start:dev"]

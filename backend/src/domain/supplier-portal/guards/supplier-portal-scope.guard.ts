@@ -1,10 +1,6 @@
-import {
-  CanActivate,
-  ExecutionContext,
-  ForbiddenException,
-  Injectable,
-} from '@nestjs/common';
+import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { AccessContext } from '../../../core/auth/interfaces/access-context.interface';
+import { supplierMembershipRequiredException } from '../supplier-portal.errors';
 
 /**
  * PR-SUPPLIER-PORTAL-UI-1 — fail closed unless PermissionsGuard set supplierScopeId.
@@ -16,9 +12,7 @@ export class SupplierPortalScopeGuard implements CanActivate {
     const accessContext = request.accessContext as AccessContext | undefined;
 
     if (!accessContext?.supplierScopeId) {
-      throw new ForbiddenException(
-        'Active supplier membership required for supplier portal access',
-      );
+      throw supplierMembershipRequiredException();
     }
 
     return true;

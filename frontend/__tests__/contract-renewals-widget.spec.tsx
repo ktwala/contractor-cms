@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
-import ContractRenewalsWidget from '../components/dashboard/ContractRenewalsWidget';
+import { ContractRenewalsWidget } from '../components/dashboard/ContractRenewalsWidget';
 import { api } from '../lib/api';
 
 jest.mock('../lib/api', () => ({

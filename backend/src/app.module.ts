@@ -15,6 +15,7 @@ import { AuditModule } from './core/audit/audit.module';
 import { UsersModule } from './domain/users/users.module';
 import { RolesModule } from './domain/roles/roles.module';
 import { SuppliersModule } from './domain/suppliers/suppliers.module';
+import { SupplierSourcesModule } from './domain/supplier-sources/supplier-sources.module';
 import { SupplierPortalModule } from './domain/supplier-portal/supplier-portal.module';
 import { ContractorsModule } from './domain/contractors/contractors.module';
 import { ContractsModule } from './domain/contracts/contracts.module';
@@ -30,6 +31,10 @@ import { PdpModule } from './pdp/pdp.module';
 import { HcmModule } from './core/hcm/hcm.module';
 import { IgaModule } from './core/iga/iga.module';
 import { ExtidModule } from './core/extid/extid.module';
+import { ResponsibleManagerTasksModule } from './domain/responsible-manager-tasks/responsible-manager-tasks.module';
+import { ContractorMigrationModule } from './domain/contractor-migration/contractor-migration.module';
+import { ContractorSourcesModule } from './domain/contractor-sources/contractor-sources.module';
+import { ContractorGovernanceModule } from './domain/contractor-governance/contractor-governance.module';
 
 @Module({
   imports: [
@@ -65,10 +70,15 @@ import { ExtidModule } from './core/extid/extid.module';
 
     // Domain modules
     SuppliersModule,
+    SupplierSourcesModule,
     SupplierPortalModule,
     ContractorsModule,
     ContractsModule,
     EngagementsModule,
+    ResponsibleManagerTasksModule,
+    ContractorMigrationModule,
+    ContractorSourcesModule,
+    ContractorGovernanceModule,
     TimesheetsModule,
     InvoicesModule,
     TaxClassificationModule,

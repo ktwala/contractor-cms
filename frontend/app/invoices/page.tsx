@@ -15,6 +15,11 @@ import { TableSkeleton } from '@/components/ui/skeleton';
 import RequirePermission from '@/components/RequirePermission';
 import { PERMISSIONS } from '@/lib/permissions.generated';
 import { useAuth } from '@/lib/auth-context';
+import {
+  canViewInvoiceAmounts,
+  canViewInvoicePaymentStatus,
+  formatRestrictedAmount,
+} from '@/lib/finance-visibility';
 
 interface Invoice {
   id: string;
@@ -56,6 +61,8 @@ export default function InvoicesPage() {
   const [endDate, setEndDate] = useState('');
   const { showToast } = useToast();
   const { can } = useAuth();
+  const showAmounts = canViewInvoiceAmounts(can);
+  const showPaymentDetails = canViewInvoicePaymentStatus(can);
 
   // Debounced search for better performance
   const debouncedSearch = useDebounce(searchTerm, 500);
@@ -223,6 +230,7 @@ export default function InvoicesPage() {
             <p className="text-gray-600 mt-1">Manage contractor invoices and payments</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
+            {can(PERMISSIONS.INVOICES.EXPORT) && (
             <button
               onClick={() => exportInvoicesToCSV(filteredInvoices)}
               className="btn btn-secondary flex items-center"
@@ -232,6 +240,7 @@ export default function InvoicesPage() {
               <span className="hidden sm:inline">Export CSV</span>
               <span className="sm:hidden">Export</span>
             </button>
+            )}
             {can(PERMISSIONS.INVOICES.CREATE) && (
               <button
                 onClick={() => router.push('/invoices/new')}
@@ -451,7 +460,9 @@ export default function InvoicesPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">
-                          {formatCurrency(invoice.totalAmount, invoice.currency)}
+                          {showAmounts && invoice.totalAmount != null
+                            ? formatCurrency(invoice.totalAmount, invoice.currency)
+                            : formatRestrictedAmount()}
                         </div>
                         {invoice.paidAt && invoice.paidAmount && (
                           <div className="text-xs text-green-600">

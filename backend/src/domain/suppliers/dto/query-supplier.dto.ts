@@ -1,7 +1,8 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsOptional, IsString, IsInt, Min } from 'class-validator';
+import { IsEnum, IsIn, IsOptional, IsString, IsInt, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 import { SupplierType, SupplierStatus } from '@prisma/client';
+import { SUPPLIER_GOVERNANCE_BUCKETS } from '../supplier-governance-query.util';
 
 export class QuerySupplierDto {
   @ApiPropertyOptional()
@@ -23,6 +24,15 @@ export class QuerySupplierDto {
   @IsOptional()
   @IsString()
   country?: string;
+
+  @ApiPropertyOptional({
+    description:
+      'Oracle-linked governance bucket filter (synced / pending_evidence / active / suspended)',
+    enum: SUPPLIER_GOVERNANCE_BUCKETS,
+  })
+  @IsOptional()
+  @IsIn([...SUPPLIER_GOVERNANCE_BUCKETS])
+  governanceBucket?: (typeof SUPPLIER_GOVERNANCE_BUCKETS)[number];
 
   @ApiPropertyOptional({ default: 1 })
   @IsOptional()

@@ -6,12 +6,16 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import { ConfigService } from '@nestjs/config';
+import { isResponsibleManagerAccountabilityInboxEnabled } from '../../config/responsible-manager-accountability.config';
 import { PERMISSIONS_KEY } from '../decorators/permissions.decorator';
-import { WILDCARD_ALL, WILDCARD_ACTION } from '../permissions.constants';
+import { permissionSatisfied } from '../utils/permission-evaluation';
 import { OrgContextOptions, ORG_CONTEXT_KEY } from '../decorators/org-context.decorator';
 import { OrgContextResolverService } from './org-context-resolver.service';
 import { AccessContext } from '../interfaces/access-context.interface';
 import { AuditService } from '../../audit/audit.service';
+import { resolveSponsorEmployeeId } from '../utils/responsible-manager-identity.helper';
+import { supplierMembershipRequiredException } from '../../../domain/supplier-portal/supplier-portal.errors';
 
 @Injectable()
 export class PermissionsGuard implements CanActivate {
@@ -21,6 +25,7 @@ export class PermissionsGuard implements CanActivate {
     private reflector: Reflector,
     private orgContextResolver: OrgContextResolverService,
     private auditService: AuditService,
+    private config: ConfigService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -80,7 +85,7 @@ export class PermissionsGuard implements CanActivate {
 
     // Any listed permission grants access (OR). Single-permission routes behave as before.
     const hasAccess = requiredPermissions.some((required) =>
-      this.hasPermission(userPermissions, required),
+      permissionSatisfied(userPermissions, required),
     );
 
     if (!hasAccess) {
@@ -133,7 +138,7 @@ export class PermissionsGuard implements CanActivate {
     
     // Global access when a global role satisfies at least one required permission
     isGlobalAccess = requiredPermissions.some((required) =>
-      this.hasPermission(globalPermissions, required),
+      permissionSatisfied(globalPermissions, required),
     );
 
     const activeMembership = user.supplierMemberships?.find(
@@ -143,7 +148,7 @@ export class PermissionsGuard implements CanActivate {
     const accessViaSupplierPortal = requiredPermissions.some(
       (required) =>
         required.startsWith('supplier-') &&
-        this.hasPermission(userPermissions, required),
+        permissionSatisfied(userPermissions, required),
     );
 
     // Fail closed: supplier-* permissions require an active SupplierMembership row scope
@@ -167,17 +172,27 @@ export class PermissionsGuard implements CanActivate {
           },
         },
       );
-      throw new ForbiddenException(errorMsg);
+      throw supplierMembershipRequiredException();
     }
 
-    // Supplier-portal routes are row-scoped by membership whenever a membership exists,
-    // even if the user also holds a global role (PR-SUPPLIER-PORTAL-HYDRATION-FIX-1).
+    // PR-CMS-RUNTIME-HARDENING-1 — bind membership scope for portal routes and non-global users.
+    const onSupplierPortalRoute =
+      typeof request.url === 'string' && request.url.includes('/supplier-portal');
+
     const supplierScopeId =
-      accessViaSupplierPortal && activeMembership
+      activeMembership &&
+      (accessViaSupplierPortal || onSupplierPortalRoute || !isGlobalAccess)
         ? activeMembership.supplierId
-        : !isGlobalAccess && activeMembership
-          ? activeMembership.supplierId
-          : null;
+        : null;
+
+    const responsibleManagerEmployeeId = isResponsibleManagerAccountabilityInboxEnabled(this.config)
+      ? resolveSponsorEmployeeId({
+          externalId: user.externalId,
+          userType: user.userType ?? 'INTERNAL',
+          isGlobalAccess,
+          userPermissions,
+        })
+      : null;
 
     // Populate AccessContext
     const accessContext: AccessContext = {
@@ -185,7 +200,9 @@ export class PermissionsGuard implements CanActivate {
       actorOrganizationId: user.organizationId || null,
       targetOrganizationId,
       isGlobalAccess,
+      effectivePermissions: userPermissions,
       supplierScopeId,
+      responsibleManagerEmployeeId,
     };
     
     request.accessContext = accessContext;
@@ -193,35 +210,4 @@ export class PermissionsGuard implements CanActivate {
     return true;
   }
 
-  /**
-   * Checks whether the user's permission set satisfies a single required
-   * permission. Supports:
-   *   1. Full wildcard: `*:*` — grants everything
-   *   2. Exact match: `suppliers:create` matches `suppliers:create`
-   *   3. Resource wildcard: `suppliers:*` matches `suppliers:create`
-   */
-  private hasPermission(
-    userPermissions: Set<string>,
-    required: string,
-  ): boolean {
-    // Reject malformed permission strings
-    if (!required.includes(':')) {
-      this.logger.error(`Malformed permission string: "${required}"`);
-      return false;
-    }
-
-    // 1. Full wildcard: *:* grants everything
-    if (userPermissions.has(WILDCARD_ALL)) {
-      return true;
-    }
-
-    // 2. Exact match
-    if (userPermissions.has(required)) {
-      return true;
-    }
-
-    // 3. Resource wildcard: suppliers:* matches suppliers:create
-    const [requiredResource] = required.split(':');
-    return userPermissions.has(`${requiredResource}:${WILDCARD_ACTION}`);
-  }
 }

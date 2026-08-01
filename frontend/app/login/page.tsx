@@ -4,6 +4,10 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth-context';
+import { EXTERNAL_WORKFORCE_LABELS } from '@/lib/external-workforce-labels';
+import DemoLoginPersonas from '@/components/auth/DemoLoginPersonas';
+import { DEMO_PRIMARY_LOGINS } from '@/lib/demo-login-personas';
+import { isConnectorDemoUiEnabled } from '@/lib/demo-mode';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -22,23 +26,37 @@ export default function LoginPage() {
       await login(email, password);
       router.push('/dashboard');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Login failed. Please try again.');
+      const message =
+        err.response?.data?.message || 'Login failed. Please try again.';
+      const hint =
+        message === 'Invalid credentials'
+          ? ' If this is a fresh Docker/local DB, run: docker compose exec backend npx prisma db seed'
+          : '';
+      setError(`${message}${hint}`);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+    <div className="min-h-screen flex items-center justify-center bg-page">
       <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow-lg">
         <div>
-          <h2 className="text-center text-3xl font-extrabold text-gray-900">
-            Contractor CMS
+          <h2 className="text-center text-3xl font-extrabold text-content">
+            {EXTERNAL_WORKFORCE_LABELS.product}
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Sign in to your account
+          <p className="mt-2 text-center text-sm text-content-muted">
+            Sign in to {EXTERNAL_WORKFORCE_LABELS.productPlatform}
           </p>
         </div>
+
+        <DemoLoginPersonas
+          onSelect={(nextEmail, nextPassword) => {
+            setEmail(nextEmail);
+            setPassword(nextPassword);
+            setError('');
+          }}
+        />
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {error && (
@@ -58,7 +76,7 @@ export default function LoginPage() {
                 type="email"
                 required
                 className="input"
-                placeholder="you@example.com"
+                placeholder={isConnectorDemoUiEnabled() ? DEMO_PRIMARY_LOGINS.operations.email : 'you@example.com'}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
@@ -93,7 +111,7 @@ export default function LoginPage() {
 
           <div className="text-center text-sm">
             <span className="text-gray-600">Don't have an account? </span>
-            <Link href="/register" className="text-primary-600 hover:text-primary-700 font-medium">
+            <Link href="/register" className="link-brand">
               Register here
             </Link>
           </div>

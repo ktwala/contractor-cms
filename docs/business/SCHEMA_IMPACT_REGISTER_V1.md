@@ -40,6 +40,22 @@
 
 ---
 
+## 3.1 PR-CTR-2 (migration control plane) — `PRODUCTION_BOUND` candidate
+
+| Concept | Prisma home | Maturity |
+|---------|-------------|----------|
+| HCM raw staging | `HcmContractorStaging` → `hcm_contractor_staging` | Schema candidate (migrations `20260518100000`) |
+| Quarantine queue | `HcmContractorQuarantine` | Schema candidate |
+| Identity map + CTR ref | `ContractorIdentityMap`, `CtrSequenceRegistry` | Schema candidate |
+| Migration audit | `ContractorMigrationAudit` | Schema candidate |
+| Batch replay | `ContractorMigrationBatch` | Schema candidate |
+| Business contractor ID | `Contractor.contractorBusinessId` | Schema candidate (`20260518110000`) |
+| Migration provenance | `Contractor.legacySource*`, `migrationStatus` | Schema candidate |
+
+Detail: [`PR-CTR-2_STAGING_SCHEMA.md`](./PR-CTR-2_STAGING_SCHEMA.md).
+
+---
+
 ## 4. Stream alignment
 
 | Stream | This register section |

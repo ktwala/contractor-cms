@@ -1,0 +1,99 @@
+{
+  "suppliers": [
+    {
+      "externalSupplierId": "ORCL-SUP-MTN-001",
+      "supplierNumber": "SUP-MTN-001",
+      "name": "Atlas Consulting (Pty) Ltd",
+      "countryCode": "ZA",
+      "taxRegistrationNumber": "ZA-MTN-ATLAS-001",
+      "metadata": {
+        "fixture": "ORCL-SUP-MTN-001",
+        "scenario": "clean_supplier",
+        "tradingName": "Atlas Consulting",
+        "industry": "Professional Services",
+        "region": "Gauteng",
+        "contactPerson": "Thandi Ndlovu",
+        "contactEmail": "thandi.ndlovu@atlas.co.za",
+        "logoSlug": "atlas",
+        "supplierType": "Professional Services",
+        "oracleStatus": "Approved"
+      }
+    },
+    {
+      "externalSupplierId": "ORCL-SUP-MTN-002",
+      "supplierNumber": "SUP-MTN-002",
+      "name": "Nexa Technologies (Pty) Ltd",
+      "countryCode": "ZA",
+      "taxRegistrationNumber": "ZA-MTN-NEXA-002",
+      "metadata": {
+        "fixture": "ORCL-SUP-MTN-002",
+        "scenario": "large_it_supplier",
+        "tradingName": "Nexa Technologies",
+        "industry": "IT Services",
+        "region": "Gauteng",
+        "contactPerson": "James Mthembu",
+        "contactEmail": "james.mthembu@nexa.co.za",
+        "logoSlug": "nexa",
+        "supplierType": "IT Services",
+        "oracleStatus": "Approved"
+      }
+    },
+    {
+      "externalSupplierId": "ORCL-SUP-MTN-003",
+      "supplierNumber": "SUP-MTN-003",
+      "name": "Ubuntu Field Services (Pty) Ltd",
+      "countryCode": "ZA",
+      "taxRegistrationNumber": "ZA-MTN-UBUNTU-003",
+      "metadata": {
+        "fixture": "ORCL-SUP-MTN-003",
+        "scenario": "field_operations",
+        "tradingName": "Ubuntu Field Services",
+        "industry": "Field Operations",
+        "region": "KwaZulu-Natal",
+        "contactPerson": "Nomsa Dlamini",
+        "contactEmail": "nomsa.dlamini@ubuntu.co.za",
+        "logoSlug": "ubuntu",
+        "supplierType": "Field Operations",
+        "oracleStatus": "Approved"
+      }
+    },
+    {
+      "externalSupplierId": "ORCL-SUP-MTN-004",
+      "supplierNumber": "SUP-MTN-004",
+      "name": "Vertex Projects (Pty) Ltd",
+      "countryCode": "ZA",
+      "taxRegistrationNumber": "ZA-MTN-VERTEX-004",
+      "metadata": {
+        "fixture": "ORCL-SUP-MTN-004",
+        "scenario": "project_delivery",
+        "tradingName": "Vertex Projects",
+        "industry": "Project Delivery",
+        "region": "Western Cape",
+        "contactPerson": "Lauren Petersen",
+        "contactEmail": "lauren.petersen@vertex.co.za",
+        "logoSlug": "vertex",
+        "supplierType": "Project Delivery",
+        "oracleStatus": "Approved"
+      }
+    },
+    {
+      "externalSupplierId": "ORCL-SUP-MTN-005",
+      "supplierNumber": "SUP-MTN-005",
+      "name": "Horizon Staffing Solutions (Pty) Ltd",
+      "countryCode": "ZA",
+      "taxRegistrationNumber": "ZA-MTN-HORIZON-005",
+      "metadata": {
+        "fixture": "ORCL-SUP-MTN-005",
+        "scenario": "labour_broker",
+        "tradingName": "Horizon Staffing",
+        "industry": "Labour Broker",
+        "region": "Gauteng",
+        "contactPerson": "Samuel Daniels",
+        "contactEmail": "samuel.daniels@horizon.co.za",
+        "logoSlug": "horizon",
+        "supplierType": "Labour Broker",
+        "oracleStatus": "Approved"
+      }
+    }
+  ]
+}

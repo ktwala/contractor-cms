@@ -30,21 +30,70 @@ const TARGET_ROLE_PERMISSIONS = {
   SPONSOR: ['contractors:read', 'engagements:read', 'engagements:update'],
 } as const;
 
+const defaultAuth = {
+  user: null,
+  loading: false,
+  refreshProfile: jest.fn().mockResolvedValue(undefined),
+  can: () => false,
+  canAny: () => false,
+  canAll: () => false,
+  hasRole: () => false,
+};
+
 jest.mock('@/lib/auth-context', () => ({
-  useAuth: jest.fn(),
+  useAuth: jest.fn(() => defaultAuth),
 }));
+
+function mockAuth(overrides: any) {
+  const user = overrides.user === null ? null : {
+    id: 'user-id',
+    email: 'user@example.com',
+    firstName: 'User',
+    lastName: 'Name',
+    roles: [],
+    effectivePermissions: [],
+    organizationId: 'org-id',
+    ...overrides.user,
+  };
+  
+  (useAuth as jest.Mock).mockReturnValue({
+    ...defaultAuth,
+    ...overrides,
+    user,
+  });
+}
 
 jest.mock('@/lib/api', () => ({
   api: {
     getTimesheets: jest.fn(),
     getInvoices: jest.fn(),
     getContracts: jest.fn(),
+    getSuppliers: jest.fn(),
+    getContractors: jest.fn(),
+    getContractorWorkforceReviewQueue: jest.fn(),
+    getSupplierApprovalQueue: jest.fn(),
+    getResponsibleManagerTasks: jest.fn(),
+  },
+}));
+
+jest.mock('@/services/pdp-exception.service', () => ({
+  pdpExceptionService: {
+    listExceptions: jest.fn().mockResolvedValue([]),
+  },
+}));
+
+jest.mock('@/services/pdp-activation.service', () => ({
+  pdpActivationService: {
+    listRules: jest.fn().mockResolvedValue({ rules: [], isEmergencyOverrideActive: false }),
   },
 }));
 
 jest.mock('@/lib/api-supplier-portal', () => ({
   supplierPortalApi: {
     getTimesheets: jest.fn(),
+    getDashboard: jest.fn(),
+    getContractors: jest.fn(),
+    getInvoices: jest.fn(),
   },
 }));
 
@@ -63,45 +112,70 @@ describe('Dashboard role parity (permission-filtered cards)', () => {
     (api.getTimesheets as jest.Mock).mockResolvedValue({ data: [] });
     (api.getInvoices as jest.Mock).mockResolvedValue({ data: [] });
     (api.getContracts as jest.Mock).mockResolvedValue({ data: [], total: 0 });
+    (supplierPortalApi.getDashboard as jest.Mock).mockResolvedValue({
+      status: 'ok',
+      supplier_context: { supplier_id: 'supplier-123', organization_id: 'org-id' },
+      data: {
+        profile: { available: true, display_name: 'Supplier', status: 'ACTIVE' },
+        contractors: { count: 0 },
+        timesheets: { total: 0, pending: 0, approved: 0, rejected: 0, draft: 0 },
+      },
+    });
+    (supplierPortalApi.getContractors as jest.Mock).mockResolvedValue({
+      status: 'ok',
+      supplier_context: { supplier_id: 'supplier-123', organization_id: 'org-id' },
+      data: [],
+    });
+    (supplierPortalApi.getInvoices as jest.Mock).mockResolvedValue({
+      status: 'ok',
+      supplier_context: { supplier_id: 'supplier-123', organization_id: 'org-id' },
+      data: [],
+    });
   });
 
   it('SUPPLIER_ADMIN dashboard renders supplier Contractors card, not client modules', () => {
-    (useAuth as jest.Mock).mockReturnValue({
+    mockAuth({
       can: mockCan(TARGET_ROLE_PERMISSIONS.SUPPLIER_ADMIN),
+      user: { supplierId: 'supplier-123' },
     });
 
     render(<DashboardNavCards />);
 
     expect(screen.getByText('Supplier profile')).toBeInTheDocument();
-    expect(screen.getByText('Contractors')).toBeInTheDocument();
+    expect(screen.getByText('External workers')).toBeInTheDocument();
     expect(screen.queryByText('Suppliers')).not.toBeInTheDocument();
     expect(screen.queryByText('Contracts')).not.toBeInTheDocument();
     expect(screen.queryByText('Timesheets')).not.toBeInTheDocument();
   });
 
   it('SUPPLIER_MANAGER dashboard renders supplier Contractors and timesheets, not client modules', () => {
-    (useAuth as jest.Mock).mockReturnValue({
+    mockAuth({
       can: mockCan(TARGET_ROLE_PERMISSIONS.SUPPLIER_MANAGER),
+      user: { supplierId: 'supplier-123' },
     });
 
     render(<DashboardNavCards />);
 
     expect(screen.getByText('Supplier profile')).toBeInTheDocument();
-    expect(screen.getByText('Contractors')).toBeInTheDocument();
+    expect(screen.getByText('External workers')).toBeInTheDocument();
     expect(screen.getByText('Timesheets')).toBeInTheDocument();
     expect(screen.queryByText('Suppliers')).not.toBeInTheDocument();
     expect(screen.queryByText('Contracts')).not.toBeInTheDocument();
   });
 
-  it('SPONSOR dashboard renders only Contractors and Engagements cards', () => {
-    (useAuth as jest.Mock).mockReturnValue({
+  it('HCM-linked sponsor dashboard renders sponsored contractors and engagements cards', () => {
+    mockAuth({
       can: mockCan(TARGET_ROLE_PERMISSIONS.SPONSOR),
+      user: {
+        externalId: 'cms:emp:sponsor-demo',
+        responsibleManagerAccountabilityInboxEnabled: true,
+      },
     });
 
     render(<DashboardNavCards />);
 
-    expect(screen.getByText('Contractors')).toBeInTheDocument();
-    expect(screen.getByText('Engagements')).toBeInTheDocument();
+    expect(screen.getAllByText('Managed external workers').length).toBeGreaterThan(0);
+    expect(screen.getByText('My managed engagements')).toBeInTheDocument();
     expect(screen.queryByText('Suppliers')).not.toBeInTheDocument();
     expect(screen.queryByText('Contracts')).not.toBeInTheDocument();
     expect(screen.queryByText('Timesheets')).not.toBeInTheDocument();
@@ -119,7 +193,7 @@ describe('Dashboard role parity (permission-filtered cards)', () => {
       'pdp-activation:read',
       'pdp-exceptions:read',
     ];
-    (useAuth as jest.Mock).mockReturnValue({
+    mockAuth({
       can: mockCan(managerPerms),
       user: { firstName: 'Manager' },
     });
@@ -127,7 +201,7 @@ describe('Dashboard role parity (permission-filtered cards)', () => {
     render(<DashboardNavCards />);
 
     expect(screen.getByText('Suppliers')).toBeInTheDocument();
-    expect(screen.getByText('Contractors')).toBeInTheDocument();
+    expect(screen.getByText('External Workers')).toBeInTheDocument();
     expect(screen.getByText('Contracts')).toBeInTheDocument();
     expect(screen.getByText('Engagements')).toBeInTheDocument();
     expect(screen.getByText('Timesheets')).toBeInTheDocument();
@@ -140,27 +214,50 @@ describe('Dashboard role parity (permission-gated API calls)', () => {
     jest.clearAllMocks();
     (api.getTimesheets as jest.Mock).mockResolvedValue({ data: [] });
     (api.getInvoices as jest.Mock).mockResolvedValue({ data: [] });
+    (api.getContracts as jest.Mock).mockResolvedValue({ total: 0, data: [] });
+    (api.getSuppliers as jest.Mock).mockResolvedValue({ data: [] });
+    (api.getContractors as jest.Mock).mockResolvedValue({ data: [] });
+    (api.getContractorWorkforceReviewQueue as jest.Mock).mockResolvedValue({ data: [] });
+    (api.getSupplierApprovalQueue as jest.Mock).mockResolvedValue({ data: [] });
+    (api.getResponsibleManagerTasks as jest.Mock).mockResolvedValue({ data: [] });
+    (supplierPortalApi.getDashboard as jest.Mock).mockResolvedValue({
+      status: 'ok',
+      supplier_context: { supplier_id: 'supplier-123', organization_id: 'org-id' },
+      data: {
+        profile: { available: true, display_name: 'Supplier', status: 'ACTIVE' },
+        contractors: { count: 0 },
+        timesheets: { total: 0, pending: 0, approved: 0, rejected: 0, draft: 0 },
+      },
+    });
+    (supplierPortalApi.getContractors as jest.Mock).mockResolvedValue({
+      status: 'ok',
+      supplier_context: { supplier_id: 'supplier-123', organization_id: 'org-id' },
+      data: [],
+    });
+    (supplierPortalApi.getInvoices as jest.Mock).mockResolvedValue({
+      status: 'ok',
+      supplier_context: { supplier_id: 'supplier-123', organization_id: 'org-id' },
+      data: [],
+    });
   });
 
-  it('SUPPLIER_MANAGER dashboard uses supplier portal timesheets API', async () => {
-    (useAuth as jest.Mock).mockReturnValue({
+  it('SUPPLIER_MANAGER dashboard uses supplier portal dashboard API', async () => {
+    mockAuth({
       can: mockCan(TARGET_ROLE_PERMISSIONS.SUPPLIER_MANAGER),
-      user: { firstName: 'Mgr' },
+      user: { firstName: 'Mgr', supplierId: 'supplier-123' },
     });
-
-    (supplierPortalApi.getTimesheets as jest.Mock).mockResolvedValue({ data: [] });
 
     render(<PermissionAwareDashboard />);
 
     await waitFor(() => {
-      expect(supplierPortalApi.getTimesheets).toHaveBeenCalled();
+      expect(supplierPortalApi.getDashboard).toHaveBeenCalled();
     });
     expect(api.getTimesheets).not.toHaveBeenCalled();
   });
 
   it('CONTRACTOR dashboard does not call getInvoices', async () => {
     const contractorPerms = ['timesheets:read', 'timesheets:create', 'profile:read'];
-    (useAuth as jest.Mock).mockReturnValue({
+    mockAuth({
       can: mockCan(contractorPerms),
       user: { firstName: 'Alex' },
     });
@@ -171,7 +268,7 @@ describe('Dashboard role parity (permission-gated API calls)', () => {
       expect(api.getTimesheets).toHaveBeenCalled();
     });
     expect(api.getInvoices).not.toHaveBeenCalled();
-    expect(screen.queryByText(/Failed to load dashboard data/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Failed to load/i)).not.toBeInTheDocument();
   });
 
   it('FINANCE_USER with invoices:read calls getInvoices', async () => {
@@ -181,7 +278,7 @@ describe('Dashboard role parity (permission-gated API calls)', () => {
       'timesheets:read',
       'invoices:read',
     ];
-    (useAuth as jest.Mock).mockReturnValue({
+    mockAuth({
       can: mockCan(financePerms),
       user: { firstName: 'Finance' },
     });

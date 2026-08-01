@@ -1,6 +1,9 @@
 import { PdpReasonCode } from './pdp.reason-codes';
 
-export type PdpAction = 'SUBMIT_TIMESHEET' | 'SUBMIT_INVOICE';
+export type PdpAction =
+  | 'SUBMIT_TIMESHEET'
+  | 'SUBMIT_INVOICE'
+  | 'CREATE_CONTRACTOR';
 
 export interface PdpContext {
   organizationId?: string; // Tenant context

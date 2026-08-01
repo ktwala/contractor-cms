@@ -1,0 +1,17 @@
+{
+  "items": [
+    {
+      "person_id": "hcm-rest-e2e-001",
+      "person_number": "PN-REST-001",
+      "first_name": "Oracle",
+      "last_name": "Rest",
+      "email": "oracle.rest.e2e@example.com",
+      "worker_type": "Contingent Worker",
+      "start_date": "2024-01-01",
+      "sponsor_employee_id": "cms:emp:sponsor-demo",
+      "assignment_status": "Active",
+      "vendor_name": "Demo Supplier Ltd"
+    }
+  ],
+  "hasMore": false
+}

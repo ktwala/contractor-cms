@@ -9,6 +9,10 @@ import {
   TaxSummaryDto,
 } from './dto/analytics-response.dto';
 import { AccessContext } from '../../core/auth/interfaces/access-context.interface';
+import {
+  excludeComparisonAnchorContractorsWhere,
+  excludeComparisonAnchorSuppliersWhere,
+} from '../demo/connector-demo-comparison.constants';
 
 @Injectable()
 export class AnalyticsService {
@@ -90,12 +94,19 @@ export class AnalyticsService {
     const orgFilter = accessContext.isGlobalAccess ? {} : {
       organizationId: accessContext.targetOrganizationId as string,
     };
-    
-    // Get all contractors for the organization
+
+    const contractorWhere = accessContext.isGlobalAccess
+      ? excludeComparisonAnchorContractorsWhere()
+      : {
+          supplier: {
+            ...orgFilter,
+            ...excludeComparisonAnchorSuppliersWhere(),
+          },
+          ...excludeComparisonAnchorContractorsWhere(),
+        };
+
     const contractors = await this.prisma.contractor.findMany({
-      where: accessContext.isGlobalAccess ? {} : {
-        supplier: orgFilter,
-      },
+      where: contractorWhere,
       select: {
         id: true,
         isActive: true,
@@ -113,20 +124,28 @@ export class AnalyticsService {
     // Get active engagements
     const activeEngagements = await this.prisma.contractorEngagement.count({
       where: {
-        ...(accessContext.isGlobalAccess ? {} : {
-          contractor: {
-            supplier: {
-              organizationId: accessContext.targetOrganizationId as string,
-            },
-          },
-        }),
+        ...(accessContext.isGlobalAccess
+          ? {
+              contractor: excludeComparisonAnchorContractorsWhere(),
+            }
+          : {
+              contractor: {
+                ...excludeComparisonAnchorContractorsWhere(),
+                supplier: {
+                  ...orgFilter,
+                  ...excludeComparisonAnchorSuppliersWhere(),
+                },
+              },
+            }),
         isActive: true,
       },
     });
 
-    // Get supplier count
     const supplierCount = await this.prisma.supplier.count({
-      where: orgFilter,
+      where: {
+        ...orgFilter,
+        ...excludeComparisonAnchorSuppliersWhere(),
+      },
     });
 
     return {

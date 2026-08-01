@@ -4,6 +4,7 @@ import '@testing-library/jest-dom';
 import DashboardLayout, { buildSidebarNavSections } from '@/components/dashboard-layout';
 import { useAuth } from '@/lib/auth-context';
 import type { Permission } from '@/lib/permissions.generated';
+import { EXTERNAL_WORKFORCE_LABELS } from '@/lib/external-workforce-labels';
 
 jest.mock('next/navigation', () => ({
   useRouter: () => ({ push: jest.fn() }),
@@ -29,8 +30,12 @@ function canFromSeedPermissions(allowed: Set<string>): (p: Permission) => boolea
   return (p) => allowed.has(p);
 }
 
-describe('PR-NAV-IA-1: buildSidebarNavSections (seed-aligned)', () => {
-  it('CONTRACTOR: Operations (Dashboard + Timesheets) only; no Invoices; no Governance', () => {
+function engagementSection(sections: ReturnType<typeof buildSidebarNavSections>) {
+  return sections.find((s) => s.group === 'engagementAdministration');
+}
+
+describe('PR-NAV-CAPABILITY-IA-1: buildSidebarNavSections (seed-aligned)', () => {
+  it('CONTRACTOR: Overview + Timesheets only; no Invoices; no Governance', () => {
     const can = canFromSeedPermissions(
       new Set([
         'timesheets:create',
@@ -41,14 +46,16 @@ describe('PR-NAV-IA-1: buildSidebarNavSections (seed-aligned)', () => {
       ]),
     );
     const sections = buildSidebarNavSections(can);
-    const ops = sections.find((s) => s.group === 'operations');
-    expect(ops?.items.map((i) => i.name)).toEqual(['Dashboard', 'Timesheets']);
-    expect(ops?.items.some((i) => i.name === 'Invoices')).toBe(false);
+    expect(sections.find((s) => s.group === 'overview')?.items.map((i) => i.name)).toEqual([
+      'Overview',
+    ]);
+    expect(engagementSection(sections)?.items.map((i) => i.name)).toEqual(['Timesheets']);
+    expect(engagementSection(sections)?.items.some((i) => i.name === 'Invoices')).toBe(false);
     expect(sections.some((s) => s.group === 'governance')).toBe(false);
     expect(sections.some((s) => s.group === 'administration')).toBe(false);
   });
 
-  it('FINANCE_USER: Operations includes Invoices', () => {
+  it('FINANCE_USER: Engagement Administration includes Invoices', () => {
     const can = canFromSeedPermissions(
       new Set([
         'invoices:read',
@@ -60,17 +67,20 @@ describe('PR-NAV-IA-1: buildSidebarNavSections (seed-aligned)', () => {
       ]),
     );
     const sections = buildSidebarNavSections(can);
-    const ops = sections.find((s) => s.group === 'operations');
-    expect(ops?.items.map((i) => i.name)).toContain('Invoices');
-    expect(ops?.items.map((i) => i.name)).toContain('Suppliers');
+    expect(engagementSection(sections)?.items.map((i) => i.name)).toContain('Invoices');
+    expect(
+      sections.find((s) => s.group === 'supplierAdministration')?.items.map((i) => i.name),
+    ).toContain('Suppliers');
   });
 
-  it('CONTRACTOR_MANAGER: rich Operations but not Invoices', () => {
+  it('CONTRACTOR_MANAGER: supplier + engagement capabilities with invoice summary', () => {
     const can = canFromSeedPermissions(
       new Set([
         'suppliers:create',
         'suppliers:read',
         'suppliers:update',
+        'suppliers:approve',
+        'suppliers:suspend',
         'contractors:create',
         'contractors:read',
         'contractors:update',
@@ -79,35 +89,124 @@ describe('PR-NAV-IA-1: buildSidebarNavSections (seed-aligned)', () => {
         'contracts:update',
         'timesheets:read',
         'timesheets:approve',
+        'invoices:read',
         'tax-classifications:create',
         'tax-classifications:read',
       ]),
     );
     const sections = buildSidebarNavSections(can);
-    const ops = sections.find((s) => s.group === 'operations');
-    expect(ops?.items.some((i) => i.name === 'Invoices')).toBe(false);
-    expect(ops?.items.map((i) => i.name)).toEqual(
-      expect.arrayContaining(['Suppliers', 'Contracts', 'Timesheets']),
+    expect(engagementSection(sections)?.items.some((i) => i.name === 'Invoices')).toBe(true);
+    expect(
+      sections.find((s) => s.group === 'supplierAdministration')?.items.map((i) => i.name),
+    ).toEqual(
+      expect.arrayContaining([
+        'Suppliers',
+        'Operational trust queue',
+        'Operational trust management',
+      ]),
     );
+    expect(engagementSection(sections)?.items.map((i) => i.name)).toEqual(
+      expect.arrayContaining(['Contracts', 'Timesheets']),
+    );
+    expect(sections.some((s) => s.group === 'supplierPortal')).toBe(false);
   });
 
-  it('on /supplier-portal paths, sidebar shows portal routes only (no client Suppliers)', () => {
+  it('CMS_ADMIN on /supplier-portal URL keeps internal menu (Invoices + Governance)', () => {
     const can = canFromSeedPermissions(
       new Set([
-        'supplier-profile:read',
-        'supplier-contractors:read',
         'suppliers:read',
+        'supplier-profile:read',
         'contractors:read',
+        'contracts:read',
+        'engagements:read',
+        'timesheets:read',
         'invoices:read',
+        'projects:read',
+        'users:read',
+        'roles:read',
+        'audit:read',
+        'pdp-activation:view',
+        'pdp-exceptions:view',
       ]),
     );
     const sections = buildSidebarNavSections(can, '/supplier-portal/profile');
-    const ops = sections.find((s) => s.group === 'operations');
-    expect(ops?.items.map((i) => i.name)).toEqual(
-      expect.arrayContaining(['Dashboard', 'Supplier profile', 'Contractors']),
+    expect(
+      sections.find((s) => s.group === 'supplierAdministration')?.items.some((i) => i.name === 'Suppliers'),
+    ).toBe(true);
+    expect(engagementSection(sections)?.items.some((i) => i.name === 'Invoices')).toBe(true);
+    expect(sections.some((s) => s.group === 'supplierPortal')).toBe(false);
+    expect(sections.some((s) => s.group === 'governance')).toBe(true);
+    expect(sections.some((s) => s.group === 'administration')).toBe(true);
+  });
+
+  it('GOVERNANCE_INTEGRATION_OPERATOR: supplier + workforce capabilities; no approvals', () => {
+    const can = canFromSeedPermissions(
+      new Set([
+        'suppliers:read',
+        'suppliers:sync',
+        'suppliers:governance-scan',
+        'contractor-migration:read',
+        'contractors:read',
+        'contractors:bootstrap',
+        'contractors:governance-scan',
+        'workforce:cutover-manage',
+      ]),
     );
-    expect(ops?.items.some((i) => i.name === 'Suppliers')).toBe(false);
-    expect(ops?.items.some((i) => i.name === 'Invoices')).toBe(false);
+    const sections = buildSidebarNavSections(can, '/dashboard', {
+      tenantAuthority: {
+        supplierAuthorityMode: 'ORACLE_ONLY',
+        contractorAuthorityMode: 'HCM_ONLY',
+      },
+    });
+    expect(
+      sections.find((s) => s.group === 'supplierAdministration')?.items.map((i) => i.name),
+    ).toEqual(expect.arrayContaining(['Suppliers', 'Supplier Synchronization']));
+    expect(
+      sections.find((s) => s.group === 'workforceAdministration')?.items.map((i) => i.name),
+    ).toEqual(
+      expect.arrayContaining(['External Workers', 'Workforce Discovery']),
+    );
+    expect(
+      sections.find((s) => s.group === 'supplierAdministration')?.items.some(
+        (i) => i.name === 'Operational trust queue',
+      ),
+    ).toBe(false);
+    expect(engagementSection(sections)).toBeUndefined();
+    expect(sections.some((s) => s.group === 'governance')).toBe(false);
+  });
+
+  it('GOVERNANCE_AUDITOR: governance + invoice summary; no supplier portal routes', () => {
+    const can = canFromSeedPermissions(
+      new Set([
+        'audit:read',
+        'governance-analytics:view',
+        'governance-risk:view',
+        'pdp-exceptions:view',
+        'pdp-telemetry:view',
+        'invoices:read',
+        'contracts:read',
+        'engagements:read',
+        'suppliers:read',
+      ]),
+    );
+    const sections = buildSidebarNavSections(can);
+    expect(sections.some((s) => s.group === 'governance')).toBe(true);
+    expect(engagementSection(sections)?.items.some((i) => i.name === 'Invoices')).toBe(true);
+    expect(sections.some((s) => s.group === 'supplierPortal')).toBe(false);
+    expect(sections.some((s) => s.group === 'administration')).toBe(false);
+  });
+
+  it('supplierPortalPreview shows portal routes for internal operator', () => {
+    const can = canFromSeedPermissions(
+      new Set(['suppliers:read', 'invoices:read', 'users:read', 'supplier-profile:read']),
+    );
+    const sections = buildSidebarNavSections(can, '/dashboard', null, {
+      supplierPortalPreview: true,
+    });
+    expect(
+      sections.find((s) => s.group === 'supplierPortal')?.items.some((i) => i.name === 'Supplier profile'),
+    ).toBe(true);
+    expect(sections.some((s) => s.group === 'supplierAdministration')).toBe(false);
     expect(sections.some((s) => s.group === 'governance')).toBe(false);
   });
 
@@ -125,14 +224,15 @@ describe('PR-NAV-IA-1: buildSidebarNavSections (seed-aligned)', () => {
       ]),
     );
     const sections = buildSidebarNavSections(can);
-    const ops = sections.find((s) => s.group === 'operations');
-    expect(ops?.items.map((i) => i.name)).toEqual([
-      'Dashboard',
-      'Supplier profile',
-      'Contractors',
+    expect(sections.find((s) => s.group === 'overview')?.items.map((i) => i.name)).toEqual([
+      'Overview',
     ]);
-    expect(ops?.items.some((i) => i.name === 'Suppliers')).toBe(false);
-    expect(ops?.items.some((i) => i.name === 'Invoices')).toBe(false);
+    expect(sections.find((s) => s.group === 'supplierPortal')?.items.map((i) => i.name)).toEqual([
+      'Supplier profile',
+      'External workers',
+    ]);
+    expect(sections.some((s) => s.group === 'supplierAdministration')).toBe(false);
+    expect(engagementSection(sections)).toBeUndefined();
     expect(sections.some((s) => s.group === 'governance')).toBe(false);
   });
 
@@ -149,47 +249,96 @@ describe('PR-NAV-IA-1: buildSidebarNavSections (seed-aligned)', () => {
       ]),
     );
     const sections = buildSidebarNavSections(can);
-    const ops = sections.find((s) => s.group === 'operations');
-    expect(ops?.items.map((i) => i.name)).toEqual([
-      'Dashboard',
+    expect(sections.find((s) => s.group === 'supplierPortal')?.items.map((i) => i.name)).toEqual([
       'Supplier profile',
-      'Contractors',
+      'External workers',
       'Supplier timesheets',
     ]);
-    expect(ops?.items.some((i) => i.name === 'Suppliers')).toBe(false);
-    expect(ops?.items.some((i) => i.name === 'Timesheets')).toBe(false);
+    expect(sections.some((s) => s.group === 'supplierAdministration')).toBe(false);
+    expect(engagementSection(sections)).toBeUndefined();
   });
 
-  it('SPONSOR seed bundle: contractors + engagements; no Invoices', () => {
+  it('HCM-linked sponsor view hidden when inbox flag is off', () => {
     const can = canFromSeedPermissions(
       new Set(['contractors:read', 'engagements:read', 'engagements:update']),
     );
-    const sections = buildSidebarNavSections(can);
-    const ops = sections.find((s) => s.group === 'operations');
-    expect(ops?.items.map((i) => i.name)).toEqual(
-      expect.arrayContaining(['Dashboard', 'Contractors', 'Engagements']),
-    );
-    expect(ops?.items.some((i) => i.name === 'Invoices')).toBe(false);
+    const sections = buildSidebarNavSections(can, '/dashboard', {
+      externalId: 'cms:emp:sponsor-demo',
+      responsibleManagerAccountabilityInboxEnabled: false,
+    });
+    expect(
+      sections.find((s) => s.group === 'workforceAdministration')?.items.map((i) => i.name),
+    ).not.toContain('Sponsored contractors');
+    expect(
+      sections.flatMap((s) => s.items).some((i) => i.path === '/responsible-manager-tasks'),
+    ).toBe(false);
   });
 
-  it('CMS_ADMIN wildcard: Operations, Governance, and Administration sections', () => {
-    const can = () => true;
-    const sections = buildSidebarNavSections(can);
-    expect(sections.map((s) => s.group)).toEqual(['operations', 'governance', 'administration']);
-    expect(sections.find((s) => s.group === 'operations')?.items.map((i) => i.name)).toContain(
-      'Invoices',
+  it('HCM-linked sponsor view: sponsored workers + engagements labels; no Invoices', () => {
+    const can = canFromSeedPermissions(
+      new Set([
+        'contractors:read',
+        'engagements:read',
+        'engagements:update',
+        'responsible-manager-tasks:read',
+      ]),
     );
+    const sections = buildSidebarNavSections(can, '/dashboard', {
+      externalId: 'cms:emp:sponsor-demo',
+      responsibleManagerAccountabilityInboxEnabled: true,
+    });
+    const workforce = sections.find((s) => s.group === 'workforceAdministration')?.items ?? [];
+    const engagement = engagementSection(sections)?.items ?? [];
+    expect([...workforce, ...engagement].map((i) => i.name)).toEqual(
+      expect.arrayContaining([
+        'Managed external workers',
+        'My managed engagements',
+        EXTERNAL_WORKFORCE_LABELS.myResponsibleManagerAccountability,
+      ]),
+    );
+    expect(engagement.some((i) => i.name === 'Invoices')).toBe(false);
+  });
+
+  it('CMS_ADMIN: capability sections for supplier, workforce, engagement, governance, administration', () => {
+    const can = canFromSeedPermissions(
+      new Set([
+        'suppliers:read',
+        'contractors:read',
+        'contracts:read',
+        'engagements:read',
+        'timesheets:read',
+        'invoices:read',
+        'projects:read',
+        'users:read',
+        'roles:read',
+        'audit:read',
+        'pdp-activation:view',
+        'pdp-exceptions:view',
+        'governance-analytics:view',
+      ]),
+    );
+    const sections = buildSidebarNavSections(can);
+    expect(sections.map((s) => s.group)).toEqual([
+      'overview',
+      'supplierAdministration',
+      'workforceAdministration',
+      'engagementAdministration',
+      'governance',
+      'administration',
+    ]);
+    expect(engagementSection(sections)?.items.map((i) => i.name) ?? []).toContain('Invoices');
+    expect(sections.some((s) => s.group === 'supplierPortal')).toBe(false);
     expect(sections.find((s) => s.group === 'governance')?.items.length).toBe(4);
     expect(sections.find((s) => s.group === 'administration')?.items.length).toBe(2);
   });
 });
 
-describe('PR-NAV-IA-1: DashboardLayout grouped sidebar', () => {
+describe('PR-NAV-CAPABILITY-IA-1: DashboardLayout grouped sidebar', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it('renders Operations section label and seed-appropriate links for CONTRACTOR', () => {
+  it('renders Engagement Administration section for CONTRACTOR', () => {
     (useAuth as jest.Mock).mockReturnValue({
       user: {
         id: 'u1',
@@ -217,8 +366,11 @@ describe('PR-NAV-IA-1: DashboardLayout grouped sidebar', () => {
 
     render(<DashboardLayout>child</DashboardLayout>);
 
-    expect(screen.getByTestId('nav-section-operations')).toBeInTheDocument();
-    expect(screen.getByTestId('nav-section-label-operations')).toHaveTextContent('Operations');
+    expect(screen.getByTestId('nav-section-overview')).toBeInTheDocument();
+    expect(screen.getByTestId('nav-section-engagementAdministration')).toBeInTheDocument();
+    expect(screen.getByTestId('nav-section-label-engagementAdministration')).toHaveTextContent(
+      'Engagement Administration',
+    );
     expect(screen.getByRole('link', { name: /Timesheets/i })).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: /^Invoices$/ })).not.toBeInTheDocument();
     expect(screen.queryByTestId('nav-section-governance')).not.toBeInTheDocument();
@@ -254,8 +406,10 @@ describe('PR-NAV-IA-1: DashboardLayout grouped sidebar', () => {
 
     render(<DashboardLayout>child</DashboardLayout>);
 
+    expect(screen.getByTestId('nav-shell-supplier-portal')).toBeInTheDocument();
+    expect(screen.getByTestId('nav-section-supplierPortal')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Supplier profile/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /^Contractors$/ })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /^External workers$/ })).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: /^Suppliers$/ })).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: /^Invoices$/ })).not.toBeInTheDocument();
     expect(screen.queryByTestId('nav-section-governance')).not.toBeInTheDocument();

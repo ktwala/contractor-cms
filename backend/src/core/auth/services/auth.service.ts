@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
 import { PasswordService } from './password.service';
 import { LoginDto } from '../dto/login.dto';
@@ -13,11 +14,27 @@ import { RegisterDto } from '../dto/register.dto';
 import { AuthResponseDto } from '../dto/auth-response.dto';
 import { UserType } from '@prisma/client';
 import * as crypto from 'crypto';
-import {
-  ALL_PERMISSIONS,
-  WILDCARD_ALL,
-  WILDCARD_ACTION,
-} from '../permissions.constants';
+import { expandEffectivePermissions } from '../utils/permission-evaluation';
+import { TenantAuthorityService } from '../../authority/tenant-authority.service';
+import { isResponsibleManagerAccountabilityInboxEnabled } from '../../config/responsible-manager-accountability.config';
+
+const USER_AUTH_CONTEXT_INCLUDE = {
+  roles: {
+    include: {
+      role: true,
+    },
+  },
+  supplierMemberships: {
+    where: { isActive: true },
+    select: { supplierId: true, role: true, isActive: true },
+    orderBy: { assignedAt: 'asc' as const },
+    take: 1,
+  },
+} satisfies Prisma.UserInclude;
+
+type UserWithAuthContext = Prisma.UserGetPayload<{
+  include: typeof USER_AUTH_CONTEXT_INCLUDE;
+}>;
 
 @Injectable()
 export class AuthService {
@@ -28,13 +45,13 @@ export class AuthService {
     private jwtService: JwtService,
     private passwordService: PasswordService,
     private configService: ConfigService,
+    private tenantAuthority: TenantAuthorityService,
   ) {}
 
   /**
    * Register a new user
    */
   async register(registerDto: RegisterDto): Promise<AuthResponseDto> {
-    // Check if user already exists
     const existingUser = await this.prisma.user.findUnique({
       where: { email: registerDto.email },
     });
@@ -43,12 +60,10 @@ export class AuthService {
       throw new ConflictException('User with this email already exists');
     }
 
-    // Hash password
     const passwordHash = await this.passwordService.hashPassword(
       registerDto.password,
     );
 
-    // Create user
     const user = await this.prisma.user.create({
       data: {
         email: registerDto.email,
@@ -60,11 +75,11 @@ export class AuthService {
         isActive: true,
         emailVerified: false,
       },
+      include: USER_AUTH_CONTEXT_INCLUDE,
     });
 
     this.logger.log(`User registered: ${user.email} (${user.id})`);
 
-    // Generate tokens
     return this.generateAuthResponse(user);
   }
 
@@ -72,21 +87,19 @@ export class AuthService {
    * Login with email and password
    */
   async login(loginDto: LoginDto): Promise<AuthResponseDto> {
-    // Find user by email
     const user = await this.prisma.user.findUnique({
       where: { email: loginDto.email },
+      include: USER_AUTH_CONTEXT_INCLUDE,
     });
 
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    // Check if user is active
     if (!user.isActive) {
       throw new UnauthorizedException('User account is deactivated');
     }
 
-    // Verify password
     const isPasswordValid = await this.passwordService.verifyPassword(
       user.passwordHash || '',
       loginDto.password,
@@ -97,19 +110,12 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    // Check if password needs rehashing
     if (user.passwordHash && this.passwordService.needsRehash(user.passwordHash)) {
-      const newHash = await this.passwordService.hashPassword(loginDto.password);
-      await this.prisma.user.update({
-        where: { id: user.id },
-        data: { passwordHash: newHash },
-      });
-      this.logger.log(`Rehashed password for user: ${user.id}`);
+      void this.rehashPasswordInBackground(user.id, loginDto.password);
     }
 
     this.logger.log(`User logged in: ${user.email} (${user.id})`);
 
-    // Generate tokens
     return this.generateAuthResponse(user);
   }
 
@@ -126,6 +132,8 @@ export class AuthService {
         lastName: true,
         userType: true,
         organizationId: true,
+        externalId: true,
+        externalProvider: true,
         isActive: true,
         roles: {
           include: {
@@ -148,9 +156,71 @@ export class AuthService {
   }
 
   /**
+   * Profile payload for GET /auth/profile (and login response user envelope).
+   */
+  async buildProfileResponse(user: {
+    id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    userType: string;
+    organizationId: string | null;
+    externalId?: string | null;
+    externalProvider?: string | null;
+    roles: Array<{
+      roleId: string;
+      organizationId: string | null;
+      role: { name: string; permissions: string[] };
+    }>;
+    supplierMemberships?: Array<{
+      supplierId: string;
+      role?: string;
+      isActive: boolean;
+    }>;
+  }) {
+    const [effectivePermissions, tenantAuthority] = await Promise.all([
+      Promise.resolve(this.resolveEffectivePermissions(user)),
+      this.tenantAuthority.resolveForOrganization(user.organizationId),
+    ]);
+
+    const activeMembership = user.supplierMemberships?.find((m) => m.isActive);
+
+    return {
+      id: user.id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      userType: user.userType,
+      organizationId: user.organizationId,
+      supplierId: activeMembership?.supplierId ?? null,
+      externalId: user.externalId ?? null,
+      externalProvider: user.externalProvider ?? null,
+      roles: Array.from(
+        new Map(
+          user.roles.map((ur) => [
+            `${ur.roleId}:${ur.organizationId ?? 'global'}`,
+            {
+              name: ur.role.name,
+              permissions: ur.role.permissions,
+              organizationId: ur.organizationId,
+            },
+          ]),
+        ).values(),
+      ),
+      effectivePermissions,
+      responsibleManagerAccountabilityInboxEnabled: isResponsibleManagerAccountabilityInboxEnabled(
+        this.configService,
+      ),
+      tenantAuthority,
+    };
+  }
+
+  /**
    * Generate JWT tokens and auth response
    */
-  private async generateAuthResponse(user: any): Promise<AuthResponseDto> {
+  private async generateAuthResponse(
+    user: UserWithAuthContext,
+  ): Promise<AuthResponseDto> {
     const payload = {
       sub: user.id,
       email: user.email,
@@ -160,50 +230,30 @@ export class AuthService {
     };
 
     const expiresIn = this.configService.get<any>('jwt.expiresIn');
+    const refreshExpiresIn = this.configService.get<any>('jwt.refreshExpiresIn');
 
-    const [accessToken, refreshToken] = await Promise.all([
+    const profilePromise = this.buildProfileResponse(user);
+
+    const [accessToken, refreshToken, profile] = await Promise.all([
       this.jwtService.signAsync(payload, { expiresIn }),
-      this.jwtService.signAsync(payload, {
-        expiresIn: this.configService.get<any>('jwt.refreshExpiresIn'),
-      }),
+      this.jwtService.signAsync(payload, { expiresIn: refreshExpiresIn }),
+      profilePromise,
     ]);
 
-    // Store session
     const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 1); // 1 day
+    expiresAt.setDate(expiresAt.getDate() + 1);
 
     const tokenHash = crypto.createHash('sha256').update(accessToken).digest('hex');
 
     await this.prisma.userSession.create({
       data: {
         userId: user.id,
-        token: tokenHash, // Store hash for tracking
+        token: tokenHash,
         expiresAt,
       },
     });
 
-    // Fetch roles for the user to include in the response
-    const userWithRoles = await this.prisma.user.findUnique({
-      where: { id: user.id },
-      select: {
-        roles: {
-          include: {
-            role: true,
-          },
-        },
-      },
-    });
-
-    const roleNames = userWithRoles?.roles.map((ur: any) => ur.role.name) || [];
-    const effectivePermissions = userWithRoles
-      ? this.resolveEffectivePermissions(userWithRoles)
-      : [];
-
-    const supplierMembership = await this.prisma.supplierMembership.findFirst({
-      where: { userId: user.id, isActive: true },
-      select: { supplierId: true },
-      orderBy: { assignedAt: 'asc' },
-    });
+    const roleNames = user.roles.map((ur) => ur.role.name);
 
     return {
       accessToken,
@@ -211,17 +261,39 @@ export class AuthService {
       tokenType: 'Bearer',
       expiresIn: this.parseExpiration(expiresIn!),
       user: {
-        id: user.id,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        userType: user.userType,
-        organizationId: user.organizationId,
-        supplierId: supplierMembership?.supplierId ?? null,
+        id: profile.id,
+        email: profile.email,
+        firstName: profile.firstName,
+        lastName: profile.lastName,
+        userType: profile.userType,
+        organizationId: profile.organizationId,
+        supplierId: profile.supplierId,
+        externalId: profile.externalId,
         roles: roleNames,
-        effectivePermissions,
+        effectivePermissions: profile.effectivePermissions,
+        tenantAuthority: profile.tenantAuthority,
+        responsibleManagerAccountabilityInboxEnabled:
+          profile.responsibleManagerAccountabilityInboxEnabled,
       },
     };
+  }
+
+  private async rehashPasswordInBackground(
+    userId: string,
+    password: string,
+  ): Promise<void> {
+    try {
+      const newHash = await this.passwordService.hashPassword(password);
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: { passwordHash: newHash },
+      });
+      this.logger.log(`Rehashed password for user: ${userId}`);
+    } catch (error) {
+      this.logger.warn(
+        `Background password rehash failed for user ${userId}: ${error}`,
+      );
+    }
   }
 
   /**
@@ -261,43 +333,13 @@ export class AuthService {
 
   /**
    * Resolve effective permissions from a user's roles.
-   *
-   * Expands wildcards so the consumer (frontend, profile endpoint) can
-   * do simple `includes()` checks without wildcard logic.
-   *
-   * - `*:*`         → expands to every permission in the catalog
-   * - `resource:*`  → expands to every action on that resource
-   * - explicit      → passed through as-is
-   *
-   * O(n) scan over catalog — acceptable for current size (~39 permissions).
-   * Revisit if permission count grows beyond 500.
    */
-  resolveEffectivePermissions(user: any): string[] {
-    const rawPermissions = new Set<string>(
-      user.roles.flatMap((ur: any) => ur.role.permissions || []),
+  resolveEffectivePermissions(user: {
+    roles: Array<{ role: { permissions: string[] } }>;
+  }): string[] {
+    const rawPermissions = user.roles.flatMap(
+      (ur) => ur.role.permissions || [],
     );
-
-    // Full wildcard → return entire catalog
-    if (rawPermissions.has(WILDCARD_ALL)) {
-      return Array.from(ALL_PERMISSIONS);
-    }
-
-    const resolved = new Set<string>();
-
-    for (const perm of rawPermissions) {
-      if (perm.endsWith(`:${WILDCARD_ACTION}`)) {
-        // Resource wildcard: expand to all actions for that resource
-        const resource = perm.split(':')[0];
-        for (const catalogPerm of ALL_PERMISSIONS) {
-          if (catalogPerm.startsWith(`${resource}:`)) {
-            resolved.add(catalogPerm);
-          }
-        }
-      } else {
-        resolved.add(perm);
-      }
-    }
-
-    return Array.from(resolved);
+    return expandEffectivePermissions(rawPermissions);
   }
 }

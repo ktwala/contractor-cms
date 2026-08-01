@@ -3,14 +3,12 @@ import {
   NotFoundException,
   BadRequestException,
 } from '@nestjs/common';
-import { SponsorAccountabilityStatus } from '@prisma/client';
+import { ResponsibleManagerAccountabilityStatus } from '@prisma/client';
 import { PrismaService } from '../../core/database/prisma.service';
-import { HcmSponsorLookupService } from '../../core/hcm/hcm-sponsor-lookup.service';
+import { HcmResponsibleManagerLookupService } from '../../core/hcm/hcm-responsible-manager-lookup.service';
 import { toIgaEventContractorSlice } from '../../core/iga/iga-event.mapper';
-import {
-  IgaWorkforceEventWriter,
-  shouldEmitSponsorAssignedEvent,
-} from '../../core/iga/iga-workforce-event-writer.service';
+import { AccessIntegrationPublishService } from '../access-integration/access-integration-publish.service';
+import { shouldEmitSponsorAssignedEvent } from '../../core/iga/iga-workforce-event-writer.service';
 import { CreateEngagementDto } from './dto/create-engagement.dto';
 import { UpdateEngagementDto } from './dto/update-engagement.dto';
 import { QueryEngagementDto } from './dto/query-engagement.dto';
@@ -19,6 +17,7 @@ import {
   EngagementResponseDto,
 } from './dto/engagement-response.dto';
 import { AccessContext } from '../../core/auth/interfaces/access-context.interface';
+import { applyResponsibleManagerEngagementScope } from '../../core/auth/utils/responsible-manager-scope.helper';
 
 const ENGAGEMENT_CONTRACTOR_SELECT_CORE = {
   id: true,
@@ -56,8 +55,8 @@ const ENGAGEMENT_CONTRACTOR_SELECT_WITH_SUPPLIER = {
 export class EngagementsService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly hcmSponsorLookup: HcmSponsorLookupService,
-    private readonly igaWorkforceEventWriter: IgaWorkforceEventWriter,
+    private readonly hcmResponsibleManagerLookup: HcmResponsibleManagerLookupService,
+    private readonly accessIntegrationPublish: AccessIntegrationPublishService,
   ) {}
 
   /** Tenant filter for list/read; omitted when actor has global access (PR-ENGAGEMENTS-ADMIN-500-1). */
@@ -82,24 +81,24 @@ export class EngagementsService {
   /**
    * PR-SPONSOR-GOVERNANCE-1 — structural sponsor accountability baseline (no HCM / attestation).
    * - Primary sponsor id cleared ⇒ clear delegate + status.
-   * - `sponsorStatus` without primary sponsor id ⇒ 400.
-   * - Primary sponsor id present with null/omitted status ⇒ default `SPONSOR_ASSIGNED`.
+   * - `responsibleManagerStatus` without primary sponsor id ⇒ 400.
+   * - Primary sponsor id present with null/omitted status ⇒ default `RESPONSIBLE_MANAGER_ASSIGNED`.
    */
-  private normalizeSponsorAccountability(
+  private normalizeResponsibleManagerAccountability(
     dto: {
-      sponsorEmployeeId?: string | null;
-      sponsorDelegateEmployeeId?: string | null;
-      sponsorStatus?: SponsorAccountabilityStatus | null;
+      responsibleManagerEmployeeId?: string | null;
+      responsibleManagerDelegateEmployeeId?: string | null;
+      responsibleManagerStatus?: ResponsibleManagerAccountabilityStatus | null;
     },
     existing: {
-      sponsorEmployeeId: string | null;
-      sponsorDelegateEmployeeId: string | null;
-      sponsorStatus: SponsorAccountabilityStatus | null;
+      responsibleManagerEmployeeId: string | null;
+      responsibleManagerDelegateEmployeeId: string | null;
+      responsibleManagerStatus: ResponsibleManagerAccountabilityStatus | null;
     } | null,
   ): {
-    sponsorEmployeeId: string | null;
-    sponsorDelegateEmployeeId: string | null;
-    sponsorStatus: SponsorAccountabilityStatus | null;
+    responsibleManagerEmployeeId: string | null;
+    responsibleManagerDelegateEmployeeId: string | null;
+    responsibleManagerStatus: ResponsibleManagerAccountabilityStatus | null;
   } {
     const trimId = (v: string | null | undefined): string | null => {
       if (v === undefined || v === null) return null;
@@ -108,41 +107,41 @@ export class EngagementsService {
     };
 
     const finalEmp =
-      dto.sponsorEmployeeId !== undefined
-        ? trimId(dto.sponsorEmployeeId)
-        : existing?.sponsorEmployeeId ?? null;
+      dto.responsibleManagerEmployeeId !== undefined
+        ? trimId(dto.responsibleManagerEmployeeId)
+        : existing?.responsibleManagerEmployeeId ?? null;
     const finalDel =
-      dto.sponsorDelegateEmployeeId !== undefined
-        ? trimId(dto.sponsorDelegateEmployeeId)
-        : existing?.sponsorDelegateEmployeeId ?? null;
+      dto.responsibleManagerDelegateEmployeeId !== undefined
+        ? trimId(dto.responsibleManagerDelegateEmployeeId)
+        : existing?.responsibleManagerDelegateEmployeeId ?? null;
 
-    if (dto.sponsorEmployeeId !== undefined && finalEmp === null) {
+    if (dto.responsibleManagerEmployeeId !== undefined && finalEmp === null) {
       return {
-        sponsorEmployeeId: null,
-        sponsorDelegateEmployeeId: null,
-        sponsorStatus: null,
+        responsibleManagerEmployeeId: null,
+        responsibleManagerDelegateEmployeeId: null,
+        responsibleManagerStatus: null,
       };
     }
 
-    let finalStat: SponsorAccountabilityStatus | null =
-      dto.sponsorStatus !== undefined
-        ? dto.sponsorStatus
-        : existing?.sponsorStatus ?? null;
+    let finalStat: ResponsibleManagerAccountabilityStatus | null =
+      dto.responsibleManagerStatus !== undefined
+        ? dto.responsibleManagerStatus
+        : existing?.responsibleManagerStatus ?? null;
 
     if (finalStat != null && finalEmp == null) {
       throw new BadRequestException(
-        'sponsorStatus requires sponsorEmployeeId (primary sponsor accountability)',
+        'responsibleManagerStatus requires responsibleManagerEmployeeId (primary sponsor accountability)',
       );
     }
 
     if (finalEmp != null && finalStat == null) {
-      finalStat = SponsorAccountabilityStatus.SPONSOR_ASSIGNED;
+      finalStat = ResponsibleManagerAccountabilityStatus.RESPONSIBLE_MANAGER_ASSIGNED;
     }
 
     return {
-      sponsorEmployeeId: finalEmp,
-      sponsorDelegateEmployeeId: finalDel,
-      sponsorStatus: finalStat,
+      responsibleManagerEmployeeId: finalEmp,
+      responsibleManagerDelegateEmployeeId: finalDel,
+      responsibleManagerStatus: finalStat,
     };
   }
 
@@ -216,23 +215,23 @@ export class EngagementsService {
       );
     }
 
-    const sponsor = this.normalizeSponsorAccountability(
+    const sponsor = this.normalizeResponsibleManagerAccountability(
       {
-        sponsorEmployeeId: createEngagementDto.sponsorEmployeeId,
-        sponsorDelegateEmployeeId: createEngagementDto.sponsorDelegateEmployeeId,
-        sponsorStatus: createEngagementDto.sponsorStatus,
+        responsibleManagerEmployeeId: createEngagementDto.responsibleManagerEmployeeId,
+        responsibleManagerDelegateEmployeeId: createEngagementDto.responsibleManagerDelegateEmployeeId,
+        responsibleManagerStatus: createEngagementDto.responsibleManagerStatus,
       },
       null,
     );
 
-    await this.hcmSponsorLookup.assertSponsorReferencesAllowed(organizationId, {
-      sponsorEmployeeId: sponsor.sponsorEmployeeId,
-      sponsorDelegateEmployeeId: sponsor.sponsorDelegateEmployeeId,
+    await this.hcmResponsibleManagerLookup.assertResponsibleManagerReferencesAllowed(organizationId, {
+      responsibleManagerEmployeeId: sponsor.responsibleManagerEmployeeId,
+      responsibleManagerDelegateEmployeeId: sponsor.responsibleManagerDelegateEmployeeId,
     });
 
     const emitSponsorAssigned = shouldEmitSponsorAssignedEvent(
       null,
-      sponsor.sponsorEmployeeId,
+      sponsor.responsibleManagerEmployeeId,
     );
 
     const engagement = await this.prisma.$transaction(async (tx) => {
@@ -249,22 +248,22 @@ export class EngagementsService {
           rateAmount: createEngagementDto.rateAmount,
           currency: createEngagementDto.currency || 'ZAR',
           isActive: true,
-          sponsorEmployeeId: sponsor.sponsorEmployeeId,
-          sponsorDelegateEmployeeId: sponsor.sponsorDelegateEmployeeId,
-          sponsorStatus: sponsor.sponsorStatus,
+          responsibleManagerEmployeeId: sponsor.responsibleManagerEmployeeId,
+          responsibleManagerDelegateEmployeeId: sponsor.responsibleManagerDelegateEmployeeId,
+          responsibleManagerStatus: sponsor.responsibleManagerStatus,
         },
       });
 
-      if (emitSponsorAssigned && sponsor.sponsorEmployeeId) {
+      if (emitSponsorAssigned && sponsor.responsibleManagerEmployeeId) {
         const contractorRow = await tx.contractor.findUniqueOrThrow({
           where: { id: created.contractorId },
         });
-        await this.igaWorkforceEventWriter.persistSponsorAssigned(
+        await this.accessIntegrationPublish.publishSponsorAssigned(
           toIgaEventContractorSlice(contractorRow),
           {
             id: created.id,
-            sponsorEmployeeId: sponsor.sponsorEmployeeId,
-            sponsorStatus: sponsor.sponsorStatus,
+            responsibleManagerEmployeeId: sponsor.responsibleManagerEmployeeId,
+            responsibleManagerStatus: sponsor.responsibleManagerStatus,
           },
           organizationId,
           tx,
@@ -315,6 +314,7 @@ export class EngagementsService {
     const where: any = {
       ...this.engagementTenantWhere(accessContext),
     };
+    applyResponsibleManagerEngagementScope(where, accessContext);
 
     if (search) {
       where.OR = [
@@ -397,11 +397,14 @@ export class EngagementsService {
     accessContext: AccessContext,
     id: string,
   ): Promise<EngagementResponseDto> {
+    const where: Record<string, unknown> = {
+      id,
+      ...this.engagementTenantWhere(accessContext),
+    };
+    applyResponsibleManagerEngagementScope(where, accessContext);
+
     const engagement = await this.prisma.contractorEngagement.findFirst({
-      where: {
-        id,
-        ...this.engagementTenantWhere(accessContext),
-      },
+      where,
       include: {
         contractor: {
           select: ENGAGEMENT_CONTRACTOR_SELECT_WITH_SUPPLIER,
@@ -434,11 +437,12 @@ export class EngagementsService {
   }
 
   async update(
+    accessContext: AccessContext,
     organizationId: string,
     id: string,
     updateEngagementDto: UpdateEngagementDto,
   ): Promise<EngagementResponseDto> {
-    // Check if engagement exists and belongs to organization
+    await this.findOne(accessContext, id);
     const existingEngagement = await this.prisma.contractorEngagement.findFirst(
       {
         where: {
@@ -525,42 +529,42 @@ export class EngagementsService {
     }
 
     const {
-      sponsorEmployeeId,
-      sponsorDelegateEmployeeId,
-      sponsorStatus,
+      responsibleManagerEmployeeId,
+      responsibleManagerDelegateEmployeeId,
+      responsibleManagerStatus,
       startDate: patchStart,
       endDate: patchEnd,
       ...restPatch
     } = updateEngagementDto;
 
     const sponsorTouched =
-      sponsorEmployeeId !== undefined ||
-      sponsorDelegateEmployeeId !== undefined ||
-      sponsorStatus !== undefined;
+      responsibleManagerEmployeeId !== undefined ||
+      responsibleManagerDelegateEmployeeId !== undefined ||
+      responsibleManagerStatus !== undefined;
 
     const sponsorData = sponsorTouched
-      ? this.normalizeSponsorAccountability(
-          { sponsorEmployeeId, sponsorDelegateEmployeeId, sponsorStatus },
+      ? this.normalizeResponsibleManagerAccountability(
+          { responsibleManagerEmployeeId, responsibleManagerDelegateEmployeeId, responsibleManagerStatus },
           {
-            sponsorEmployeeId: existingEngagement.sponsorEmployeeId,
-            sponsorDelegateEmployeeId: existingEngagement.sponsorDelegateEmployeeId,
-            sponsorStatus: existingEngagement.sponsorStatus,
+            responsibleManagerEmployeeId: existingEngagement.responsibleManagerEmployeeId,
+            responsibleManagerDelegateEmployeeId: existingEngagement.responsibleManagerDelegateEmployeeId,
+            responsibleManagerStatus: existingEngagement.responsibleManagerStatus,
           },
         )
       : null;
 
     if (sponsorData) {
-      await this.hcmSponsorLookup.assertSponsorReferencesAllowed(organizationId, {
-        sponsorEmployeeId: sponsorData.sponsorEmployeeId,
-        sponsorDelegateEmployeeId: sponsorData.sponsorDelegateEmployeeId,
+      await this.hcmResponsibleManagerLookup.assertResponsibleManagerReferencesAllowed(organizationId, {
+        responsibleManagerEmployeeId: sponsorData.responsibleManagerEmployeeId,
+        responsibleManagerDelegateEmployeeId: sponsorData.responsibleManagerDelegateEmployeeId,
       });
     }
 
     const emitSponsorAssigned =
       sponsorData != null &&
       shouldEmitSponsorAssignedEvent(
-        existingEngagement.sponsorEmployeeId,
-        sponsorData.sponsorEmployeeId,
+        existingEngagement.responsibleManagerEmployeeId,
+        sponsorData.responsibleManagerEmployeeId,
       );
 
     const engagement = await this.prisma.$transaction(async (tx) => {
@@ -574,16 +578,16 @@ export class EngagementsService {
         },
       });
 
-      if (emitSponsorAssigned && sponsorData?.sponsorEmployeeId) {
+      if (emitSponsorAssigned && sponsorData?.responsibleManagerEmployeeId) {
         const contractorRow = await tx.contractor.findUniqueOrThrow({
           where: { id: updated.contractorId },
         });
-        await this.igaWorkforceEventWriter.persistSponsorAssigned(
+        await this.accessIntegrationPublish.publishSponsorAssigned(
           toIgaEventContractorSlice(contractorRow),
           {
             id: updated.id,
-            sponsorEmployeeId: sponsorData.sponsorEmployeeId,
-            sponsorStatus: sponsorData.sponsorStatus,
+            responsibleManagerEmployeeId: sponsorData.responsibleManagerEmployeeId,
+            responsibleManagerStatus: sponsorData.responsibleManagerStatus,
           },
           organizationId,
           tx,

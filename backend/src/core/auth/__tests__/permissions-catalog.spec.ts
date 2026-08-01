@@ -44,6 +44,13 @@ function collectTsFiles(dir: string): string[] {
   return results;
 }
 
+/** Resolve PERMISSIONS.RESOURCE.ACTION to catalog string (PR-RBAC-REALIGN-3A). */
+function resolvePermissionConstant(resource: string, action: string): string | null {
+  const resourceGroup = (PERMISSIONS as Record<string, Record<string, string>>)[resource];
+  if (!resourceGroup) return null;
+  return resourceGroup[action] ?? null;
+}
+
 /** Extract all @Permissions('...') or @Permissions(PERMISSIONS.X.Y) values from a file's contents */
 function extractDecoratorPermissions(content: string): string[] {
   const regex = /@Permissions\(\s*(?:'([^']+)'|PERMISSIONS\.([A-Z_]+)\.([A-Z_]+))\s*\)/g;
@@ -51,10 +58,12 @@ function extractDecoratorPermissions(content: string): string[] {
   let match: RegExpExecArray | null;
   while ((match = regex.exec(content)) !== null) {
     if (match[1]) {
-      permissions.push(match[1]); // string literal
+      permissions.push(match[1]);
     } else {
-      // PERMISSIONS.RESOURCE.ACTION -> resource:action
-      permissions.push(`${match[2].toLowerCase().replace(/_/g, '-')}:${match[3].toLowerCase()}`);
+      const resolved = resolvePermissionConstant(match[2], match[3]);
+      if (resolved) {
+        permissions.push(resolved);
+      }
     }
   }
   return permissions;

@@ -171,7 +171,7 @@ describe('Frontend Permission Drift Check', () => {
         const report = violations
           .map((v) => `  ${v.file}:${v.line} → '${v.permission}'`)
           .join('\n');
-        fail(
+        throw new Error(
           `Found ${violations.length} raw permission string(s) in frontend code.\n` +
             `Use PERMISSIONS.RESOURCE.ACTION instead:\n${report}`,
         );

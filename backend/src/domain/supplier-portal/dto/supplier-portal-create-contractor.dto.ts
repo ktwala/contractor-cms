@@ -1,8 +1,10 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { EngagementModel, WorkerClassification } from '@prisma/client';
-import { IsEmail, IsEnum, IsOptional, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsEmail, IsEnum, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { SupplierPortalNominateEngagementDto } from './supplier-portal-nominate-engagement.dto';
 
-/** Supplier-scoped contractor create — supplierId is injected from membership scope. */
+/** Supplier-scoped workforce nomination — supplierId injected from membership; enters NOMINATED. */
 export class SupplierPortalCreateContractorDto {
   @ApiProperty()
   @IsString()
@@ -23,7 +25,8 @@ export class SupplierPortalCreateContractorDto {
 
   @ApiProperty({
     enum: WorkerClassification,
-    default: WorkerClassification.INDEPENDENT_CONTRACTOR,
+    default: WorkerClassification.SUPPLIER_CONTRACTOR,
+    description: 'Vendor-linked workforce — defaults to Supplier Contractor in supplier portal.',
   })
   @IsEnum(WorkerClassification)
   workerClassification: WorkerClassification;
@@ -35,4 +38,14 @@ export class SupplierPortalCreateContractorDto {
   @ApiProperty({ description: 'Tax residency country code', default: 'ZA' })
   @IsString()
   taxResidency: string;
+
+  @ApiProperty({ type: SupplierPortalNominateEngagementDto })
+  @ValidateNested()
+  @Type(() => SupplierPortalNominateEngagementDto)
+  engagement: SupplierPortalNominateEngagementDto;
+
+  @ApiPropertyOptional({ description: 'Optional note for nomination intake' })
+  @IsOptional()
+  @IsString()
+  nominationReason?: string;
 }

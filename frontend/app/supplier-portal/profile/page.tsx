@@ -7,9 +7,35 @@ import PortalPageHeader from '@/components/supplier-portal/PortalPageHeader';
 import FormInput from '@/components/ui/form-input';
 import { PERMISSIONS } from '@/lib/permissions.generated';
 import { supplierPortalApi } from '@/lib/api-supplier-portal';
-import { getSupplierPortalErrorMessage } from '@/lib/supplier-portal-errors';
+import {
+  getSupplierPortalErrorMessage,
+  isSupplierPortalLoadFailure,
+} from '@/lib/supplier-portal-errors';
+import { SUPPLIER_NOT_LINKED_TITLE } from '@/lib/supplier-portal-context';
 import { useAuth } from '@/lib/auth-context';
-import { Building2, Pencil } from 'lucide-react';
+import { useSupplierPortalGate } from '@/hooks/use-supplier-portal-gate';
+import PortalEmptyState from '@/components/supplier-portal/PortalEmptyState';
+import {
+  SUPPLIER_PORTAL_EMPTY_COPY,
+  SUPPLIER_PORTAL_EMPTY_STATES,
+  unwrapSupplierPortalProfile,
+} from '@/lib/supplier-portal-response';
+import SupplierEvidenceChecklist from '@/components/suppliers/SupplierEvidenceChecklist';
+import { EvidenceChecklistResult } from '@/lib/supplier-evidence';
+import { Building2, Pencil, Send } from 'lucide-react';
+import {
+  supplierPortalProfileDescription,
+  supplierPortalProfileTitle,
+} from '@/lib/tenant-authority';
+
+interface SupplierPortalOnboarding {
+  jurisdictionCode: string;
+  evidenceComplete: boolean;
+  missingCount: number;
+  expiredCount: number;
+  canSubmit: boolean;
+  inApprovalQueue: boolean;
+}
 
 interface SupplierProfile {
   id: string;
@@ -19,14 +45,18 @@ interface SupplierProfile {
   phone?: string | null;
   status: string;
   country: string;
+  countryCode?: string | null;
   addressLine1?: string | null;
   addressLine2?: string | null;
   city?: string | null;
   postalCode?: string | null;
+  onboarding?: SupplierPortalOnboarding;
+  evidenceChecklist?: EvidenceChecklistResult;
 }
 
 export default function SupplierPortalProfilePage() {
-  const { can } = useAuth();
+  const { can, user } = useAuth();
+  const { ready, supplierLinked, blockedMessage, guardApiCall } = useSupplierPortalGate();
   const canEdit = can(PERMISSIONS.SUPPLIER_PROFILE.UPDATE);
   const [profile, setProfile] = useState<SupplierProfile | null>(null);
   const [editing, setEditing] = useState(false);
@@ -42,33 +72,84 @@ export default function SupplierPortalProfilePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [emptyState, setEmptyState] = useState<string | null>(null);
   const [success, setSuccess] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const canSubmitOnboarding = can(PERMISSIONS.SUPPLIER_ONBOARDING.SUBMIT);
 
   const loadProfile = useCallback(async () => {
+    if (!guardApiCall(true)) {
+      setLoading(false);
+      setProfile(null);
+      return;
+    }
     setLoading(true);
     setError('');
+    setEmptyState(null);
     try {
-      const data = await supplierPortalApi.getProfile();
-      setProfile(data);
+      const response = await supplierPortalApi.getProfile();
+      const { profile, emptyState: apiEmpty } =
+        unwrapSupplierPortalProfile<SupplierProfile>(response);
+      if (!profile) {
+        setProfile(null);
+        setEmptyState(apiEmpty ?? SUPPLIER_PORTAL_EMPTY_STATES.NO_PROFILE);
+        return;
+      }
+      setProfile(profile);
       setForm({
-        tradingName: data.tradingName || data.companyName || '',
-        email: data.email || '',
-        phone: data.phone || '',
-        addressLine1: data.addressLine1 || '',
-        addressLine2: data.addressLine2 || '',
-        city: data.city || '',
-        postalCode: data.postalCode || '',
+        tradingName: profile.tradingName || profile.companyName || '',
+        email: profile.email || '',
+        phone: profile.phone || '',
+        addressLine1: profile.addressLine1 || '',
+        addressLine2: profile.addressLine2 || '',
+        city: profile.city || '',
+        postalCode: profile.postalCode || '',
       });
     } catch (err) {
-      setError(getSupplierPortalErrorMessage(err, 'Failed to load your supplier profile.'));
+      if (isSupplierPortalLoadFailure(err)) {
+        setError(
+          getSupplierPortalErrorMessage(
+            err,
+            'The server could not load your supplier profile.',
+          ),
+        );
+      }
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [guardApiCall]);
 
   useEffect(() => {
-    loadProfile();
-  }, [loadProfile]);
+    if (ready) {
+      loadProfile();
+    }
+  }, [ready, loadProfile]);
+
+  const handleSubmitForApproval = async () => {
+    setSubmitting(true);
+    setError('');
+    setSuccess('');
+    try {
+      const response = await supplierPortalApi.submitForApproval();
+      const message =
+        response?.data?.message ??
+        'Your supplier has been submitted for operations approval.';
+      setSuccess(message);
+      await loadProfile();
+    } catch (err: unknown) {
+      const body =
+        err && typeof err === 'object' && 'response' in err
+          ? (err as { response?: { data?: { message?: string; checklist?: unknown } } })
+              .response?.data
+          : undefined;
+      setError(
+        body?.message ??
+          'Cannot submit for approval until all required evidence is uploaded and valid.',
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -103,8 +184,8 @@ export default function SupplierPortalProfilePage() {
       <DashboardLayout>
         <div className="space-y-6 max-w-3xl">
           <PortalPageHeader
-            title="Supplier profile"
-            description="View and update your supplier organization details for this membership."
+            title={supplierPortalProfileTitle(user?.tenantAuthority)}
+            description={supplierPortalProfileDescription(user?.tenantAuthority)}
             action={
               canEdit && !editing && profile ? (
                 <button
@@ -119,10 +200,35 @@ export default function SupplierPortalProfilePage() {
             }
           />
 
-          {loading && (
+          {!supplierLinked && ready && (
+            <PortalEmptyState
+              icon={Building2}
+              title={SUPPLIER_NOT_LINKED_TITLE}
+              description={blockedMessage ?? 'No supplier membership is active for your account.'}
+            />
+          )}
+
+          {supplierLinked && loading && (
             <p className="text-gray-500 text-sm">Loading your profile…</p>
           )}
-          {error && (
+          {supplierLinked && emptyState && !loading && !error && (
+            <PortalEmptyState
+              icon={Building2}
+              title={
+                SUPPLIER_PORTAL_EMPTY_COPY[
+                  emptyState as keyof typeof SUPPLIER_PORTAL_EMPTY_COPY
+                ]?.title ?? 'No supplier profile'
+              }
+              description={
+                SUPPLIER_PORTAL_EMPTY_COPY[
+                  emptyState as keyof typeof SUPPLIER_PORTAL_EMPTY_COPY
+                ]?.description ??
+                'No supplier profile linked to this account.'
+              }
+            />
+          )}
+
+          {supplierLinked && error && (
             <p className="text-sm text-red-600 bg-red-50 rounded-lg px-4 py-3">{error}</p>
           )}
           {success && (
@@ -131,7 +237,7 @@ export default function SupplierPortalProfilePage() {
             </p>
           )}
 
-          {profile && !editing && (
+          {supplierLinked && profile && !editing && (
             <div className="card space-y-4">
               <div className="flex items-start gap-3">
                 <div className="p-2 bg-indigo-50 rounded-lg">
@@ -164,10 +270,47 @@ export default function SupplierPortalProfilePage() {
                   </dd>
                 </div>
               </dl>
+
+              {profile.onboarding?.inApprovalQueue && (
+                <p className="text-sm text-indigo-700 bg-indigo-50 rounded-lg px-4 py-3">
+                  Your supplier is in the operations approval queue.
+                  {profile.onboarding.evidenceComplete
+                    ? ' Evidence is complete — awaiting client approval to Active.'
+                    : ' Complete all required evidence before operations can approve.'}
+                </p>
+              )}
+
+              {profile.evidenceChecklist && (
+                <SupplierEvidenceChecklist
+                  checklist={profile.evidenceChecklist}
+                  compact
+                />
+              )}
+
+              {canSubmitOnboarding &&
+                profile.onboarding &&
+                (profile.status === 'DRAFT' || profile.status === 'PENDING_APPROVAL') && (
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-3 pt-2 border-t border-gray-100">
+                    <button
+                      type="button"
+                      className="btn btn-primary inline-flex items-center gap-2"
+                      disabled={!profile.onboarding.canSubmit || submitting}
+                      onClick={handleSubmitForApproval}
+                    >
+                      <Send className="w-4 h-4" />
+                      {submitting ? 'Submitting…' : 'Submit for approval'}
+                    </button>
+                    {!profile.onboarding.canSubmit && (
+                      <p className="text-sm text-gray-500">
+                        Upload all required jurisdiction documents before submitting.
+                      </p>
+                    )}
+                  </div>
+                )}
             </div>
           )}
 
-          {profile && editing && (
+          {supplierLinked && profile && editing && (
             <form onSubmit={handleSave} className="card space-y-4">
               <h2 className="text-lg font-medium text-gray-900">Edit profile</h2>
               <FormInput

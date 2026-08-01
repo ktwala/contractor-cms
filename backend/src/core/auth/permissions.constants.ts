@@ -34,6 +34,18 @@ export const PERMISSIONS = {
     READ: 'suppliers:read',
     UPDATE: 'suppliers:update',
     DELETE: 'suppliers:delete',
+    /** PR-CMS-OPERATIONS-1A — governed lifecycle transitions */
+    SUBMIT_FOR_APPROVAL: 'suppliers:submit-for-approval',
+    /** PR-CMS-AUTHORITY-1 — HYBRID intake only; never implied by `*:*` */
+    GOVERNANCE_INTAKE: 'suppliers:governance-intake',
+    APPROVE: 'suppliers:approve',
+    SUSPEND: 'suppliers:suspend',
+    OFFBOARD: 'suppliers:offboard',
+    ARCHIVE: 'suppliers:archive',
+    /** PR-RBAC-REALIGN-3A — Oracle import/sync/reconcile (not CMS supplier field edits). */
+    SYNC: 'suppliers:sync',
+    /** PR-RBAC-REALIGN-3A — drift detect/assign/resolve for supplier sources. */
+    GOVERNANCE_SCAN: 'suppliers:governance-scan',
   },
 
   CONTRACTORS: {
@@ -41,6 +53,10 @@ export const PERMISSIONS = {
     READ: 'contractors:read',
     UPDATE: 'contractors:update',
     DELETE: 'contractors:delete',
+    /** PR-RBAC-REALIGN-3A — HCM sync/import/materialize/promote (bootstrap path). */
+    BOOTSTRAP: 'contractors:bootstrap',
+    /** PR-RBAC-REALIGN-3A — workforce drift detect/assign/resolve. */
+    GOVERNANCE_SCAN: 'contractors:governance-scan',
   },
 
   CONTRACTS: {
@@ -73,6 +89,27 @@ export const PERMISSIONS = {
     DELETE: 'invoices:delete',
     SUBMIT: 'invoices:submit',
     APPROVE: 'invoices:approve',
+    EXPORT: 'invoices:export',
+  },
+
+  /** Sensitive invoice monetary fields (not implied by `*:*`). */
+  INVOICE_AMOUNTS: {
+    VIEW: 'invoice-amounts:view',
+  },
+
+  /** Payment dates, references, and paid-state detail (not implied by `*:*`). */
+  INVOICE_PAYMENT_STATUS: {
+    VIEW: 'invoice-payment-status:view',
+  },
+
+  /** Supplier financial summary fields (not implied by `*:*`). */
+  SUPPLIER_FINANCE: {
+    VIEW: 'supplier-finance:view',
+  },
+
+  /** Supplier banking / tax identifiers (not implied by `*:*`). */
+  SUPPLIER_BANK_DETAILS: {
+    VIEW: 'supplier-bank-details:view',
   },
 
   TAX_CLASSIFICATIONS: {
@@ -182,10 +219,52 @@ export const PERMISSIONS = {
   },
   SUPPLIER_TIMESHEETS: {
     READ: 'supplier-timesheets:read',
+    /** Operational submit/manage for supplier-scoped timesheets (portal). */
+    MANAGE: 'supplier-timesheets:manage',
+    /** @deprecated PR-RBAC-REALIGN-3B — prefer supplier-timesheets:manage */
     SUBMIT: 'supplier-timesheets:submit',
   },
+  /** PR-CMS-OPERATIONS-1D2 — portal onboarding checklist and approval submission. */
+  SUPPLIER_ONBOARDING: {
+    READ: 'supplier-onboarding:read',
+    SUBMIT: 'supplier-onboarding:submit',
+  },
+  /** PR-CMS-OPERATIONS-1D2 — portal evidence document metadata (membership-scoped). */
+  SUPPLIER_DOCUMENTS: {
+    READ: 'supplier-documents:read',
+    MANAGE: 'supplier-documents:manage',
+  },
   SUPPLIER_INVOICES: {
+    READ: 'supplier-invoices:read',
     SUBMIT: 'supplier-invoices:submit',
+  },
+
+  /** PR-SPONSOR-TASKS-1 — sponsor accountability inbox (row-scoped by HCM employee id). */
+  RESPONSIBLE_MANAGER_TASKS: {
+    READ: 'responsible-manager-tasks:read',
+    MANAGE: 'responsible-manager-tasks:manage',
+  },
+
+  /** PR-CTR-6 — HCM contractor migration control plane (staging / quarantine / promote). */
+  CONTRACTOR_MIGRATION: {
+    READ: 'contractor-migration:read',
+    /** @deprecated PR-RBAC-REALIGN-3A — use contractors:bootstrap, contractors:governance-scan, workforce:cutover-manage, contractor-remediation:manage */
+    MANAGE: 'contractor-migration:manage',
+  },
+
+  /** PR-RBAC-REALIGN-3A — workforce migration cutover ceremony + bootstrap decay. */
+  WORKFORCE: {
+    CUTOVER_MANAGE: 'workforce:cutover-manage',
+  },
+
+  /** PR-RBAC-REALIGN-3A — operational remediation lifecycle (not bootstrap ingest). */
+  CONTRACTOR_REMEDIATION: {
+    MANAGE: 'contractor-remediation:manage',
+  },
+
+  /** PR-RBAC-REALIGN-3A — PDP activation + exception resolution (union manage surface). */
+  PDP_RESTRICTIONS: {
+    MANAGE: 'pdp-restrictions:manage',
   },
 } as const;
 

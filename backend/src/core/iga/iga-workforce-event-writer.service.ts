@@ -32,8 +32,38 @@ export class IgaWorkforceEventWriter {
     contractor: IgaEventContractorSlice,
     organizationId: string | null,
     tx?: PrismaTx,
+    engagement?: IgaEventEngagementSponsorSlice | null,
   ): Promise<void> {
-    const event = this.eventBuilder.buildExternalPersonUpdated({ contractor });
+    const event = this.eventBuilder.buildExternalPersonUpdated({
+      contractor,
+      engagement,
+    });
+    await this.outbox.save(event, { tx, organizationId });
+  }
+
+  async persistExternalPersonSuspended(
+    contractor: IgaEventContractorSlice,
+    organizationId: string | null,
+    tx?: PrismaTx,
+    engagement?: IgaEventEngagementSponsorSlice | null,
+  ): Promise<void> {
+    const event = this.eventBuilder.buildExternalPersonSuspended({
+      contractor,
+      engagement,
+    });
+    await this.outbox.save(event, { tx, organizationId });
+  }
+
+  async persistExternalPersonTerminated(
+    contractor: IgaEventContractorSlice,
+    organizationId: string | null,
+    tx?: PrismaTx,
+    engagement?: IgaEventEngagementSponsorSlice | null,
+  ): Promise<void> {
+    const event = this.eventBuilder.buildExternalPersonTerminated({
+      contractor,
+      engagement,
+    });
     await this.outbox.save(event, { tx, organizationId });
   }
 

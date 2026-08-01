@@ -18,12 +18,14 @@ import { AccessContext } from '../../core/auth/interfaces/access-context.interfa
 import { applySupplierContractorScope } from '../../core/auth/utils/supplier-scope.helper';
 
 import { AuditService } from '../../core/audit/audit.service';
+import { PdpOperationalGuardService } from '../../pdp/pdp-operational-guard.service';
 
 @Injectable()
 export class TimesheetsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditService: AuditService,
+    private readonly pdpGuard: PdpOperationalGuardService,
   ) {}
 
   async create(
@@ -423,6 +425,7 @@ export class TimesheetsService {
       where,
       include: {
         entries: true,
+        contractor: { select: { supplierId: true } },
       },
     });
 
@@ -439,6 +442,21 @@ export class TimesheetsService {
         'Cannot submit timesheet with no entries',
       );
     }
+
+    const supplierId = timesheet.contractor.supplierId;
+    if (!supplierId) {
+      throw new BadRequestException(
+        'Cannot submit timesheet for a contractor without a supplier link',
+      );
+    }
+
+    await this.pdpGuard.assertAllowed('SUBMIT_TIMESHEET', {
+      supplierId,
+      organizationId: accessContext.targetOrganizationId ?? undefined,
+      contractorId: timesheet.contractorId,
+      timesheetId: id,
+      transactionDate: new Date(),
+    });
 
     const updatedTimesheet = await this.prisma.timesheet.update({
       where: { id },

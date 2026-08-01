@@ -7,3 +7,7 @@
 **Source of truth (bundles):** [`backend/src/core/auth/seed-system-role-bundles.ts`](../../backend/src/core/auth/seed-system-role-bundles.ts) — imported by [`backend/prisma/seed.ts`](../../backend/prisma/seed.ts) upserts; covered by [`seed-system-role-bundles.spec.ts`](../../backend/src/core/auth/seed-system-role-bundles.spec.ts).
 
 **Narrative / transition:** [`ROLE_TRANSITION_MATRIX_V1.md`](./ROLE_TRANSITION_MATRIX_V1.md).
+
+**PR-RBAC-REALIGN-3 target roles + gap matrix:** [`PLATFORM_GOVERNANCE_ROLES.md`](./PLATFORM_GOVERNANCE_ROLES.md).
+
+**PR-RBAC-REALIGN-3A / 3B / 3D:** **COMPLETE** — production RBAC baseline locked. Next portal slice: [`PR-SUPPLIER-PORTAL-INVOICES-1.md`](./PR-SUPPLIER-PORTAL-INVOICES-1.md).

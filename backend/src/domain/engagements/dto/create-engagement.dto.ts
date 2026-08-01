@@ -10,7 +10,7 @@ import {
   MaxLength,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { SponsorAccountabilityStatus } from '@prisma/client';
+import { ResponsibleManagerAccountabilityStatus } from '@prisma/client';
 
 export enum RateType {
   HOURLY = 'HOURLY',
@@ -74,7 +74,7 @@ export class CreateEngagementDto {
   @IsOptional()
   @IsString()
   @MaxLength(2048)
-  sponsorEmployeeId?: string | null;
+  responsibleManagerEmployeeId?: string | null;
 
   @ApiPropertyOptional({
     nullable: true,
@@ -83,16 +83,16 @@ export class CreateEngagementDto {
   @IsOptional()
   @IsString()
   @MaxLength(2048)
-  sponsorDelegateEmployeeId?: string | null;
+  responsibleManagerDelegateEmployeeId?: string | null;
 
   @ApiPropertyOptional({
-    enum: SponsorAccountabilityStatus,
-    enumName: 'SponsorAccountabilityStatus',
+    enum: ResponsibleManagerAccountabilityStatus,
+    enumName: 'ResponsibleManagerAccountabilityStatus',
     nullable: true,
     description:
-      'Sponsor accountability status. When `sponsorEmployeeId` is set and this is omitted or null, the API defaults to SPONSOR_ASSIGNED (PR-SPONSOR-GOVERNANCE-1). Setting a status without a primary `sponsorEmployeeId` is rejected.',
+      'Sponsor accountability status. When `responsibleManagerEmployeeId` is set and this is omitted or null, the API defaults to RESPONSIBLE_MANAGER_ASSIGNED (PR-SPONSOR-GOVERNANCE-1). Setting a status without a primary `responsibleManagerEmployeeId` is rejected.',
   })
   @IsOptional()
-  @IsEnum(SponsorAccountabilityStatus)
-  sponsorStatus?: SponsorAccountabilityStatus | null;
+  @IsEnum(ResponsibleManagerAccountabilityStatus)
+  responsibleManagerStatus?: ResponsibleManagerAccountabilityStatus | null;
 }

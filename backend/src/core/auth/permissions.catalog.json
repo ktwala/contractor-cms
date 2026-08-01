@@ -9,13 +9,23 @@
       "CREATE": "suppliers:create",
       "READ": "suppliers:read",
       "UPDATE": "suppliers:update",
-      "DELETE": "suppliers:delete"
+      "DELETE": "suppliers:delete",
+      "SUBMIT_FOR_APPROVAL": "suppliers:submit-for-approval",
+      "GOVERNANCE_INTAKE": "suppliers:governance-intake",
+      "APPROVE": "suppliers:approve",
+      "SUSPEND": "suppliers:suspend",
+      "OFFBOARD": "suppliers:offboard",
+      "ARCHIVE": "suppliers:archive",
+      "SYNC": "suppliers:sync",
+      "GOVERNANCE_SCAN": "suppliers:governance-scan"
     },
     "CONTRACTORS": {
       "CREATE": "contractors:create",
       "READ": "contractors:read",
       "UPDATE": "contractors:update",
-      "DELETE": "contractors:delete"
+      "DELETE": "contractors:delete",
+      "BOOTSTRAP": "contractors:bootstrap",
+      "GOVERNANCE_SCAN": "contractors:governance-scan"
     },
     "CONTRACTS": {
       "CREATE": "contracts:create",
@@ -43,7 +53,20 @@
       "UPDATE": "invoices:update",
       "DELETE": "invoices:delete",
       "SUBMIT": "invoices:submit",
-      "APPROVE": "invoices:approve"
+      "APPROVE": "invoices:approve",
+      "EXPORT": "invoices:export"
+    },
+    "INVOICE_AMOUNTS": {
+      "VIEW": "invoice-amounts:view"
+    },
+    "INVOICE_PAYMENT_STATUS": {
+      "VIEW": "invoice-payment-status:view"
+    },
+    "SUPPLIER_FINANCE": {
+      "VIEW": "supplier-finance:view"
+    },
+    "SUPPLIER_BANK_DETAILS": {
+      "VIEW": "supplier-bank-details:view"
     },
     "TAX_CLASSIFICATIONS": {
       "CREATE": "tax-classifications:create",
@@ -131,17 +154,49 @@
     },
     "SUPPLIER_TIMESHEETS": {
       "READ": "supplier-timesheets:read",
+      "MANAGE": "supplier-timesheets:manage",
       "SUBMIT": "supplier-timesheets:submit"
     },
+    "SUPPLIER_ONBOARDING": {
+      "READ": "supplier-onboarding:read",
+      "SUBMIT": "supplier-onboarding:submit"
+    },
+    "SUPPLIER_DOCUMENTS": {
+      "READ": "supplier-documents:read",
+      "MANAGE": "supplier-documents:manage"
+    },
     "SUPPLIER_INVOICES": {
+      "READ": "supplier-invoices:read",
       "SUBMIT": "supplier-invoices:submit"
+    },
+    "RESPONSIBLE_MANAGER_TASKS": {
+      "READ": "responsible-manager-tasks:read",
+      "MANAGE": "responsible-manager-tasks:manage"
+    },
+    "CONTRACTOR_MIGRATION": {
+      "READ": "contractor-migration:read",
+      "MANAGE": "contractor-migration:manage"
+    },
+    "WORKFORCE": {
+      "CUTOVER_MANAGE": "workforce:cutover-manage"
+    },
+    "CONTRACTOR_REMEDIATION": {
+      "MANAGE": "contractor-remediation:manage"
+    },
+    "PDP_RESTRICTIONS": {
+      "MANAGE": "pdp-restrictions:manage"
     }
   },
   "allPermissions": [
     "analytics:read",
     "audit:read",
+    "contractor-migration:manage",
+    "contractor-migration:read",
+    "contractor-remediation:manage",
+    "contractors:bootstrap",
     "contractors:create",
     "contractors:delete",
+    "contractors:governance-scan",
     "contractors:read",
     "contractors:update",
     "contracts:create",
@@ -159,9 +214,12 @@
     "governance-analytics:view",
     "governance-risk:manage",
     "governance-risk:view",
+    "invoice-amounts:view",
+    "invoice-payment-status:view",
     "invoices:approve",
     "invoices:create",
     "invoices:delete",
+    "invoices:export",
     "invoices:read",
     "invoices:submit",
     "invoices:update",
@@ -173,6 +231,7 @@
     "pdp-exceptions:manage",
     "pdp-exceptions:request",
     "pdp-exceptions:view",
+    "pdp-restrictions:manage",
     "pdp-telemetry:view",
     "profile:read",
     "profile:update",
@@ -180,23 +239,41 @@
     "projects:delete",
     "projects:read",
     "projects:update",
+    "responsible-manager-tasks:manage",
+    "responsible-manager-tasks:read",
     "roles:assign",
     "roles:create",
     "roles:delete",
     "roles:read",
     "roles:update",
+    "supplier-bank-details:view",
     "supplier-contractors:create",
     "supplier-contractors:read",
     "supplier-contractors:update",
+    "supplier-documents:manage",
+    "supplier-documents:read",
+    "supplier-finance:view",
+    "supplier-invoices:read",
     "supplier-invoices:submit",
+    "supplier-onboarding:read",
+    "supplier-onboarding:submit",
     "supplier-profile:read",
     "supplier-profile:update",
+    "supplier-timesheets:manage",
     "supplier-timesheets:read",
     "supplier-timesheets:submit",
     "supplier-users:manage",
+    "suppliers:approve",
+    "suppliers:archive",
     "suppliers:create",
     "suppliers:delete",
+    "suppliers:governance-intake",
+    "suppliers:governance-scan",
+    "suppliers:offboard",
     "suppliers:read",
+    "suppliers:submit-for-approval",
+    "suppliers:suspend",
+    "suppliers:sync",
     "suppliers:update",
     "tax-classifications:approve",
     "tax-classifications:create",
@@ -216,7 +293,8 @@
     "withholding:create",
     "withholding:delete",
     "withholding:read",
-    "withholding:update"
+    "withholding:update",
+    "workforce:cutover-manage"
   ],
   "groups": [
     {
@@ -242,6 +320,46 @@
           "action": "DELETE",
           "value": "suppliers:delete",
           "label": "Delete"
+        },
+        {
+          "action": "SUBMIT_FOR_APPROVAL",
+          "value": "suppliers:submit-for-approval",
+          "label": "Submit_for_approval"
+        },
+        {
+          "action": "GOVERNANCE_INTAKE",
+          "value": "suppliers:governance-intake",
+          "label": "Governance_intake"
+        },
+        {
+          "action": "APPROVE",
+          "value": "suppliers:approve",
+          "label": "Approve"
+        },
+        {
+          "action": "SUSPEND",
+          "value": "suppliers:suspend",
+          "label": "Suspend"
+        },
+        {
+          "action": "OFFBOARD",
+          "value": "suppliers:offboard",
+          "label": "Offboard"
+        },
+        {
+          "action": "ARCHIVE",
+          "value": "suppliers:archive",
+          "label": "Archive"
+        },
+        {
+          "action": "SYNC",
+          "value": "suppliers:sync",
+          "label": "Sync"
+        },
+        {
+          "action": "GOVERNANCE_SCAN",
+          "value": "suppliers:governance-scan",
+          "label": "Governance_scan"
         }
       ]
     },
@@ -268,6 +386,16 @@
           "action": "DELETE",
           "value": "contractors:delete",
           "label": "Delete"
+        },
+        {
+          "action": "BOOTSTRAP",
+          "value": "contractors:bootstrap",
+          "label": "Bootstrap"
+        },
+        {
+          "action": "GOVERNANCE_SCAN",
+          "value": "contractors:governance-scan",
+          "label": "Governance_scan"
         }
       ]
     },
@@ -392,6 +520,55 @@
           "action": "APPROVE",
           "value": "invoices:approve",
           "label": "Approve"
+        },
+        {
+          "action": "EXPORT",
+          "value": "invoices:export",
+          "label": "Export"
+        }
+      ]
+    },
+    {
+      "resource": "INVOICE_AMOUNTS",
+      "label": "INVOICE AMOUNTS",
+      "permissions": [
+        {
+          "action": "VIEW",
+          "value": "invoice-amounts:view",
+          "label": "View"
+        }
+      ]
+    },
+    {
+      "resource": "INVOICE_PAYMENT_STATUS",
+      "label": "INVOICE PAYMENT STATUS",
+      "permissions": [
+        {
+          "action": "VIEW",
+          "value": "invoice-payment-status:view",
+          "label": "View"
+        }
+      ]
+    },
+    {
+      "resource": "SUPPLIER_FINANCE",
+      "label": "SUPPLIER FINANCE",
+      "permissions": [
+        {
+          "action": "VIEW",
+          "value": "supplier-finance:view",
+          "label": "View"
+        }
+      ]
+    },
+    {
+      "resource": "SUPPLIER_BANK_DETAILS",
+      "label": "SUPPLIER BANK DETAILS",
+      "permissions": [
+        {
+          "action": "VIEW",
+          "value": "supplier-bank-details:view",
+          "label": "View"
         }
       ]
     },
@@ -753,9 +930,46 @@
           "label": "Read"
         },
         {
+          "action": "MANAGE",
+          "value": "supplier-timesheets:manage",
+          "label": "Manage"
+        },
+        {
           "action": "SUBMIT",
           "value": "supplier-timesheets:submit",
           "label": "Submit"
+        }
+      ]
+    },
+    {
+      "resource": "SUPPLIER_ONBOARDING",
+      "label": "SUPPLIER ONBOARDING",
+      "permissions": [
+        {
+          "action": "READ",
+          "value": "supplier-onboarding:read",
+          "label": "Read"
+        },
+        {
+          "action": "SUBMIT",
+          "value": "supplier-onboarding:submit",
+          "label": "Submit"
+        }
+      ]
+    },
+    {
+      "resource": "SUPPLIER_DOCUMENTS",
+      "label": "SUPPLIER DOCUMENTS",
+      "permissions": [
+        {
+          "action": "READ",
+          "value": "supplier-documents:read",
+          "label": "Read"
+        },
+        {
+          "action": "MANAGE",
+          "value": "supplier-documents:manage",
+          "label": "Manage"
         }
       ]
     },
@@ -764,9 +978,79 @@
       "label": "SUPPLIER INVOICES",
       "permissions": [
         {
+          "action": "READ",
+          "value": "supplier-invoices:read",
+          "label": "Read"
+        },
+        {
           "action": "SUBMIT",
           "value": "supplier-invoices:submit",
           "label": "Submit"
+        }
+      ]
+    },
+    {
+      "resource": "RESPONSIBLE_MANAGER_TASKS",
+      "label": "RESPONSIBLE MANAGER TASKS",
+      "permissions": [
+        {
+          "action": "READ",
+          "value": "responsible-manager-tasks:read",
+          "label": "Read"
+        },
+        {
+          "action": "MANAGE",
+          "value": "responsible-manager-tasks:manage",
+          "label": "Manage"
+        }
+      ]
+    },
+    {
+      "resource": "CONTRACTOR_MIGRATION",
+      "label": "CONTRACTOR MIGRATION",
+      "permissions": [
+        {
+          "action": "READ",
+          "value": "contractor-migration:read",
+          "label": "Read"
+        },
+        {
+          "action": "MANAGE",
+          "value": "contractor-migration:manage",
+          "label": "Manage"
+        }
+      ]
+    },
+    {
+      "resource": "WORKFORCE",
+      "label": "WORKFORCE",
+      "permissions": [
+        {
+          "action": "CUTOVER_MANAGE",
+          "value": "workforce:cutover-manage",
+          "label": "Cutover_manage"
+        }
+      ]
+    },
+    {
+      "resource": "CONTRACTOR_REMEDIATION",
+      "label": "CONTRACTOR REMEDIATION",
+      "permissions": [
+        {
+          "action": "MANAGE",
+          "value": "contractor-remediation:manage",
+          "label": "Manage"
+        }
+      ]
+    },
+    {
+      "resource": "PDP_RESTRICTIONS",
+      "label": "PDP RESTRICTIONS",
+      "permissions": [
+        {
+          "action": "MANAGE",
+          "value": "pdp-restrictions:manage",
+          "label": "Manage"
         }
       ]
     }

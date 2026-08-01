@@ -22,4 +22,15 @@ describe('prisma/seed.ts', () => {
     expect(content).toMatch(/demo supplier contract/i);
     expect(content).toMatch(/contractor engagement/i);
   });
+
+  it('seeds unsponsored contractors for sponsor scope contrast', () => {
+    expect(content).toMatch(/seed-unsponsored-a@demo\.local/);
+    expect(content).toMatch(/Unsponsored demo contractors/);
+  });
+
+  it('seeds governance operations persona and fixtures', () => {
+    expect(content).toMatch(/governance\.ops@contractor-cms\.com/);
+    expect(content).toMatch(/GOVERNANCE_OPERATIONS_ADMIN/);
+    expect(content).toMatch(/seedGovernanceFixtures/);
+  });
 });

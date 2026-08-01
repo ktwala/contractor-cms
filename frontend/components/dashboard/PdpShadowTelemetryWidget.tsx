@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
+import { POLICY_EVALUATION_LABELS } from '@/lib/policy-evaluation-labels';
 
 const Card = ({ children, className = '' }: { children: React.ReactNode, className?: string }) => <div className={`rounded-xl ${className}`}>{children}</div>;
 const CardHeader = ({ children, className = '' }: { children: React.ReactNode, className?: string }) => <div className={`p-6 ${className}`}>{children}</div>;
@@ -16,14 +17,8 @@ export function PdpShadowTelemetryWidget() {
   useEffect(() => {
     async function fetchTelemetry() {
       try {
-        const token = localStorage.getItem('auth_token');
-        const response = await fetch('/api/v1/pdp/telemetry?days=30', {
-          headers: token ? { 'Authorization': `Bearer ${token}` } : {},
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setTelemetry(data);
-        }
+        const data = await api.getPdpTelemetry(30);
+        setTelemetry(data);
       } catch (error) {
         console.error('Failed to fetch PDP telemetry:', error);
       } finally {
@@ -33,15 +28,15 @@ export function PdpShadowTelemetryWidget() {
     fetchTelemetry();
   }, []);
 
-  if (loading) return <Card><CardContent className="p-6">Loading PDP Telemetry...</CardContent></Card>;
-  if (!telemetry) return <Card><CardContent className="p-6">Failed to load PDP telemetry.</CardContent></Card>;
+  if (loading) return <Card><CardContent className="p-6">Loading policy evaluation telemetry…</CardContent></Card>;
+  if (!telemetry) return <Card><CardContent className="p-6">Failed to load policy evaluation telemetry.</CardContent></Card>;
 
   return (
     <Card className="col-span-full xl:col-span-2 border-indigo-200 bg-gradient-to-br from-indigo-50 to-white shadow-md">
       <CardHeader className="pb-2 border-b border-indigo-100">
         <div className="flex justify-between items-center">
           <CardTitle className="text-lg font-semibold text-indigo-900">
-            PDP Shadow Mode Readiness
+            {POLICY_EVALUATION_LABELS.shadowTelemetryTitle}
           </CardTitle>
           <Badge variant="outline" className="border-indigo-300 text-indigo-700 bg-indigo-100">
             Evaluating Only

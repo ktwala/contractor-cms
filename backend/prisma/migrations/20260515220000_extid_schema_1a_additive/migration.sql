@@ -8,7 +8,7 @@ CREATE TYPE "IgaIntegrationPlaneStatus" AS ENUM ('IGA_UNKNOWN', 'IGA_NOT_CONNECT
 
 CREATE TYPE "AccessEnablementPlaneStatus" AS ENUM ('ENABLEMENT_NOT_REQUIRED', 'ENABLEMENT_PENDING_IGA', 'ENABLEMENT_PARTIAL', 'ENABLEMENT_ENABLED', 'ENABLEMENT_BLOCKED', 'ENABLEMENT_REVOKED');
 
-CREATE TYPE "SponsorAccountabilityStatus" AS ENUM ('SPONSOR_ACTIVE', 'SPONSOR_TRANSFER_PENDING', 'SPONSOR_REVOKED');
+CREATE TYPE "ResponsibleManagerAccountabilityStatus" AS ENUM ('RESPONSIBLE_MANAGER_ACTIVE', 'RESPONSIBLE_MANAGER_TRANSFER_PENDING', 'RESPONSIBLE_MANAGER_REVOKED');
 
 CREATE TYPE "GovernanceRiskTier" AS ENUM ('RISK_UNKNOWN', 'RISK_LOW', 'RISK_MEDIUM', 'RISK_HIGH');
 
@@ -27,6 +27,6 @@ ADD COLUMN "igaLastSyncAt" TIMESTAMP(3),
 ADD COLUMN "riskTier" "GovernanceRiskTier",
 ADD COLUMN "workerArchetype" "WorkerArchetypeKind";
 
-ALTER TABLE "ContractorEngagement" ADD COLUMN "sponsorEmployeeId" TEXT,
-ADD COLUMN "sponsorDelegateEmployeeId" TEXT,
-ADD COLUMN "sponsorStatus" "SponsorAccountabilityStatus";
+ALTER TABLE "ContractorEngagement" ADD COLUMN "responsibleManagerEmployeeId" TEXT,
+ADD COLUMN "responsibleManagerDelegateEmployeeId" TEXT,
+ADD COLUMN "responsibleManagerStatus" "ResponsibleManagerAccountabilityStatus";

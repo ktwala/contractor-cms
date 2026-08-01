@@ -81,6 +81,18 @@ fi
 echo "Checking supplier portal terminology (warn-only)..."
 (cd backend && npx --yes ts-node ../scripts/supplier-portal-terminology-drift-check.ts) || true
 
+# 7b. CMS forms — no supplier modal placeholder / RNaN drift (PR-CMS-FORMS-1A)
+echo "Checking CMS forms drift (supplier placeholder, RNaN)..."
+if ! (cd backend && npx --yes ts-node ../scripts/cms-forms-drift-check.ts); then
+  DRIFT_FOUND=1
+fi
+
+# 7c. Supplier portal data truthfulness (PR-SUPPLIER-PORTAL-DATA-1)
+echo "Checking supplier portal data drift..."
+if ! (cd backend && npx --yes ts-node ../scripts/supplier-portal-drift-check.ts); then
+  DRIFT_FOUND=1
+fi
+
 # 8. EXTID substrate drift (PR-EXTID-SCHEMA-1D — G-EXTID-02, migration tracking, sponsor placement)
 echo "Checking EXTID substrate drift (G-EXTID / migration SQL)..."
 if ! (cd backend && npx --yes ts-node ../scripts/extid-drift-check.ts); then

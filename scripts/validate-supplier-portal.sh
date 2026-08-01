@@ -2,7 +2,8 @@
 # PR-SUPPLIER-PORTAL-UX-1 validation — API-level browser-equivalent checks
 set -euo pipefail
 
-API_BASE="${API_BASE:-http://localhost:3010/api/v1}"
+API_BASE="${API_BASE:-http://localhost:3000/api/v1}"
+RUN_ID="${RUN_ID:-$(date +%s)}"
 PASS=0
 FAIL=0
 
@@ -39,7 +40,7 @@ echo
 
 # --- SUPPLIER_ADMIN ---
 echo "── supplier.admin@ (SUPPLIER_ADMIN) ──"
-ADMIN_TOKEN=$(login "supplier.admin@contractor-cms.com" "SupplierAdmin123!")
+ADMIN_TOKEN=$(login "supplier.admin@ewp.demo" "SupplierAdmin123!")
 [[ -n "$ADMIN_TOKEN" ]] || { echo "❌ Admin login failed"; exit 1; }
 echo "  ✅ Login"
 
@@ -47,15 +48,40 @@ assert_code "GET /supplier-portal/profile" 200 "$(code "$ADMIN_TOKEN" GET /suppl
 assert_code "PATCH /supplier-portal/profile (edit)" 200 "$(code "$ADMIN_TOKEN" PATCH /supplier-portal/profile -d '{"phone":"+27111111111"}')"
 assert_code "GET /supplier-portal/contractors" 200 "$(code "$ADMIN_TOKEN" GET /supplier-portal/contractors)"
 assert_code "GET /supplier-portal/resources (removed)" 404 "$(code "$ADMIN_TOKEN" GET /supplier-portal/resources)"
-NOM_CODE=$(code "$ADMIN_TOKEN" POST /supplier-portal/contractors -d '{
-  "firstName":"Validation",
-  "lastName":"Contractor",
-  "email":"validation.contractor@portal.test",
-  "workerClassification":"INDEPENDENT_CONTRACTOR",
-  "engagementModel":"DIRECT",
-  "taxResidency":"ZA"
-}')
-assert_code "POST /supplier-portal/contractors (add)" "201" "$NOM_CODE"
+CONTRACT_ID=$(curl -sS "$API_BASE/supplier-portal/contracts" -H "Authorization: Bearer $ADMIN_TOKEN" | jq -r '.data[0].id // empty')
+if [[ -z "$CONTRACT_ID" ]]; then
+  echo "  ❌ No active supplier contract for nomination test"
+  FAIL=$((FAIL + 1))
+else
+  echo "  ✅ GET /supplier-portal/contracts → contract available"
+  PASS=$((PASS + 1))
+fi
+NOM_EMAIL="validation.contractor.${RUN_ID}@portal.test"
+NOM_CODE=$(code "$ADMIN_TOKEN" POST /supplier-portal/contractors -d "{
+  \"firstName\":\"Validation\",
+  \"lastName\":\"Contractor\",
+  \"email\":\"${NOM_EMAIL}\",
+  \"workerClassification\":\"INDEPENDENT_CONTRACTOR\",
+  \"engagementModel\":\"DIRECT\",
+  \"taxResidency\":\"ZA\",
+  \"engagement\":{
+    \"contractId\":\"${CONTRACT_ID}\",
+    \"role\":\"Validation Developer\",
+    \"startDate\":\"2026-06-01\",
+    \"rateType\":\"HOURLY\",
+    \"rateAmount\":750
+  }
+}")
+assert_code "POST /supplier-portal/contractors (nominate)" "201" "$NOM_CODE"
+CONTRACTOR_ID=$(curl -sS "$API_BASE/supplier-portal/contractors" \
+  -H "Authorization: Bearer $ADMIN_TOKEN" | jq -r --arg email "$NOM_EMAIL" '.data[] | select(.email==$email) | .id // empty')
+if [[ -n "$CONTRACTOR_ID" ]]; then
+  assert_code "GET /supplier-portal/contractors/:id/workforce-history" 200 \
+    "$(code "$ADMIN_TOKEN" GET "/supplier-portal/contractors/${CONTRACTOR_ID}/workforce-history")"
+else
+  echo "  ❌ Could not resolve nominated contractor id for timeline check"
+  FAIL=$((FAIL + 1))
+fi
 assert_code "GET /supplier-portal/timesheets" 403 "$(code "$ADMIN_TOKEN" GET /supplier-portal/timesheets)"
 assert_code "GET /suppliers (client)" 403 "$(code "$ADMIN_TOKEN" GET /suppliers)"
 assert_code "GET /contractors (client)" 403 "$(code "$ADMIN_TOKEN" GET /contractors)"
@@ -64,7 +90,7 @@ echo
 
 # --- SUPPLIER_MANAGER ---
 echo "── supplier.manager@ (SUPPLIER_MANAGER) ──"
-MGR_TOKEN=$(login "supplier.manager@contractor-cms.com" "SupplierManager123!")
+MGR_TOKEN=$(login "supplier.manager@ewp.demo" "SupplierManager123!")
 [[ -n "$MGR_TOKEN" ]] || { echo "❌ Manager login failed"; exit 1; }
 echo "  ✅ Login"
 

@@ -1,10 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import Link from 'next/link';
 import DashboardLayout from '@/components/dashboard-layout';
-import Modal from '@/components/ui/modal';
-import FormInput from '@/components/ui/form-input';
-import FormSelect from '@/components/ui/form-select';
+import ContractorFormModal from '@/components/contractors/ContractorFormModal';
 import StatusBadge from '@/components/ui/status-badge';
 import { api } from '@/lib/api';
 import { useToast } from '@/lib/toast';
@@ -14,6 +13,8 @@ import RequirePermission from '@/components/RequirePermission';
 import { PERMISSIONS } from '@/lib/permissions.generated';
 import { useAuth } from '@/lib/auth-context';
 import { formatSupplierDisplayName } from '@/lib/supplier-display';
+import { EXTERNAL_WORKFORCE_LABELS } from '@/lib/external-workforce-labels';
+import { useOperationalTrustChanged } from '@/lib/operational-trust-events';
 
 interface Contractor {
   id: string;
@@ -42,6 +43,8 @@ interface Supplier {
   firstName?: string;
   lastName?: string;
   companyName?: string;
+  status?: string;
+  externalSupplierId?: string | null;
 }
 
 export default function ContractorsPage() {
@@ -52,36 +55,36 @@ export default function ContractorsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingContractor, setEditingContractor] = useState<Contractor | null>(null);
-  const [formData, setFormData] = useState({
-    supplierId: '',
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    taxNumber: '',
-    idNumber: '',
-    dateOfBirth: '',
-    nationality: 'ZA',
-    status: 'ACTIVE',
-  });
-  const [formErrors, setFormErrors] = useState<any>({});
-  const [submitting, setSubmitting] = useState(false);
+  const [governancePhase, setGovernancePhase] = useState<'NO_CUTOVER' | 'PRE_CUTOVER' | 'POST_CUTOVER'>('NO_CUTOVER');
   const { showToast } = useToast();
   const { can } = useAuth();
+  const canMutateContractors =
+    can(PERMISSIONS.CONTRACTORS.CREATE) ||
+    can(PERMISSIONS.CONTRACTORS.UPDATE) ||
+    can(PERMISSIONS.CONTRACTORS.DELETE);
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       const [contractorsRes, suppliersRes] = await Promise.all([
         api.getContractors({ page: 1, limit: 100 }),
         api.getSuppliers({ page: 1, limit: 100 }),
       ]);
-      setContractors(contractorsRes.data);
+      const mapped = contractorsRes.data.map((c: any) => ({
+        ...c,
+        status: c.isActive ? 'ACTIVE' : 'INACTIVE',
+        nationality: c.taxResidency,
+      }));
+      setContractors(mapped);
       setSuppliers(suppliersRes.data);
       setError('');
+
+      try {
+        const cutoverRes = await api.getWorkforceCutover();
+        setGovernancePhase(cutoverRes.governancePhase);
+      } catch (cutoverErr) {
+        console.warn('Failed to load workforce cutover phase, defaulting to NO_CUTOVER', cutoverErr);
+        setGovernancePhase('NO_CUTOVER');
+      }
     } catch (err: any) {
       console.error(err);
       setError('Failed to load contractors');
@@ -90,81 +93,41 @@ export default function ContractorsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    void loadData();
+  }, [loadData]);
+
+  useOperationalTrustChanged((detail) => {
+    setSuppliers((prev) =>
+      prev.map((s) =>
+        s.id === detail.supplierId ? { ...s, status: detail.currentState } : s,
+      ),
+    );
+    void loadData();
+  });
 
   const handleOpenModal = (contractor?: Contractor) => {
-    if (contractor) {
-      setEditingContractor(contractor);
-      setFormData({
-        supplierId: contractor.supplierId,
-        firstName: contractor.firstName,
-        lastName: contractor.lastName,
-        email: contractor.email,
-        phone: contractor.phone || '',
-        taxNumber: contractor.taxNumber || '',
-        idNumber: contractor.idNumber || '',
-        dateOfBirth: contractor.dateOfBirth || '',
-        nationality: contractor.nationality || 'ZA',
-        status: contractor.status,
-      });
-    } else {
-      setEditingContractor(null);
-      setFormData({
-        supplierId: '',
-        firstName: '',
-        lastName: '',
-        email: '',
-        phone: '',
-        taxNumber: '',
-        idNumber: '',
-        dateOfBirth: '',
-        nationality: 'ZA',
-        status: 'ACTIVE',
-      });
-    }
-    setFormErrors({});
+    setEditingContractor(contractor ?? null);
     setShowModal(true);
   };
 
   const handleCloseModal = () => {
     setShowModal(false);
     setEditingContractor(null);
-    setFormErrors({});
   };
 
-  const validateForm = () => {
-    const errors: any = {};
-    if (!formData.supplierId) errors.supplierId = 'Supplier is required';
-    if (!formData.firstName) errors.firstName = 'First name is required';
-    if (!formData.lastName) errors.lastName = 'Last name is required';
-    if (!formData.email) errors.email = 'Email is required';
-    if (formData.email && !/\S+@\S+\.\S+/.test(formData.email)) {
-      errors.email = 'Email is invalid';
-    }
-    setFormErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!validateForm()) return;
-
-    setSubmitting(true);
-    try {
-      if (editingContractor) {
-        const updated = await api.updateContractor(editingContractor.id, formData);
-        setContractors(contractors.map((c) => (c.id === updated.id ? updated : c)));
-        showToast('success', 'Contractor updated successfully');
-      } else {
-        const created = await api.createContractor(formData);
-        setContractors([created, ...contractors]);
-        showToast('success', 'Contractor created successfully');
-      }
-      handleCloseModal();
-    } catch (err: any) {
-      showToast('error', err.response?.data?.message || 'Failed to save contractor');
-    } finally {
-      setSubmitting(false);
+  const handleContractorSaved = (saved: Record<string, unknown>, mode: 'create' | 'update') => {
+    const mapped = {
+      ...(saved as Contractor),
+      status: (saved as { isActive?: boolean }).isActive ? 'ACTIVE' : 'INACTIVE',
+      nationality: (saved as { taxResidency?: string }).taxResidency,
+    };
+    if (mode === 'create') {
+      setContractors([mapped, ...contractors]);
+    } else {
+      setContractors(contractors.map((c) => (c.id === mapped.id ? mapped : c)));
     }
   };
 
@@ -206,10 +169,17 @@ export default function ContractorsPage() {
         <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Contractors</h1>
-            <p className="text-gray-600 mt-1">Manage contractor profiles and information</p>
+            <h1 className="text-2xl font-bold text-gray-900">{EXTERNAL_WORKFORCE_LABELS.registry}</h1>
+            <p className="text-gray-600 mt-1">
+              {canMutateContractors
+                ? 'Manage external worker profiles and information'
+                : 'Read-only external workforce registry (workforce import and governance scans use connector surfaces)'}
+            </p>
           </div>
           <div className="flex items-center space-x-2">
+            <Link href="/contractors/workforce-review" className="btn btn-secondary">
+              {EXTERNAL_WORKFORCE_LABELS.workforceReview}
+            </Link>
             <button
               onClick={() => exportContractorsToCSV(filteredContractors)}
               className="btn btn-secondary flex items-center"
@@ -221,7 +191,7 @@ export default function ContractorsPage() {
             {can(PERMISSIONS.CONTRACTORS.CREATE) && (
               <button onClick={() => handleOpenModal()} className="btn btn-primary flex items-center">
                 <Plus className="w-4 h-4 mr-2" />
-                Add Contractor
+                {EXTERNAL_WORKFORCE_LABELS.addWorker}
               </button>
             )}
           </div>
@@ -230,6 +200,26 @@ export default function ContractorsPage() {
         {error && (
           <div className="bg-red-50 border border-red-400 text-red-700 px-4 py-3 rounded relative">
             <span className="block sm:inline">{error}</span>
+          </div>
+        )}
+
+        {governancePhase && (
+          <div
+            data-testid="cutover-banner"
+            className={
+              governancePhase === 'POST_CUTOVER'
+                ? 'rounded-md border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm text-indigo-800'
+                : governancePhase === 'PRE_CUTOVER'
+                ? 'rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900'
+                : 'rounded-md border border-violet-200 bg-violet-50 px-4 py-3 text-sm text-violet-800'
+            }
+            role="status"
+          >
+            {governancePhase === 'POST_CUTOVER'
+              ? 'Post-cutover — operational governance prioritized; bootstrap lineage hidden by default.'
+              : governancePhase === 'PRE_CUTOVER'
+              ? 'Pre-cutover — bootstrap governance remains active.'
+              : 'Bootstrap lineage visible — workforce cutover not declared.'}
           </div>
         )}
 
@@ -251,7 +241,15 @@ export default function ContractorsPage() {
             <div className="text-center py-12">
               <User className="w-12 h-12 text-gray-400 mx-auto mb-4" />
               <p className="text-gray-500">
-                {searchTerm ? 'No contractors found matching your search' : 'No contractors yet'}
+                {searchTerm ? (
+                  'No external workers found matching your search'
+                ) : governancePhase === 'POST_CUTOVER' ? (
+                  can(PERMISSIONS.CONTRACTORS.CREATE)
+                    ? `No external workers yet. Use '${EXTERNAL_WORKFORCE_LABELS.addWorker}' to create governed external workers.`
+                    : 'No external workers materialized yet.'
+                ) : (
+                  'No external workers materialized yet. Run workforce import to bring workers from Oracle HCM.'
+                )}
               </p>
             </div>
           ) : (
@@ -274,9 +272,11 @@ export default function ContractorsPage() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                       Status
                     </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
-                      Actions
-                    </th>
+                    {canMutateContractors && (
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                        Actions
+                      </th>
+                    )}
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -305,24 +305,26 @@ export default function ContractorsPage() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <StatusBadge status={contractor.status} />
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        {can(PERMISSIONS.CONTRACTORS.UPDATE) && (
-                          <button
-                            onClick={() => handleOpenModal(contractor)}
-                            className="text-primary-600 hover:text-primary-900 mr-4"
-                          >
-                            <Edit className="w-4 h-4" />
-                          </button>
-                        )}
-                        {can(PERMISSIONS.CONTRACTORS.DELETE) && (
-                          <button
-                            onClick={() => handleDelete(contractor.id)}
-                            className="text-red-600 hover:text-red-900"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        )}
-                      </td>
+                      {canMutateContractors && (
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          {can(PERMISSIONS.CONTRACTORS.UPDATE) && (
+                            <button
+                              onClick={() => handleOpenModal(contractor)}
+                              className="text-primary-600 hover:text-primary-900 mr-4"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </button>
+                          )}
+                          {can(PERMISSIONS.CONTRACTORS.DELETE) && (
+                            <button
+                              onClick={() => handleDelete(contractor.id)}
+                              className="text-red-600 hover:text-red-900"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>
@@ -332,116 +334,17 @@ export default function ContractorsPage() {
         </div>
 
         <div className="text-sm text-gray-500">
-          Showing {filteredContractors.length} of {contractors.length} contractors
+          Showing {filteredContractors.length} of {contractors.length} external workers
         </div>
       </div>
 
-      <Modal
+      <ContractorFormModal
         isOpen={showModal}
+        contractor={editingContractor}
+        suppliers={suppliers}
         onClose={handleCloseModal}
-        title={editingContractor ? 'Edit Contractor' : 'Add Contractor'}
-        size="lg"
-      >
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <FormSelect
-            label="Supplier"
-            value={formData.supplierId}
-            onChange={(e) => setFormData({ ...formData, supplierId: e.target.value })}
-            options={suppliers.map((s) => ({
-              value: s.id,
-              label: formatSupplierDisplayName(s),
-            }))}
-            error={formErrors.supplierId}
-            required
-          />
-
-          <div className="grid grid-cols-2 gap-4">
-            <FormInput
-              label="First Name"
-              value={formData.firstName}
-              onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-              error={formErrors.firstName}
-              required
-            />
-            <FormInput
-              label="Last Name"
-              value={formData.lastName}
-              onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-              error={formErrors.lastName}
-              required
-            />
-          </div>
-
-          <FormInput
-            label="Email"
-            type="email"
-            value={formData.email}
-            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            error={formErrors.email}
-            required
-          />
-
-          <FormInput
-            label="Phone"
-            type="tel"
-            value={formData.phone}
-            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-            placeholder="+27821234567"
-          />
-
-          <div className="grid grid-cols-2 gap-4">
-            <FormInput
-              label="Tax Number"
-              value={formData.taxNumber}
-              onChange={(e) => setFormData({ ...formData, taxNumber: e.target.value })}
-            />
-            <FormInput
-              label="ID Number"
-              value={formData.idNumber}
-              onChange={(e) => setFormData({ ...formData, idNumber: e.target.value })}
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <FormInput
-              label="Date of Birth"
-              type="date"
-              value={formData.dateOfBirth}
-              onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })}
-            />
-            <FormInput
-              label="Nationality"
-              value={formData.nationality}
-              onChange={(e) => setFormData({ ...formData, nationality: e.target.value })}
-              placeholder="ZA"
-            />
-          </div>
-
-          <FormSelect
-            label="Status"
-            value={formData.status}
-            onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-            options={[
-              { value: 'ACTIVE', label: 'Active' },
-              { value: 'INACTIVE', label: 'Inactive' },
-            ]}
-            required
-          />
-
-          <div className="flex justify-end space-x-2 pt-4">
-            <button type="button" onClick={handleCloseModal} className="btn btn-secondary">
-              Cancel
-            </button>
-            <button type="submit" disabled={submitting} className="btn btn-primary">
-              {submitting
-                ? 'Saving...'
-                : editingContractor
-                ? 'Update Contractor'
-                : 'Create Contractor'}
-            </button>
-          </div>
-        </form>
-      </Modal>
+        onSaved={handleContractorSaved}
+      />
       </DashboardLayout>
     </RequirePermission>
   );

@@ -115,6 +115,12 @@ export class WithholdingService {
       );
     }
 
+    if (!contractor.supplier) {
+      throw new BadRequestException(
+        'Withholding instructions require a supplier-linked contractor',
+      );
+    }
+
     // Verify tax classification exists
     const taxClassification = await this.prisma.contractorTaxClassification.findUnique({
       where: {

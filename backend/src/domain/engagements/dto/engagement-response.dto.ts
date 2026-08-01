@@ -6,7 +6,7 @@ import {
   AccessEnablementPlaneStatus,
   GovernanceRiskTier,
   WorkerArchetypeKind,
-  SponsorAccountabilityStatus,
+  ResponsibleManagerAccountabilityStatus,
 } from '@prisma/client';
 import { RateType } from './create-engagement.dto';
 
@@ -51,16 +51,16 @@ export class EngagementResponseDto {
   isActive: boolean;
 
   @ApiPropertyOptional()
-  sponsorEmployeeId?: string | null;
+  responsibleManagerEmployeeId?: string | null;
 
   @ApiPropertyOptional()
-  sponsorDelegateEmployeeId?: string | null;
+  responsibleManagerDelegateEmployeeId?: string | null;
 
   @ApiPropertyOptional({
-    enum: SponsorAccountabilityStatus,
-    enumName: 'SponsorAccountabilityStatus',
+    enum: ResponsibleManagerAccountabilityStatus,
+    enumName: 'ResponsibleManagerAccountabilityStatus',
   })
-  sponsorStatus?: SponsorAccountabilityStatus | null;
+  responsibleManagerStatus?: ResponsibleManagerAccountabilityStatus | null;
 
   @ApiProperty()
   createdAt: Date;

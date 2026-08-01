@@ -57,22 +57,62 @@ describe('Audit Intelligence Contract Drift', () => {
 
     files.forEach((file) => {
       const content = fs.readFileSync(file, 'utf8');
-      const matches = content.match(/logAction\([^)]*\)/g);
-      
-      if (matches) {
-        matches.forEach((match) => {
-          // Extract the string literal used for the action name (2nd argument)
-          // Simplified regex to catch 'EVENT_NAME' or "EVENT_NAME"
-          const actionMatch = match.match(/['"]([A-Z_0-9]+)['"]/);
-          if (actionMatch && actionMatch[1]) {
-            const actionString = actionMatch[1];
-            // If it's a known non-event literal, skip it (like targetType 'User')
-            // This is a naive check. A better approach is AST parsing or just checking the validEvents set.
-            if (actionString === actionString.toUpperCase() && !actionString.includes(' ')) {
-              expect(validEvents).toContain(actionString);
+      let pos = 0;
+      while ((pos = content.indexOf('logAction(', pos)) !== -1) {
+        let braceCount = 1;
+        let endPos = pos + 'logAction('.length;
+        while (braceCount > 0 && endPos < content.length) {
+          if (content[endPos] === '(') braceCount++;
+          else if (content[endPos] === ')') braceCount--;
+          endPos++;
+        }
+        const argsStr = content.slice(pos + 'logAction('.length, endPos - 1);
+        pos = endPos; // advance
+
+        // Parse argsStr by commas at depth 0
+        const args: string[] = [];
+        let currentArg = '';
+        let depth = 0;
+        let inQuote = false;
+        let quoteChar = '';
+        for (let i = 0; i < argsStr.length; i++) {
+          const char = argsStr[i];
+          if (inQuote) {
+            if (char === quoteChar && argsStr[i - 1] !== '\\') {
+              inQuote = false;
+            }
+            currentArg += char;
+          } else {
+            if (char === "'" || char === '"' || char === '`') {
+              inQuote = true;
+              quoteChar = char;
+              currentArg += char;
+            } else if (char === '(' || char === '{' || char === '[') {
+              depth++;
+              currentArg += char;
+            } else if (char === ')' || char === '}' || char === ']') {
+              depth--;
+              currentArg += char;
+            } else if (char === ',' && depth === 0) {
+              args.push(currentArg.trim());
+              currentArg = '';
+            } else {
+              currentArg += char;
             }
           }
-        });
+        }
+        if (currentArg.trim()) {
+          args.push(currentArg.trim());
+        }
+
+        if (args.length >= 2) {
+          const actionArg = args[1];
+          // Check if it is a string literal
+          const literalMatch = actionArg.match(/^['"`]([A-Z_0-9]+)['"`]$/);
+          if (literalMatch) {
+            expect(validEvents).toContain(literalMatch[1]);
+          }
+        }
       }
     });
   });

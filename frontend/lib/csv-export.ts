@@ -2,6 +2,11 @@
  * Utility functions for exporting data to CSV
  */
 
+import {
+  formatAmountForCsvExport,
+  formatContractTypeLabel,
+} from './display-format';
+
 /**
  * Convert an array of objects to CSV string
  */
@@ -182,21 +187,28 @@ export function exportContractorsToCSV(contractors: any[]): void {
 }
 
 /**
- * Export contracts to CSV
+ * Map contracts for CSV using the same display rules as /contracts UI.
  */
-export function exportContractsToCSV(contracts: any[]): void {
-  const exportData = contracts.map((c) => ({
+export function mapContractsForCsvExport(contracts: any[]) {
+  return contracts.map((c) => ({
     contractNumber: c.contractNumber,
     title: c.title,
     contractor: c.contractor ? `${c.contractor.firstName} ${c.contractor.lastName}` : '',
-    type: c.type,
+    type: formatContractTypeLabel(c.type),
     startDate: formatDateForCSV(c.startDate),
     endDate: formatDateForCSV(c.endDate),
-    rate: formatCurrencyForCSV(c.rate),
+    rate: formatAmountForCsvExport(c.rate),
     rateType: c.rateType,
     currency: c.currency,
     status: c.status,
   }));
+}
+
+/**
+ * Export contracts to CSV
+ */
+export function exportContractsToCSV(contracts: any[]): void {
+  const exportData = mapContractsForCsvExport(contracts);
 
   const headers = [
     'contractNumber',

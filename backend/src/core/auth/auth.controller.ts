@@ -20,7 +20,6 @@ import { AuthResponseDto } from './dto/auth-response.dto';
 import { Public } from './decorators/public.decorator';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
-
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
@@ -70,34 +69,6 @@ export class AuthController {
   @ApiOperation({ summary: 'Get current user profile with effective permissions' })
   @ApiResponse({ status: 200, description: 'User profile with roles and permissions' })
   async getProfile(@CurrentUser() user: any) {
-    const effectivePermissions =
-      this.authService.resolveEffectivePermissions(user);
-
-    const activeMembership = user.supplierMemberships?.find(
-      (m: { isActive: boolean }) => m.isActive,
-    );
-
-    return {
-      id: user.id,
-      email: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      userType: user.userType,
-      organizationId: user.organizationId,
-      supplierId: activeMembership?.supplierId ?? null,
-      roles: Array.from(
-        new Map(
-          user.roles.map((ur: any) => [
-            `${ur.roleId}:${ur.organizationId ?? 'global'}`,
-            {
-              name: ur.role.name,
-              permissions: ur.role.permissions,
-              organizationId: ur.organizationId,
-            },
-          ]),
-        ).values(),
-      ),
-      effectivePermissions,
-    };
+    return this.authService.buildProfileResponse(user);
   }
 }

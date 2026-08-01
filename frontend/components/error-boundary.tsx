@@ -72,7 +72,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                 onClick={() => window.location.href = '/dashboard'}
                 className="btn btn-primary"
               >
-                Go to Dashboard
+                Go to Overview
               </button>
             </div>
           </div>

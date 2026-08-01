@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import type { TenantAuthorityProfile } from '../../authority/authority.constants';
 
 export class AuthResponseDto {
   @ApiProperty({
@@ -37,7 +38,10 @@ export class AuthResponseDto {
     organizationId: string | null;
     /** Active SupplierMembership supplier id (supplier-portal users). */
     supplierId?: string | null;
+    externalId?: string | null;
     roles: string[];
     effectivePermissions: string[];
+    tenantAuthority?: TenantAuthorityProfile;
+    responsibleManagerAccountabilityInboxEnabled?: boolean;
   };
 }

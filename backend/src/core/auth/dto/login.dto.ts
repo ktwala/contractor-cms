@@ -3,7 +3,7 @@ import { IsEmail, IsString, MinLength } from 'class-validator';
 
 export class LoginDto {
   @ApiProperty({
-    example: 'admin@contractor-cms.com',
+    example: 'ops.admin@ewp.demo',
     description: 'User email address',
   })
   @IsEmail()

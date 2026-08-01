@@ -48,10 +48,97 @@ export const AUDIT_EVENTS = {
   SUPPLIER_CREATED: { action: 'SUPPLIER_CREATED', defaultSeverity: AUDIT_SEVERITY.INFO },
   SUPPLIER_UPDATED: { action: 'SUPPLIER_UPDATED', defaultSeverity: AUDIT_SEVERITY.INFO },
   SUPPLIER_DELETED: { action: 'SUPPLIER_DELETED', defaultSeverity: AUDIT_SEVERITY.CRITICAL },
+  SUPPLIER_STATUS_CHANGED: {
+    action: 'SUPPLIER_STATUS_CHANGED',
+    defaultSeverity: AUDIT_SEVERITY.INFO,
+  },
+  SUPPLIER_SUBMITTED_FOR_APPROVAL: {
+    action: 'SUPPLIER_SUBMITTED_FOR_APPROVAL',
+    defaultSeverity: AUDIT_SEVERITY.INFO,
+  },
+  SUPPLIER_APPROVED: { action: 'SUPPLIER_APPROVED', defaultSeverity: AUDIT_SEVERITY.INFO },
+  SUPPLIER_REJECTED: {
+    action: 'SUPPLIER_REJECTED',
+    defaultSeverity: AUDIT_SEVERITY.WARNING,
+  },
+  SUPPLIER_SUSPENDED: {
+    action: 'SUPPLIER_SUSPENDED',
+    defaultSeverity: AUDIT_SEVERITY.WARNING,
+  },
+  SUPPLIER_OFFBOARDED: {
+    action: 'SUPPLIER_OFFBOARDED',
+    defaultSeverity: AUDIT_SEVERITY.WARNING,
+  },
+  SUPPLIER_ARCHIVED: {
+    action: 'SUPPLIER_ARCHIVED',
+    defaultSeverity: AUDIT_SEVERITY.INFO,
+  },
+  SUPPLIER_DOCUMENT_ADDED: {
+    action: 'SUPPLIER_DOCUMENT_ADDED',
+    defaultSeverity: AUDIT_SEVERITY.INFO,
+  },
+  SUPPLIER_DOCUMENT_UPDATED: {
+    action: 'SUPPLIER_DOCUMENT_UPDATED',
+    defaultSeverity: AUDIT_SEVERITY.INFO,
+  },
+  SUPPLIER_DOCUMENT_EXPIRED: {
+    action: 'SUPPLIER_DOCUMENT_EXPIRED',
+    defaultSeverity: AUDIT_SEVERITY.WARNING,
+  },
+  SUPPLIER_SOURCE_ORACLE_IMPORTED: {
+    action: 'SUPPLIER_SOURCE_ORACLE_IMPORTED',
+    defaultSeverity: AUDIT_SEVERITY.INFO,
+  },
+  CONTRACTOR_SOURCE_HCM_IMPORTED: {
+    action: 'CONTRACTOR_SOURCE_HCM_IMPORTED',
+    defaultSeverity: AUDIT_SEVERITY.INFO,
+  },
+  CONTRACTOR_GOVERNANCE_REMEDIATION_EVENT_EMITTED: {
+    action: 'CONTRACTOR_GOVERNANCE_REMEDIATION_EVENT_EMITTED',
+    defaultSeverity: AUDIT_SEVERITY.WARNING,
+  },
+  CONTRACTOR_GOVERNANCE_REMEDIATION_ACKNOWLEDGED: {
+    action: 'CONTRACTOR_GOVERNANCE_REMEDIATION_ACKNOWLEDGED',
+    defaultSeverity: AUDIT_SEVERITY.INFO,
+  },
+  CONTRACTOR_GOVERNANCE_REMEDIATION_VERIFIED: {
+    action: 'CONTRACTOR_GOVERNANCE_REMEDIATION_VERIFIED',
+    defaultSeverity: AUDIT_SEVERITY.INFO,
+  },
+  CONTRACTOR_GOVERNANCE_REMEDIATION_CLOSED: {
+    action: 'CONTRACTOR_GOVERNANCE_REMEDIATION_CLOSED',
+    defaultSeverity: AUDIT_SEVERITY.INFO,
+  },
+  SUPPLIER_GOVERNANCE_TWIN_CREATED: {
+    action: 'SUPPLIER_GOVERNANCE_TWIN_CREATED',
+    defaultSeverity: AUDIT_SEVERITY.INFO,
+  },
+  SUPPLIER_GOVERNANCE_TWIN_LINKED: {
+    action: 'SUPPLIER_GOVERNANCE_TWIN_LINKED',
+    defaultSeverity: AUDIT_SEVERITY.INFO,
+  },
+  SUPPLIER_GOVERNANCE_TWIN_PROMOTED: {
+    action: 'SUPPLIER_GOVERNANCE_TWIN_PROMOTED',
+    defaultSeverity: AUDIT_SEVERITY.INFO,
+  },
 
   CONTRACTOR_CREATED: { action: 'CONTRACTOR_CREATED', defaultSeverity: AUDIT_SEVERITY.INFO },
+  // PR-CTR-CMS-AUTHORITY-1 — distinguishes CMS-native creation from HCM-bootstrapped materialization.
+  // Fired in addition to CONTRACTOR_CREATED when the actor creates a contractor directly in CMS
+  // (not via HCM import/materialization). metadata.missingResponsibleManagerAtCreation=true when no sponsor at
+  // the time of creation — governance scan will raise MISSING_RESPONSIBLE_MANAGER until sponsor assigned.
+  CONTRACTOR_CREATED_IN_CMS: { action: 'CONTRACTOR_CREATED_IN_CMS', defaultSeverity: AUDIT_SEVERITY.INFO },
   CONTRACTOR_UPDATED: { action: 'CONTRACTOR_UPDATED', defaultSeverity: AUDIT_SEVERITY.INFO },
   CONTRACTOR_DELETED: { action: 'CONTRACTOR_DELETED', defaultSeverity: AUDIT_SEVERITY.CRITICAL },
+  CONTRACTOR_WORKFORCE_STATE_CHANGED: {
+    action: 'CONTRACTOR_WORKFORCE_STATE_CHANGED',
+    defaultSeverity: AUDIT_SEVERITY.INFO,
+  },
+  /** Stub domain-event envelope until workforce bus handlers ship (PR-WORKFORCE-STATE-MODEL-1). */
+  CONTRACTOR_WORKFORCE_DOMAIN_EVENT: {
+    action: 'CONTRACTOR_WORKFORCE_DOMAIN_EVENT',
+    defaultSeverity: AUDIT_SEVERITY.INFO,
+  },
 
   // Transactions
   INVOICE_SUBMITTED: { action: 'INVOICE_SUBMITTED', defaultSeverity: AUDIT_SEVERITY.INFO },
@@ -65,6 +152,17 @@ export const AUDIT_EVENTS = {
 
   // Settings & Configuration
   SECURITY_SETTINGS_CHANGED: { action: 'SECURITY_SETTINGS_CHANGED', defaultSeverity: AUDIT_SEVERITY.CRITICAL },
+
+  // PR-GOV-SIGNAL-LIFECYCLE-2 — Workforce migration cutover ceremony
+  // These events fire when an admin explicitly declares or clears the workforce cutover date.
+  // Cutover changes governance visibility semantics (operational vs bootstrap priority),
+  // making it audit-mandatory for RCA, attestation, and executive reporting.
+  WORKFORCE_CUTOVER_SET: { action: 'WORKFORCE_CUTOVER_SET', defaultSeverity: AUDIT_SEVERITY.INFO },
+  WORKFORCE_CUTOVER_CLEARED: { action: 'WORKFORCE_CUTOVER_CLEARED', defaultSeverity: AUDIT_SEVERITY.INFO },
+
+  // PR-GOV-SIGNAL-LIFECYCLE-3 — bootstrap signal decay provenance
+  // One event per decay batch (not per signal) — archivedCount in metadata.
+  BOOTSTRAP_SIGNAL_ARCHIVED: { action: 'BOOTSTRAP_SIGNAL_ARCHIVED', defaultSeverity: AUDIT_SEVERITY.INFO },
 
   // PR-EXTID-EVENT-FEED-1 — integration pull API (IGA/middleware consumes)
   EXTID_EVENTS_LISTED: { action: 'EXTID_EVENTS_LISTED', defaultSeverity: AUDIT_SEVERITY.INFO },

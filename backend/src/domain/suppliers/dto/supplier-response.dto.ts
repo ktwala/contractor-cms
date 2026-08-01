@@ -56,6 +56,24 @@ export class SupplierResponseDto {
   @ApiProperty()
   country: string;
 
+  @ApiProperty({ description: 'Governance jurisdiction (ISO 3166-1 alpha-2)' })
+  countryCode: string;
+
+  @ApiProperty({ required: false })
+  sourceSystem?: string;
+
+  @ApiProperty({ required: false })
+  externalSupplierId?: string;
+
+  @ApiProperty({ required: false })
+  externalSupplierNumber?: string;
+
+  @ApiProperty({ required: false })
+  sourceLastSyncedAt?: Date;
+
+  @ApiProperty({ required: false })
+  sourceSyncStatus?: string;
+
   @ApiProperty({ required: false })
   bankName?: string;
 

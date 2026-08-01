@@ -7,6 +7,7 @@ import { SupplierRuleEvaluator } from './rules/supplier.rule';
 import { ContractorRuleEvaluator } from './rules/contractor.rule';
 import { PoRuleEvaluator } from './rules/po.rule';
 import { FinancialRuleEvaluator } from './rules/financial.rule';
+import { WorkforceGovernanceRuleEvaluator } from './rules/workforce-governance.rule';
 
 const SEVERITY_SCALE: Record<PdpDecisionType, number> = {
   ALLOW: 0,
@@ -22,6 +23,7 @@ export class PdpEngine {
   private contractorRule: ContractorRuleEvaluator;
   private poRule: PoRuleEvaluator;
   private financialRule: FinancialRuleEvaluator;
+  private workforceGovernanceRule: WorkforceGovernanceRuleEvaluator;
 
   constructor(
     private readonly prisma: PrismaService,
@@ -31,10 +33,12 @@ export class PdpEngine {
     this.contractorRule = new ContractorRuleEvaluator(this.prisma);
     this.poRule = new PoRuleEvaluator(this.prisma);
     this.financialRule = new FinancialRuleEvaluator(this.prisma);
+    this.workforceGovernanceRule = new WorkforceGovernanceRuleEvaluator(this.prisma);
   }
 
   /**
-   * Evaluates the transaction against the Master Policy Decision Hierarchy.
+   * Policy Evaluation Service — evaluates authoritative governance truths; owns no facts.
+   * (Implementation module: PDP — Policy Decision Point engine.)
    *
    * @param action The transaction being attempted
    * @param context The transaction context
@@ -45,6 +49,7 @@ export class PdpEngine {
       const evaluators = [
         this.supplierRule,
         this.contractorRule,
+        this.workforceGovernanceRule,
         this.poRule,
         this.financialRule,
       ];

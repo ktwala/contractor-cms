@@ -7,6 +7,7 @@ import { PdpActivationAdminService } from './pdp.activation.admin.service';
 import { PdpExceptionService } from './pdp.exception.service';
 import { PdpController } from './pdp.controller';
 import { AuditModule } from '../core/audit/audit.module';
+import { PdpOperationalGuardService } from './pdp-operational-guard.service';
 
 @Module({
   imports: [AuditModule],
@@ -18,7 +19,14 @@ import { AuditModule } from '../core/audit/audit.module';
     PdpActivationService,
     PdpActivationAdminService,
     PdpExceptionService,
+    PdpOperationalGuardService,
   ],
-  exports: [PdpEngine, PdpActivationService, PdpActivationAdminService, PdpExceptionService],
+  exports: [
+    PdpEngine,
+    PdpActivationService,
+    PdpActivationAdminService,
+    PdpExceptionService,
+    PdpOperationalGuardService,
+  ],
 })
 export class PdpModule {}

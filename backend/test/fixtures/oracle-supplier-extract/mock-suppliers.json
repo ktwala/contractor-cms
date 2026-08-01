@@ -1,0 +1,33 @@
+{
+  "suppliers": [
+    {
+      "externalSupplierId": "ORA-10001",
+      "supplierNumber": "SUP-10001",
+      "name": "Maseru Logistics Pty Ltd",
+      "countryCode": "LS",
+      "taxRegistrationNumber": "LS-TAX-10001",
+      "metadata": {
+        "oracleStatus": "Approved",
+        "lastUpdated": "2026-05-01T10:00:00Z"
+      }
+    },
+    {
+      "externalSupplierId": "ORA-20002",
+      "supplierNumber": "SUP-20002",
+      "name": "Cape Services Group",
+      "countryCode": "ZA",
+      "taxRegistrationNumber": "ZA-TAX-20002",
+      "metadata": {
+        "oracleStatus": "Active",
+        "lastUpdated": "2026-05-02T08:30:00Z"
+      }
+    },
+    {
+      "externalSupplierId": "ORA-30003",
+      "supplierNumber": "SUP-NEW-30003",
+      "name": "Future Supplier Holdings",
+      "countryCode": "LS",
+      "taxRegistrationNumber": "LS-TAX-NEW-30003"
+    }
+  ]
+}

@@ -18,6 +18,10 @@ export class TestHelper {
   private static userId: string;
 
   static async setupTestApp(): Promise<INestApplication> {
+    if (this.app) {
+      await this.closeApp();
+    }
+
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
@@ -51,16 +55,29 @@ export class TestHelper {
     await this.prisma.invoice.deleteMany();
     await this.prisma.timesheetEntry.deleteMany();
     await this.prisma.timesheet.deleteMany();
+    await this.prisma.hcmContractorQuarantine.deleteMany();
+    await this.prisma.contractorGovernanceRemediation.deleteMany();
+    await this.prisma.contractorSourceDrift.deleteMany();
+    await this.prisma.contractorSourceSyncRun.deleteMany();
+    await this.prisma.hcmContractorStaging.deleteMany();
+    await this.prisma.contractorMigrationAudit.deleteMany();
+    await this.prisma.contractorIdentityMap.deleteMany();
     await this.prisma.contractorEngagement.deleteMany();
+    await this.prisma.contractorWorkforceHistory.deleteMany();
     await this.prisma.supplierContract.deleteMany();
     await this.prisma.contractorTaxClassification.deleteMany();
     await this.prisma.supplierDocument.deleteMany();
+    await this.prisma.supplierSourceDrift.deleteMany();
+    await this.prisma.supplierSourceSyncRun.deleteMany();
+    await this.prisma.supplierSourceStaging.deleteMany();
     await this.prisma.contractor.deleteMany();
     await this.prisma.supplierMembership.deleteMany();
     await this.prisma.supplier.deleteMany();
     await this.prisma.task.deleteMany();
     await this.prisma.project.deleteMany();
     await this.prisma.igaOutboxEvent.deleteMany();
+    await this.prisma.contractorMigrationBatch.deleteMany();
+    await this.prisma.ctrSequenceRegistry.deleteMany();
     await this.prisma.userRole.deleteMany();
     await this.prisma.role.deleteMany();
     await this.prisma.userSession.deleteMany();
@@ -72,6 +89,8 @@ export class TestHelper {
   static async closeApp(): Promise<void> {
     if (this.app) {
       await this.app.close();
+      this.app = undefined as unknown as INestApplication;
+      this.prisma = undefined as unknown as PrismaService;
     }
   }
 

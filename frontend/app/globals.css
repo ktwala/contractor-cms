@@ -2,38 +2,144 @@
 @tailwind components;
 @tailwind utilities;
 
+/**
+ * Hubsec Workforce–aligned design tokens (PR-UI-TOKENS-1).
+ * Scope: colours + shell (dark sidebar); spacing/components unchanged.
+ */
+:root {
+  --sidebar-bg: #1f2b3d;
+  --sidebar-border: #314056;
+  --sidebar-text: #cbd5e1;
+  --sidebar-muted: #8b97aa;
+  --sidebar-active-bg: #5b3fd6;
+  --sidebar-active-border: #38bdf8;
+  --sidebar-active-glow: rgba(56, 189, 248, 0.45);
+  --card-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.06), 0 1px 2px -1px rgba(15, 23, 42, 0.06);
+  --brand-purple: #5b3fd6;
+  --brand-purple-dark: #4338ca;
+  --page-bg: #f8fafc;
+  --card-bg: #ffffff;
+  --card-border: #e2e8f0;
+  --text-main: #111827;
+  --text-muted: #475569;
+  --warning: #eab308;
+  --danger: #ef4444;
+}
+
 @layer base {
   body {
-    @apply bg-gray-50 text-gray-900;
+    @apply bg-page text-content antialiased;
+  }
+
+  a.link-brand {
+    @apply text-brand hover:text-brand-dark font-medium transition-colors;
   }
 }
 
 @layer components {
+  /* Legacy aliases — prefer <Button variant="…"> from @/components/ui/button */
   .btn {
-    @apply px-4 py-2 rounded-lg font-medium transition-colors;
+    @apply inline-flex items-center justify-center gap-2.5 font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-cyan-400/60 focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
   }
 
   .btn-primary {
-    @apply bg-primary-600 text-white hover:bg-primary-700;
+    @apply btn min-h-11 rounded-lg px-5 text-sm text-white shadow-sm bg-brand hover:bg-brand-dark hover:shadow-md active:scale-[0.99];
   }
 
   .btn-secondary {
-    @apply bg-gray-200 text-gray-800 hover:bg-gray-300;
+    @apply btn min-h-11 rounded-lg border-2 border-slate-300 bg-white px-5 text-sm text-content shadow-sm hover:border-slate-400 hover:bg-slate-50 active:scale-[0.99];
+  }
+
+  .btn-ghost {
+    @apply btn min-h-10 rounded-lg px-4 text-sm text-content-muted hover:bg-slate-100 hover:text-content;
+  }
+
+  .btn-toolbar {
+    @apply inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-card-border bg-white px-3 text-sm font-medium text-content-muted shadow-sm transition-all hover:border-primary-300 hover:text-brand focus:outline-none focus:ring-2 focus:ring-cyan-400/60 focus:ring-offset-2 disabled:opacity-50;
   }
 
   .btn-danger {
-    @apply bg-red-600 text-white hover:bg-red-700;
+    @apply btn min-h-11 rounded-lg px-5 text-sm text-white shadow-sm bg-danger hover:bg-red-600 active:scale-[0.99];
+  }
+
+  .btn-inline {
+    @apply inline-flex h-8 items-center justify-center rounded-md border border-transparent px-3 text-xs font-medium text-brand transition-colors hover:border-violet-200 hover:bg-violet-50;
   }
 
   .card {
-    @apply bg-white rounded-lg shadow-sm border border-gray-200 p-6;
+    @apply bg-card rounded-xl border border-card p-6;
+    box-shadow: var(--card-shadow);
   }
 
   .input {
-    @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent;
+    @apply w-full px-3 py-2 border border-card rounded-lg bg-white text-content focus:outline-none focus:ring-2 focus:ring-cyan-400/70 focus:border-brand;
   }
 
   .label {
-    @apply block text-sm font-medium text-gray-700 mb-1;
+    @apply block text-sm font-medium text-content-muted mb-1;
+  }
+
+  /* App shell — dark navy sidebar (Hubsec Workforce) */
+  .sidebar-shell {
+    @apply flex flex-col flex-1 min-h-0 bg-sidebar border-r border-sidebar-border;
+  }
+
+  .sidebar-header {
+    @apply flex items-center h-16 px-4 border-b border-sidebar-border shrink-0;
+  }
+
+  .sidebar-brand {
+    @apply text-lg font-bold text-white tracking-tight;
+  }
+
+  .sidebar-section-label {
+    @apply px-4 pb-2 text-xs font-semibold uppercase tracking-wide text-sidebar-muted;
+  }
+
+  .sidebar-nav-link {
+    @apply flex items-center px-4 py-2 text-sm font-medium rounded-lg text-sidebar-text transition-colors hover:bg-white/5;
+  }
+
+  .sidebar-nav-link-active {
+    @apply bg-sidebar-active text-white ring-2 ring-inset ring-sidebar-active-border;
+    box-shadow:
+      inset 0 0 0 1px var(--sidebar-active-glow),
+      0 0 12px var(--sidebar-active-glow);
+  }
+
+  .app-topbar {
+    @apply sticky top-0 z-10 flex h-14 items-center bg-card border-b border-card shrink-0;
+  }
+
+  .app-topbar-menu {
+    @apply inline-flex items-center justify-center rounded-lg p-2 text-content-muted transition-colors hover:bg-slate-100 hover:text-content;
+  }
+
+  .app-topbar-refresh {
+    @apply inline-flex items-center gap-2 rounded-lg border border-card bg-white px-3 py-1.5 text-sm font-medium text-content-muted transition-colors hover:border-primary-300 hover:text-brand disabled:opacity-50;
+  }
+
+  .app-topbar-avatar {
+    @apply flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand text-sm font-semibold text-white shadow-sm;
+  }
+
+  .app-main {
+    @apply pt-8 pb-10;
+  }
+
+  .app-main-inner {
+    @apply max-w-[90rem] mx-auto px-4 sm:px-6 lg:px-10;
+  }
+
+  .chart-empty-state {
+    @apply flex flex-col items-center justify-center rounded-xl border border-dashed border-card bg-slate-50/80 px-6;
+  }
+
+  .page-heading {
+    @apply text-2xl font-bold text-content;
+  }
+
+  .page-subheading {
+    @apply mt-1 text-sm text-content-muted;
   }
 }

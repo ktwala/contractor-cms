@@ -1,6 +1,6 @@
 'use client';
 
-import { PdpExceptionQueue } from '@/pages/settings/PdpExceptionQueue';
+import { PdpExceptionQueue } from '@/components/pdp/PdpExceptionQueue';
 import { useAuth } from '@/lib/auth-context';
 import { PERMISSIONS } from '@/lib/permissions.generated';
 

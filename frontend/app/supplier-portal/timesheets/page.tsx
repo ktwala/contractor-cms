@@ -8,8 +8,18 @@ import PortalEmptyState from '@/components/supplier-portal/PortalEmptyState';
 import StatusBadge from '@/components/ui/status-badge';
 import { PERMISSIONS } from '@/lib/permissions.generated';
 import { supplierPortalApi } from '@/lib/api-supplier-portal';
-import { getSupplierPortalErrorMessage } from '@/lib/supplier-portal-errors';
-import { format } from 'date-fns';
+import {
+  getSupplierPortalErrorMessage,
+  isSupplierPortalLoadFailure,
+} from '@/lib/supplier-portal-errors';
+import { SUPPLIER_NOT_LINKED_TITLE } from '@/lib/supplier-portal-context';
+import {
+  SUPPLIER_PORTAL_EMPTY_COPY,
+  SUPPLIER_PORTAL_EMPTY_STATES,
+  unwrapSupplierPortalList,
+} from '@/lib/supplier-portal-response';
+import { useSupplierPortalGate } from '@/hooks/use-supplier-portal-gate';
+import { safeFormatDate, safeString } from '@/lib/safe-string';
 import { Clock } from 'lucide-react';
 
 interface PortalTimesheet {
@@ -30,31 +40,43 @@ const STATUS_FILTERS = [
 ];
 
 export default function SupplierPortalTimesheetsPage() {
+  const { ready, supplierLinked, blockedMessage, guardApiCall } = useSupplierPortalGate();
   const [timesheets, setTimesheets] = useState<PortalTimesheet[]>([]);
   const [statusFilter, setStatusFilter] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   const loadTimesheets = useCallback(async () => {
+    if (!guardApiCall(true)) {
+      setLoading(false);
+      setTimesheets([]);
+      return;
+    }
     setLoading(true);
     setError('');
     try {
       const params: Record<string, unknown> = { page: 1, limit: 100 };
       if (statusFilter) params.status = statusFilter;
       const res = await supplierPortalApi.getTimesheets(params);
-      setTimesheets(res.data || []);
+      const { items } = unwrapSupplierPortalList<PortalTimesheet>(res);
+      setTimesheets(items);
     } catch (err) {
-      setError(
-        getSupplierPortalErrorMessage(err, 'Failed to load timesheets for your contractors.'),
-      );
+      if (isSupplierPortalLoadFailure(err)) {
+        setError(
+          getSupplierPortalErrorMessage(
+            err,
+            'The server could not load timesheets for your contractors.',
+          ),
+        );
+      }
     } finally {
       setLoading(false);
     }
-  }, [statusFilter]);
+  }, [statusFilter, guardApiCall]);
 
   useEffect(() => {
-    loadTimesheets();
-  }, [loadTimesheets]);
+    if (ready) loadTimesheets();
+  }, [ready, loadTimesheets]);
 
   const filtered = timesheets;
 
@@ -67,6 +89,7 @@ export default function SupplierPortalTimesheetsPage() {
             description="Review time submissions for contractors under your supplier membership."
           />
 
+          {supplierLinked && (
           <div className="flex flex-wrap items-center gap-3">
             <label className="text-sm text-gray-600" htmlFor="ts-status">
               Filter
@@ -84,25 +107,42 @@ export default function SupplierPortalTimesheetsPage() {
               ))}
             </select>
           </div>
+          )}
 
-          {loading && <p className="text-sm text-gray-500">Loading timesheets…</p>}
-          {error && (
+          {!supplierLinked && ready && (
+            <PortalEmptyState
+              icon={Clock}
+              title={SUPPLIER_NOT_LINKED_TITLE}
+              description={blockedMessage ?? 'No supplier membership is active for your account.'}
+            />
+          )}
+
+          {supplierLinked && loading && (
+            <p className="text-sm text-gray-500">Loading timesheets…</p>
+          )}
+          {supplierLinked && error && (
             <p className="text-sm text-red-600 bg-red-50 rounded-lg px-4 py-3">{error}</p>
           )}
 
-          {!loading && !error && filtered.length === 0 && (
+          {supplierLinked && !loading && !error && filtered.length === 0 && (
             <PortalEmptyState
               icon={Clock}
-              title="No timesheets found"
+              title={
+                statusFilter
+                  ? 'No timesheets match this filter'
+                  : SUPPLIER_PORTAL_EMPTY_COPY[SUPPLIER_PORTAL_EMPTY_STATES.NO_TIMESHEETS]
+                      .title
+              }
               description={
                 statusFilter
                   ? 'No timesheets match this status for your contractors.'
-                  : 'When your contractors submit timesheets, they will appear here.'
+                  : SUPPLIER_PORTAL_EMPTY_COPY[SUPPLIER_PORTAL_EMPTY_STATES.NO_TIMESHEETS]
+                      .description
               }
             />
           )}
 
-          {!loading && filtered.length > 0 && (
+          {supplierLinked && !loading && filtered.length > 0 && (
             <div className="overflow-hidden card p-0">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
@@ -127,7 +167,7 @@ export default function SupplierPortalTimesheetsPage() {
                       <td className="px-4 py-3 text-sm">
                         <p className="font-medium text-gray-900">
                           {ts.contractor
-                            ? `${ts.contractor.firstName} ${ts.contractor.lastName}`
+                            ? `${safeString(ts.contractor.firstName)} ${safeString(ts.contractor.lastName)}`
                             : 'Resource'}
                         </p>
                         {ts.contractor?.email && (
@@ -135,8 +175,8 @@ export default function SupplierPortalTimesheetsPage() {
                         )}
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-600">
-                        {format(new Date(ts.periodStart), 'dd MMM yyyy')} –{' '}
-                        {format(new Date(ts.periodEnd), 'dd MMM yyyy')}
+                        {safeFormatDate(ts.periodStart, 'dd MMM yyyy')} –{' '}
+                        {safeFormatDate(ts.periodEnd, 'dd MMM yyyy')}
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-900">
                         {Number(ts.totalHours)}h

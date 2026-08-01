@@ -8,10 +8,10 @@ import { Users } from 'lucide-react';
 describe('PR-SUPPLIER-PORTAL-UX-1', () => {
   it('PortalPageHeader shows supplier portal label', () => {
     render(
-      <PortalPageHeader title="Contractors" description="Scoped list" />,
+      <PortalPageHeader title="External workers" description="Scoped list" />,
     );
     expect(screen.getByText('Supplier portal')).toBeInTheDocument();
-    expect(screen.getByText('Contractors')).toBeInTheDocument();
+    expect(screen.getByText('External workers')).toBeInTheDocument();
   });
 
   it('PortalEmptyState renders title and action', () => {

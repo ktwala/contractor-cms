@@ -1,0 +1,9 @@
+{
+  "name": "mock-oracle",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Mock Oracle Procurement + HCM REST sources for connector demos",
+  "scripts": {
+    "start": "node server.js"
+  }
+}

@@ -3,23 +3,93 @@
 > **NON-PRODUCTION ONLY** — These accounts and passwords exist only in local/demo seed data.
 > Never use in production. Rotate or disable before any shared or hosted environment.
 
-**Status:** Seeded by `backend/prisma/seed.ts` — run `cd backend && npm run db:seed` before use.
+**Status:** Seeded by `backend/prisma/seed.ts`. Docker runs seed on backend startup; for local API use `cd backend && npm run db:seed` if login returns *Invalid credentials*.
 
-**Organization:** Demo Organization (`DEMO`)
+**Email domain:** `@ewp.demo` — reflects **External Workforce Platform** demo personas (replaces legacy `@contractor-cms.com`).
+
+**Organization:** Demo Organization (`DEMO`) — `ORACLE_ONLY` suppliers, `CMS_ONLY` contractors (HCM import; EWP authoritative after import)
+
+**Connector & governance platform:** [`CONNECTOR_GOVERNANCE_PLATFORM.md`](CONNECTOR_GOVERNANCE_PLATFORM.md) · **Connector UAT:** [`CONNECTOR_DEMO_UAT.md`](CONNECTOR_DEMO_UAT.md) · **MTN story data:** [`DEMO-MTN-STORY.md`](./DEMO-MTN-STORY.md) · **Demo package:** [`DEMO_ARCHITECTURE_WALKTHROUGH.md`](./DEMO_ARCHITECTURE_WALKTHROUGH.md) · **Managing an External Workforce:** [`DEMO-OPERATIONS.md`](./DEMO-OPERATIONS.md) · **Working as a Supplier:** [`DEMO-SUPPLIER-PORTAL.md`](./DEMO-SUPPLIER-PORTAL.md) · **Platform Architecture:** [`DEMO-PLATFORM-ARCHITECTURE.md`](./DEMO-PLATFORM-ARCHITECTURE.md) · **Cheat sheet:** [`DEMO-CHEATSHEET.md`](./DEMO-CHEATSHEET.md)
+
+**Source of truth (code):** `backend/prisma/demo-login-credentials.ts` · `frontend/lib/demo-login-personas.ts`
+
+> **Demo super-user is not a production role.** `workforce.import@ewp.demo` is for connector UAT only — not least-privilege production governance.
 
 ---
 
-## Users
+## Primary demo personas
 
-| Role | Email | Password | Expected sidebar |
-|------|--------|----------|------------------|
-| **CMS_ADMIN** | `admin@contractor-cms.com` | `Admin123!` | Operations: Dashboard, Suppliers, Contractors, Contracts, Engagements, Timesheets, Invoices, Projects · Governance: Activation, Exceptions, Audit Logs, Security Insights · Administration: Users, Roles |
-| **FINANCE_USER** | `finance@contractor-cms.com` | `Finance123!` | Operations: Dashboard, Suppliers, Contractors, Timesheets, Invoices · Governance: Activation, Exceptions |
-| **CONTRACTOR_MANAGER** | `manager@contractor-cms.com` | `Manager123!` | Operations: Dashboard, Suppliers, Contractors, Contracts, Engagements, Timesheets · Governance: Activation, Exceptions (no Invoices) |
-| **CONTRACTOR** | `contractor@contractor-cms.com` | `Contractor123!` | Operations: Dashboard, Timesheets only (no Invoices) |
-| **SUPPLIER_ADMIN** | `supplier.admin@contractor-cms.com` | `SupplierAdmin123!` | Operations: Dashboard, Supplier profile, Contractors (supplier-portal; not client Contractors registry) |
-| **SUPPLIER_MANAGER** | `supplier.manager@contractor-cms.com` | `SupplierManager123!` | Operations: Dashboard, Supplier profile, Contractors, Supplier timesheets |
-| **SPONSOR** | `sponsor@contractor-cms.com` | `Sponsor123!` | Operations: Dashboard, Contractors, Engagements |
+| Experience | Email | Password | Use for |
+|------------|-------|----------|---------|
+| **Managing an External Workforce** | `ops.admin@ewp.demo` | `Admin123!` | MTN operations demo — suppliers, workforce review, engagements |
+| **Working as a Supplier (MTN story)** | `supplier.admin@atlas.demo` | `SupplierAdmin123!` | Atlas Consulting portal — see [`DEMO-MTN-STORY.md`](./DEMO-MTN-STORY.md) |
+| **Working as a Supplier (legacy)** | `supplier.admin@ewp.demo` | `SupplierAdmin123!` | Legacy single-supplier seed path |
+| **Workforce Import** | `workforce.import@ewp.demo` | `GovOps123!` | Oracle HCM connector, worker linking, governance scan |
+
+The login page (non-production) shows quick-fill buttons for these and other personas.
+
+---
+
+## All demo users
+
+### Client-side (internal)
+
+| Audience | Email | Password | RBAC bundle *(internal)* |
+|----------|-------|----------|--------------------------|
+| Operations admin | `ops.admin@ewp.demo` | `Admin123!` | CMS_ADMIN |
+| Finance | `finance@ewp.demo` | `Finance123!` | FINANCE_USER |
+| Operations manager | `ops.manager@ewp.demo` | `Manager123!` | CONTRACTOR_MANAGER |
+| Workforce Import / connector UAT *(demo composite)* | `workforce.import@ewp.demo` | `GovOps123!` | GOVERNANCE_OPERATIONS_ADMIN |
+| Supplier sync operator | `integration@ewp.demo` | `IntegrationOps123!` | GOVERNANCE_INTEGRATION_OPERATOR |
+| Supplier approvals reviewer | `supplier.reviewer@ewp.demo` | `SupplierReview123!` | SUPPLIER_GOVERNANCE_REVIEWER |
+| Workforce governance reviewer | `governance.reviewer@ewp.demo` | `GovReview123!` | GOVERNANCE_REVIEWER |
+| Engagement operations | `engagement.ops@ewp.demo` | `ContractorOps123!` | CONTRACTOR_MANAGER |
+| Governance read-only | `governance.viewer@ewp.demo` | `GovView123!` | GOVERNANCE_VIEWER |
+| External worker self-service | `external.worker@ewp.demo` | `Contractor123!` | CONTRACTOR |
+| Sponsor inbox *(optional)* | `sponsor@ewp.demo` | `Sponsor123!` | SPONSOR |
+
+### Supplier portal (external)
+
+| Audience | Email | Password | RBAC bundle *(internal)* |
+|----------|-------|----------|--------------------------|
+| Atlas Consulting admin *(MTN)* | `supplier.admin@atlas.demo` | `SupplierAdmin123!` | SUPPLIER_ADMIN |
+| Nexa Technologies admin *(MTN)* | `supplier.admin@nexa.demo` | `SupplierAdmin123!` | SUPPLIER_ADMIN |
+| Ubuntu Field Services admin *(MTN)* | `supplier.admin@ubuntu.demo` | `SupplierAdmin123!` | SUPPLIER_ADMIN |
+| Vertex Projects admin *(MTN)* | `supplier.admin@vertex.demo` | `SupplierAdmin123!` | SUPPLIER_ADMIN |
+| Horizon Staffing admin *(MTN)* | `supplier.admin@horizon.demo` | `SupplierAdmin123!` | SUPPLIER_ADMIN |
+| Supplier admin *(legacy)* | `supplier.admin@ewp.demo` | `SupplierAdmin123!` | SUPPLIER_ADMIN |
+| Supplier portal operator | `supplier.portal@ewp.demo` | `SupplierPortal123!` | SUPPLIER_ADMIN |
+| Supplier manager | `supplier.manager@ewp.demo` | `SupplierManager123!` | SUPPLIER_MANAGER |
+
+---
+
+## Legacy emails (retired on reseed)
+
+After `db:seed`, accounts ending in `@contractor-cms.com` are **deactivated**. Use the `@ewp.demo` addresses above.
+
+| Legacy | New |
+|--------|-----|
+| `admin@contractor-cms.com` | `ops.admin@ewp.demo` |
+| `governance.ops@contractor-cms.com` | `workforce.import@ewp.demo` |
+| `contractor@contractor-cms.com` | `external.worker@ewp.demo` |
+| `manager@contractor-cms.com` | `ops.manager@ewp.demo` |
+
+---
+
+## Business sponsor (reference-only default)
+
+Production sponsors are **HCM employee references** on engagements (`sponsorEmployeeId`). EWP publishes sponsor context to IGA/workflow; sponsors do **not** log into EWP by default.
+
+Optional sponsor inbox (scoped lists + task queue) requires:
+
+```bash
+export SPONSOR_ACCOUNTABILITY_INBOX_ENABLED=true
+docker compose exec -e SPONSOR_ACCOUNTABILITY_INBOX_ENABLED=true backend npm run db:seed
+```
+
+Then `sponsor@ewp.demo` is seeded for local smoke. Without the flag, `sponsor@` is not created.
+
+See: [`docs/business/SPONSOR_ACCOUNTABILITY_MODEL.md`](business/SPONSOR_ACCOUNTABILITY_MODEL.md)
 
 ---
 
@@ -32,31 +102,31 @@
 | API (local backend) | `http://localhost:3010/api/v1` (if `PORT=3010`) |
 | Login | `POST /auth/login` with `{ "email", "password" }` |
 
-**Supplier portal API (membership-scoped):**
+---
 
-| Route | Permission |
-|-------|------------|
-| `GET/PATCH /supplier-portal/profile` | `supplier-profile:*` |
-| `GET/POST /supplier-portal/contractors` | `supplier-contractors:*` |
-| `GET /supplier-portal/timesheets` | `supplier-timesheets:read` |
+## Connector demo (UAT)
+
+**Docker (use this):**
+
+```bash
+docker compose up -d
+npm run docker:reset:connector-demo
+```
+
+Login as `workforce.import@ewp.demo` / `GovOps123!` → [`CONNECTOR_DEMO_UAT.md`](CONNECTOR_DEMO_UAT.md)
 
 ---
 
-## API smoke script
+## Troubleshooting “Login failed”
 
-```bash
-cd backend && npm run db:seed
-API_BASE=http://localhost:3010/api/v1 ./scripts/smoke-role-personas.sh
-```
-
-See also: [`scripts/smoke-role-personas.sh`](../scripts/smoke-role-personas.sh)
+1. **Reseed** — `docker compose exec backend npm run db:seed`
+2. **Backend health** — `curl http://localhost:3000/api/v1/health/liveness`
+3. **Use @ewp.demo emails** — legacy `@contractor-cms.com` accounts are deactivated after reseed
 
 ---
 
 ## Notes
 
-- **Legacy personas** (`admin`, `finance`, `manager`, `contractor`) — same emails; role bundles refresh on each reseed.
-- **Target personas** (`supplier.admin`, `supplier.manager`, `sponsor`) — map to `SUPPLIER_ADMIN`, `SUPPLIER_MANAGER`, `SPONSOR` bundles.
-- **CMS_ADMIN** is global (platform-wide). All other users are scoped to Demo Organization.
-- **Supplier users** are bound to Demo Supplier Ltd via `SupplierMembership`; they must not use client `GET /suppliers`.
+- **RBAC role names** (e.g. `CMS_ADMIN`) remain internal engineering identifiers — demo emails use business-facing personas instead.
+- **Supplier users** are bound to Demo Supplier Ltd via `SupplierMembership`.
 - **Do not commit real production credentials.**

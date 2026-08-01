@@ -1,6 +1,10 @@
 import { isAxiosError } from 'axios';
+import {
+  SUPPLIER_MEMBERSHIP_REQUIRED_CODE,
+  SUPPLIER_NOT_LINKED_MESSAGE,
+} from './supplier-portal-context';
 
-/** Map supplier-portal API failures to user-facing copy (PR-SUPPLIER-PORTAL-HYDRATION-FIX-1). */
+/** Map supplier-portal API failures to user-facing copy (PR-SUPPLIER-PORTAL-DATA-1). */
 export function getSupplierPortalErrorMessage(
   err: unknown,
   fallback: string,
@@ -10,14 +14,19 @@ export function getSupplierPortalErrorMessage(
   }
 
   const status = err.response?.status;
-  const message =
-    (err.response?.data as { message?: string | string[] })?.message ?? '';
-
+  const data = err.response?.data as {
+    message?: string | string[];
+    code?: string;
+  };
+  const message = data?.message ?? '';
   const text = Array.isArray(message) ? message.join(', ') : String(message);
 
   if (status === 403) {
-    if (text.includes('supplier membership')) {
-      return 'Supplier membership required. Sign in with a supplier portal account or contact your administrator.';
+    if (
+      data?.code === SUPPLIER_MEMBERSHIP_REQUIRED_CODE ||
+      text.toLowerCase().includes('supplier membership')
+    ) {
+      return SUPPLIER_NOT_LINKED_MESSAGE;
     }
     return text || 'You do not have permission to access this supplier portal resource.';
   }
@@ -43,4 +52,12 @@ export function getSupplierPortalErrorMessage(
   }
 
   return fallback;
+}
+
+/** True only for transport/server failures — not empty data envelopes. */
+export function isSupplierPortalLoadFailure(err: unknown): boolean {
+  if (!isAxiosError(err)) return true;
+  const status = err.response?.status;
+  if (!status) return true;
+  return status >= 500 || status === 401;
 }

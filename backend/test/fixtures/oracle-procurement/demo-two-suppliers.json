@@ -1,0 +1,28 @@
+{
+  "suppliers": [
+    {
+      "externalSupplierId": "ORCL-SUP-DEMO-001",
+      "supplierNumber": "SUP-DEMO-001",
+      "name": "Atlas Industrial Services Pty Ltd",
+      "countryCode": "ZA",
+      "taxRegistrationNumber": "ZA-DEMO-ATLAS-001",
+      "metadata": {
+        "fixture": "ORCL-SUP-DEMO-001",
+        "scenario": "clean_new_supplier",
+        "oracleStatus": "Approved"
+      }
+    },
+    {
+      "externalSupplierId": "ORCL-SUP-DEMO-002",
+      "supplierNumber": "SUP-DEMO-002",
+      "name": "Demo Supplier Holdings",
+      "countryCode": "ZA",
+      "taxRegistrationNumber": "9876543210",
+      "metadata": {
+        "fixture": "ORCL-SUP-DEMO-002",
+        "scenario": "possible_match_duplicate_tax",
+        "note": "Shares tax number with Demo Supplier Ltd — expect POSSIBLE_MATCH"
+      }
+    }
+  ]
+}

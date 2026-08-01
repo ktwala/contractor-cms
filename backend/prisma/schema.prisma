@@ -27,19 +27,188 @@ enum SupplierType {
 }
 
 enum SupplierStatus {
+  DRAFT
   PENDING_APPROVAL
   ACTIVE
   SUSPENDED
-  TERMINATED
+  OFFBOARDED
+  ARCHIVED
+}
+
+/** PR-CMS-OPERATIONS-1D0 — upstream supplier master (Oracle, etc.). */
+enum SupplierSourceSystem {
+  CMS_NATIVE
+  ORACLE_SUPPLIER_SAAS
+}
+
+/** PR-CMS-AUTHORITY-1 — who may create supplier master records (tenant-configurable). */
+enum SupplierAuthorityMode {
+  CMS_ONLY
+  ORACLE_ONLY
+  HYBRID
+}
+
+/** PR-CMS-AUTHORITY-1 — who may create contractor identity records (tenant-configurable). */
+enum ContractorAuthorityMode {
+  CMS_ONLY
+  HCM_ONLY
+  HYBRID
+}
+
+enum SupplierSourceSyncStatus {
+  NOT_SYNCED
+  PENDING
+  SYNCED
+  FAILED
+}
+
+enum SupplierSourceStagingMatchStatus {
+  NEW
+  POSSIBLE_MATCH
+  MATCHED
+  CONFLICT
+  UNMATCHED
+  IMPORTED
+  REJECTED
+}
+
+/** PR-CMS-CONNECTOR-1B — Oracle supplier import/sync run lifecycle */
+enum SupplierSourceSyncRunStatus {
+  RUNNING
+  SUCCEEDED
+  FAILED
+  PARTIAL
+}
+
+enum SupplierSourceSyncRunMode {
+  FULL
+  INCREMENTAL
+  REPLAY
+}
+
+/** PR-CMS-CONNECTOR-1E (foundation) — connector health on tenant */
+enum OracleSupplierConnectorHealth {
+  HEALTHY
+  DEGRADED
+  STALE
+  AUTH_FAILED
+  RATE_LIMITED
+  DISABLED
+  UNKNOWN
+}
+
+/** PR-CMS-CONNECTOR-4 — formal source drift taxonomy */
+enum SupplierSourceDriftType {
+  SUPPLIER_SOURCE_DRIFT
+  SOURCE_RECORD_MISSING
+  DUPLICATE_EXTERNAL_ID
+  GOVERNANCE_STATE_CONFLICT
+  RECONCILIATION_CONFLICT
+  CHECKPOINT_GAP
+}
+
+enum SupplierSourceDriftSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum SupplierSourceDriftStatus {
+  DETECTED
+  CLASSIFIED
+  UNDER_REVIEW
+  RESOLVED
+  ARCHIVED
+}
+
+/** PR-CTR-CONNECTOR-1F — identity-governed workforce drift */
+enum ContractorSourceDriftType {
+  WORKER_SOURCE_DRIFT
+  PERSON_CORRELATION_CONFLICT
+  SUPPLIER_LINK_MISSING
+  GOVERNANCE_LIFECYCLE_CONFLICT
+  MISSING_RESPONSIBLE_MANAGER
+  CHECKPOINT_GAP
+  DUPLICATE_PERSON_ANCHOR
+}
+
+enum ContractorSourceDriftSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum ContractorSourceDriftStatus {
+  DETECTED
+  CLASSIFIED
+  UNDER_REVIEW
+  RESOLVED
+  ARCHIVED
+}
+
+/** PR-GOV-SIGNAL-LIFECYCLE-1 — bootstrap lineage vs operational trust signals */
+enum GovernanceSignalCategory {
+  BOOTSTRAP
+  OPERATIONAL
+}
+
+/// PR-GOV-SIGNAL-LIFECYCLE-3 — temporal decay state for bootstrap signals.
+/// Separate from ContractorSourceDriftStatus (workflow) — this tracks automatic
+/// system-driven lifecycle, not operator-driven workflow state.
+enum SignalLifecycleState {
+  ACTIVE   // Signal is live and operationally relevant
+  DECAYING // Post-cutover grace period: visible but de-emphasized in UI
+  ARCHIVED // Grace period expired: lineage-only audit evidence, hidden from default ops view
+}
+
+enum GovernanceOperationalImpact {
+  NONE
+  LIMITED
+  ACTIVE
+}
+
+enum GovernanceSignalOwner {
+  MIGRATION
+  OPERATIONS
+}
+
+/** PR-CTR-CONNECTOR-1G — remediation orchestration (separate from drift lifecycle) */
+enum ContractorGovernanceRemediationType {
+  PDP_RESTRICTION
+  ACCESS_REVIEW_REQUIRED
+  CORRELATION_REVIEW
+  SUPPLIER_LINK_REPAIR
+  TERMINATION_VALIDATION
+}
+
+enum ContractorGovernanceRemediationStatus {
+  OPEN
+  ACKNOWLEDGED
+  REMEDIATION_IN_PROGRESS
+  VERIFIED
+  CLOSED
 }
 
 enum WorkerClassification {
+  SUPPLIER_CONTRACTOR
   INDEPENDENT_CONTRACTOR
+  CONSULTANT
+  TEMPORARY_WORKER
+  PROFESSIONAL_SERVICES
+  OTHER
 }
 
 enum EngagementModel {
   DIRECT
   AGENCY
+}
+
+/** ADR-013 — authority for bringing an External Worker into EWP (not worker type). */
+enum AcquisitionModel {
+  SUPPLIER
+  INDEPENDENT
 }
 
 enum TaxClassification {
@@ -113,11 +282,25 @@ enum AccessEnablementPlaneStatus {
   ENABLEMENT_REVOKED
 }
 
-enum SponsorAccountabilityStatus {
-  SPONSOR_ASSIGNED
-  SPONSOR_ACTIVE
-  SPONSOR_TRANSFER_PENDING
-  SPONSOR_REVOKED
+enum ResponsibleManagerAccountabilityStatus {
+  RESPONSIBLE_MANAGER_ASSIGNED
+  RESPONSIBLE_MANAGER_ACTIVE
+  RESPONSIBLE_MANAGER_TRANSFER_PENDING
+  RESPONSIBLE_MANAGER_REVOKED
+}
+
+/** PR-RESPONSIBLE-MANAGER-TASKS-1 — responsible manager accountability inbox (no IGA provisioning). */
+enum ResponsibleManagerTaskType {
+  ACCESS_NEED_CONFIRMATION
+  CERTIFICATION_READINESS
+  RENEWAL_REVIEW
+  OFFBOARDING_PROMPT
+}
+
+enum ResponsibleManagerTaskStatus {
+  OPEN
+  COMPLETED
+  DISMISSED
 }
 
 enum GovernanceRiskTier {
@@ -131,6 +314,162 @@ enum WorkerArchetypeKind {
   ARCHETYPE_UNKNOWN
   ARCHETYPE_SUPPLIED
   ARCHETYPE_INDEPENDENT
+}
+
+/** PR-WORKFORCE-STATE-MODEL-1 — CMS workforce plane (not supplier, IGA, or drift status). */
+enum ContractorWorkforceState {
+  NOMINATED
+  PENDING_APPROVAL
+  ACTIVE
+  REJECTED
+  SUSPENDED
+  TERMINATED
+  BLACKLISTED
+}
+
+/** PR-WORKFORCE-TIMELINE-FOUNDATION-1 — authority channel for workforce history rows. */
+enum ContractorWorkforceHistorySource {
+  SUPPLIER_PORTAL
+  OPS
+  HCM_BOOTSTRAP
+  HCM_SYNC
+  SYSTEM
+  LEGACY_BRIDGE
+}
+
+// PR-CTR-2 — HCM migration control plane (staging → validate → promote)
+enum MigrationSourceSystem {
+  ORACLE_HCM
+  CMS_NATIVE
+}
+
+enum HcmStagingRecordAction {
+  INSERT
+  UPDATE
+  DELETE
+  SNAPSHOT
+}
+
+enum HcmStagingValidationStatus {
+  PENDING
+  PASSED
+  FAILED
+  QUARANTINED
+  PROMOTED
+}
+
+enum HcmMigrationPipelineStatus {
+  EXTRACTED
+  NORMALIZED
+  VALIDATED
+  QUARANTINED
+  APPROVED
+  CTR_ISSUED
+  PROMOTED
+  IGA_PUBLISHED
+}
+
+enum HcmResponsibleManagerValidationStatus {
+  VALID
+  MISSING
+  INACTIVE
+  UNKNOWN
+  MISMATCH
+  MULTIPLE
+}
+
+enum ContractorMigrationStatus {
+  NOT_MIGRATED
+  IN_STAGING
+  PROMOTED
+  CMS_NATIVE
+}
+
+enum ContractorCanonicalizationStatus {
+  PENDING
+  CANONICAL
+  OVERRIDE
+}
+
+enum ContractorIdentityMapStatus {
+  ACTIVE
+  RETIRED
+  SUPERSEDED
+}
+
+enum HcmQuarantineReasonCode {
+  DUPLICATE_IDENTITY
+  MISSING_RESPONSIBLE_MANAGER
+  INACTIVE_RESPONSIBLE_MANAGER
+  INVALID_DATES
+  OVERLAPPING_ENGAGEMENT
+  WORKER_TYPE_MISMATCH
+  EMPLOYEE_COLLISION
+  SUPPLIER_UNRESOLVED
+  OTHER
+}
+
+enum ContractorMigrationAuditAction {
+  BATCH_STARTED
+  EXTRACTED
+  NORMALIZED
+  VALIDATED
+  QUARANTINED
+  APPROVED
+  CTR_ISSUED
+  PROMOTED
+  IGA_PUBLISHED
+  OVERRIDE_APPLIED
+  BATCH_COMPLETED
+}
+
+enum ContractorMigrationBatchStatus {
+  OPEN
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+/** PR-CTR-CONNECTOR-1A — contractor connector sync ledger */
+enum ContractorSourceSyncRunStatus {
+  RUNNING
+  SUCCEEDED
+  FAILED
+  PARTIAL
+}
+
+enum ContractorSourceSyncRunMode {
+  FULL
+  INCREMENTAL
+  REPLAY
+}
+
+/** PR-CTR-CONNECTOR-1C — identity correlation on staging import */
+enum HcmContractorCorrelationMatchStatus {
+  NEW
+  POSSIBLE_MATCH
+  MATCHED
+  CONFLICT
+  UNMATCHED
+}
+
+enum HcmContractorCorrelationConfidence {
+  HIGH
+  MEDIUM
+  LOW
+  MANUAL_REVIEW
+}
+
+/** PR-CTR-CONNECTOR-1D foundation — HCM connector health (mirrors supplier semantics) */
+enum HcmOracleConnectorHealth {
+  HEALTHY
+  DEGRADED
+  STALE
+  AUTH_FAILED
+  RATE_LIMITED
+  DISABLED
+  UNKNOWN
 }
 
 /// PR-IGA-OUTBOX-1 — durable outbound IGA-bound events; no dispatcher in this PR.
@@ -178,6 +517,11 @@ model User {
   roles                 UserRole[]
   auditLogs             AuditLog[]
   supplierMemberships   SupplierMembership[]
+  supplierSourceSyncRuns SupplierSourceSyncRun[]
+  contractorSourceSyncRuns ContractorSourceSyncRun[]
+  assignedSourceDrifts   SupplierSourceDrift[]
+  assignedContractorSourceDrifts ContractorSourceDrift[]
+  assignedContractorGovernanceRemediations ContractorGovernanceRemediation[]
 
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
@@ -275,16 +619,55 @@ model Organization {
   hcmType           String?        // ORACLE_HCM, SAP_SF, WORKDAY, CUSTOM_NATS
   hcmConfig         Json?          // Adapter-specific config
 
+  /** PR-CMS-AUTHORITY-1 — upstream master vs CMS-native supplier creation */
+  supplierAuthorityMode   SupplierAuthorityMode   @default(CMS_ONLY)
+  contractorAuthorityMode ContractorAuthorityMode @default(CMS_ONLY)
+
+  /** PR-CMS-CONNECTOR-1B — Oracle Procurement sync checkpoints */
+  oracleSupplierLastSuccessfulSyncAt DateTime?
+  oracleSupplierLastCursor           String?
+  oracleSupplierConnectorHealth      OracleSupplierConnectorHealth @default(UNKNOWN)
+  oracleSupplierConnectorLastError   String?
+
+  /** PR-CTR-CONNECTOR-1A — Oracle HCM contractor sync checkpoints */
+  oracleHcmLastSuccessfulSyncAt      DateTime?
+  oracleHcmLastCursor                  String?
+  oracleHcmConnectorHealth           HcmOracleConnectorHealth @default(UNKNOWN)
+  oracleHcmConnectorLastError          String?
+
+  /** PR-GOV-SIGNAL-LIFECYCLE-1 — when bootstrap governance yields to operational queues */
+  workforceMigrationCutoverAt        DateTime?
+
+  /** Latest discovery snapshot assessed by workforce governance scan */
+  workforceLastAssessedDiscoveryRunId String?
+  workforceLastAssessedAt             DateTime?
+
+  /** Latest supplier sync snapshot assessed by supplier readiness assessment */
+  supplierLastAssessedSyncRunId String?
+  supplierLastAssessedAt        DateTime?
+
   // Status
   isActive          Boolean        @default(true)
 
   // Relations
   users             User[]
   suppliers         Supplier[]
+  supplierSourceStaging SupplierSourceStaging[]
+  supplierSourceSyncRuns SupplierSourceSyncRun[]
+  supplierSourceDrifts   SupplierSourceDrift[]
+  contractorSourceDrifts ContractorSourceDrift[]
+  contractorGovernanceRemediations ContractorGovernanceRemediation[]
   contracts         SupplierContract[]
   invoices          Invoice[]
   projects          Project[]
   withholdingInstructions WithholdingInstruction[]
+  responsibleManagerAccountabilityTasks ResponsibleManagerAccountabilityTask[]
+  contractorMigrationBatches ContractorMigrationBatch[]
+  contractorSourceSyncRuns   ContractorSourceSyncRun[]
+  hcmContractorStaging       HcmContractorStaging[]
+  hcmContractorQuarantine    HcmContractorQuarantine[]
+  ctrSequenceRegistry        CtrSequenceRegistry?
+  contractors                Contractor[]
 
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
@@ -325,6 +708,15 @@ model Supplier {
   city              String?
   postalCode        String?
   country           String
+  /// ISO 3166-1 alpha-2 jurisdiction for onboarding evidence (PR-CMS-OPERATIONS-1D0).
+  countryCode       String         @default("ZA")
+
+  /// External source identity (Oracle Supplier SaaS, etc.).
+  sourceSystem           SupplierSourceSystem     @default(CMS_NATIVE)
+  externalSupplierId     String?
+  externalSupplierNumber String?
+  sourceLastSyncedAt     DateTime?
+  sourceSyncStatus       SupplierSourceSyncStatus @default(NOT_SYNCED)
 
   // Banking
   bankName          String?
@@ -346,13 +738,110 @@ model Supplier {
   contracts         SupplierContract[]
   invoices          Invoice[]
   memberships       SupplierMembership[]
+  sourceStagingRows SupplierSourceStaging[]
+  sourceDrifts      SupplierSourceDrift[]
 
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
 
+  @@unique([organizationId, sourceSystem, externalSupplierId])
   @@index([organizationId])
   @@index([email])
   @@index([status])
+  @@index([organizationId, countryCode])
+  @@index([sourceSystem, externalSupplierId])
+}
+
+/// Staging layer for supplier master imports (PR-CMS-OPERATIONS-1D0). No live connector in this PR.
+model SupplierSourceStaging {
+  id                    String                         @id @default(uuid())
+  organizationId        String
+  organization          Organization                   @relation(fields: [organizationId], references: [id])
+
+  sourceSystem          SupplierSourceSystem
+  externalSupplierId    String
+  supplierNumber        String?
+  name                  String
+  countryCode           String
+  taxRegistrationNumber String?
+  rawPayload            Json
+
+  matchStatus           SupplierSourceStagingMatchStatus @default(NEW)
+  matchReason           String?
+  proposedSupplierId    String?
+  proposedSupplier      Supplier?                        @relation(fields: [proposedSupplierId], references: [id])
+
+  importedAt            DateTime                       @default(now())
+  updatedAt             DateTime                       @updatedAt
+
+  @@unique([organizationId, sourceSystem, externalSupplierId])
+  @@index([organizationId, matchStatus])
+  @@index([proposedSupplierId])
+  @@map("supplier_source_staging")
+}
+
+/// PR-CMS-CONNECTOR-1B — ledger for Oracle supplier import/sync batches
+model SupplierSourceSyncRun {
+  id                String                    @id @default(uuid())
+  organizationId    String
+  organization      Organization              @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  sourceSystem      SupplierSourceSystem
+  status            SupplierSourceSyncRunStatus @default(RUNNING)
+  mode              SupplierSourceSyncRunMode
+  startedAt         DateTime                  @default(now())
+  finishedAt        DateTime?
+  requestedByUserId String?
+  requestedByUser   User?                     @relation(fields: [requestedByUserId], references: [id], onDelete: SetNull)
+  checkpointFrom    DateTime?
+  checkpointTo      DateTime?
+  nextCursor        String?
+  importedCount     Int                       @default(0)
+  matchedCount      Int                       @default(0)
+  newCount          Int                       @default(0)
+  failedCount       Int                       @default(0)
+  errorCode         String?
+  errorMessage      String?
+  createdAt         DateTime                  @default(now())
+  updatedAt         DateTime                  @updatedAt
+
+  @@index([organizationId, startedAt(sort: Desc)])
+  @@index([organizationId, status])
+  @@map("supplier_source_sync_runs")
+}
+
+/// PR-CMS-CONNECTOR-4 — governed source drift registry (detect first; no auto-remediation)
+model SupplierSourceDrift {
+  id                  String                    @id @default(uuid())
+  organizationId      String
+  organization        Organization              @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  supplierId          String?
+  supplier            Supplier?                 @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  stagingId           String?
+  sourceSystem        SupplierSourceSystem
+  externalSupplierId  String?
+  driftType           SupplierSourceDriftType
+  severity            SupplierSourceDriftSeverity
+  status              SupplierSourceDriftStatus @default(DETECTED)
+  driftFingerprint    String
+  detectedAt          DateTime                  @default(now())
+  classifiedAt        DateTime?
+  reviewedAt          DateTime?
+  resolvedAt          DateTime?
+  detectedByRunId     String?
+  sourceSnapshot      Json?
+  governanceSnapshot  Json?
+  resolutionNotes     String?
+  assignedToUserId    String?
+  assignedToUser      User?                     @relation(fields: [assignedToUserId], references: [id], onDelete: SetNull)
+  createdAt           DateTime                  @default(now())
+  updatedAt           DateTime                  @updatedAt
+
+  @@unique([organizationId, driftFingerprint])
+  @@index([organizationId, status])
+  @@index([organizationId, severity])
+  @@index([organizationId, driftType])
+  @@index([supplierId])
+  @@map("supplier_source_drifts")
 }
 
 // PR-SUPPLIER-SCOPING-1 — binds supplier-portal users to exactly one supplier tenant slice
@@ -382,16 +871,18 @@ model SupplierDocument {
   supplierId        String
   supplier          Supplier       @relation(fields: [supplierId], references: [id], onDelete: Cascade)
 
-  type              String         // TAX_CLEARANCE, BBBEE, ID_DOCUMENT, etc.
+  type              String         // PR-CMS-OPERATIONS-1B catalog codes
   fileName          String
   filePath          String
   fileSize          Int
   mimeType          String
 
   expiryDate        DateTime?
+  notes             String?
 
   uploadedBy        String
   uploadedAt        DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
 
   @@index([supplierId])
   @@index([type])
@@ -403,8 +894,12 @@ model SupplierDocument {
 
 model Contractor {
   id                  String              @id @default(uuid())
-  supplierId          String
-  supplier            Supplier            @relation(fields: [supplierId], references: [id])
+  organizationId      String
+  organization        Organization        @relation(fields: [organizationId], references: [id])
+  supplierId          String?
+  supplier            Supplier?           @relation(fields: [supplierId], references: [id])
+  /** ADR-013 — acquisition authority; distinct from workerClassification. */
+  acquisitionModel    AcquisitionModel    @default(SUPPLIER)
 
   // Identity
   firstName           String
@@ -415,7 +910,7 @@ model Contractor {
   passportNumber      String?
 
   // Classification
-  workerClassification WorkerClassification @default(INDEPENDENT_CONTRACTOR)
+  workerClassification WorkerClassification
   engagementModel     EngagementModel
 
   // Tax profile
@@ -429,6 +924,8 @@ model Contractor {
   // Access
   user                User?
   isActive            Boolean             @default(true)
+  /** Workforce plane truth — `isActive` remains interim derived compat (ADR-011). */
+  workforceState      ContractorWorkforceState @default(ACTIVE)
   accessExpiresAt     DateTime?
 
   // EXTID — canonical identity / access intent / IGA boundary (substrate only; not enforcement)
@@ -448,8 +945,24 @@ model Contractor {
   riskTier                     GovernanceRiskTier?
   workerArchetype              WorkerArchetypeKind?
 
+  // PR-CTR-2 — canonical business identity + migration provenance
+  contractorBusinessId         String?                     @unique
+  legacySourceSystem           MigrationSourceSystem?
+  legacySourcePersonId         String?
+  migrationBatchId             String?
+  migrationStatus              ContractorMigrationStatus?
+  canonicalizationStatus       ContractorCanonicalizationStatus?
+  authoritativeUntil           DateTime?
+
   // Relations
+  migrationBatch               ContractorMigrationBatch?   @relation(fields: [migrationBatchId], references: [id])
+  identityMaps                 ContractorIdentityMap[]
+  migrationAuditEntries        ContractorMigrationAudit[]
+  proposedHcmStagingRows       HcmContractorStaging[]      @relation("HcmStagingProposedContractor")
+  sourceDrifts                 ContractorSourceDrift[]
+  governanceRemediations       ContractorGovernanceRemediation[]
   engagements         ContractorEngagement[]
+  workforceHistory    ContractorWorkforceHistory[]
   timesheets          Timesheet[]
   taxClassifications  ContractorTaxClassification[]
   withholdingInstructions WithholdingInstruction[]
@@ -457,8 +970,37 @@ model Contractor {
   createdAt           DateTime            @default(now())
   updatedAt           DateTime            @updatedAt
 
+  @@index([organizationId])
   @@index([supplierId])
+  @@index([acquisitionModel])
   @@index([email])
+  @@index([workforceState])
+  @@index([legacySourceSystem, legacySourcePersonId])
+  @@index([migrationBatchId])
+}
+
+/** PR-WORKFORCE-TIMELINE-FOUNDATION-1 — business truth of workforce transitions (not audit). */
+model ContractorWorkforceHistory {
+  id              String                          @id @default(uuid())
+  contractorId    String
+  contractor      Contractor                      @relation(fields: [contractorId], references: [id], onDelete: Cascade)
+  organizationId  String?
+
+  fromState       ContractorWorkforceState?
+  toState         ContractorWorkforceState
+
+  occurredAt      DateTime                        @default(now())
+  effectiveAt     DateTime?
+
+  actorUserId     String?
+  reason          String?
+  source          ContractorWorkforceHistorySource
+  metadata        Json?
+
+  createdAt       DateTime                        @default(now())
+
+  @@index([contractorId, occurredAt])
+  @@index([contractorId, toState])
 }
 
 // ============================================================================
@@ -516,8 +1058,8 @@ model ContractorEngagement {
   id                String         @id @default(uuid())
   contractorId      String
   contractor        Contractor     @relation(fields: [contractorId], references: [id])
-  contractId        String
-  contract          SupplierContract @relation(fields: [contractId], references: [id])
+  contractId        String?
+  contract          SupplierContract? @relation(fields: [contractId], references: [id])
 
   projectId         String?
   project           Project?       @relation(fields: [projectId], references: [id])
@@ -537,10 +1079,14 @@ model ContractorEngagement {
 
   isActive          Boolean        @default(true)
 
-  // Sponsor accountability (placement-level; substrate only)
-  sponsorEmployeeId         String?
-  sponsorDelegateEmployeeId String?
-  sponsorStatus             SponsorAccountabilityStatus?
+  // Internal accountability (placement-level HCM employee ref)
+  responsibleManagerEmployeeId         String?
+  responsibleManagerDelegateEmployeeId String?
+  responsibleManagerStatus             ResponsibleManagerAccountabilityStatus?
+  /// Last internal-accountability validation at promote time (PR-CTR-2).
+  responsibleManagerValidationStatus   HcmResponsibleManagerValidationStatus?
+
+  responsibleManagerTasks              ResponsibleManagerAccountabilityTask[]
 
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
@@ -548,6 +1094,305 @@ model ContractorEngagement {
   @@index([contractorId])
   @@index([projectId])
   @@index([contractId])
+}
+
+// ============================================================================
+// HCM CONTRACTOR MIGRATION (PR-CTR-2)
+// ============================================================================
+
+/// Replayable migration batch — GOV-CTR-5.
+model ContractorMigrationBatch {
+  id              String                        @id @default(uuid())
+  organizationId  String
+  organization      Organization                  @relation(fields: [organizationId], references: [id])
+  sourceSystem      MigrationSourceSystem
+  waveLabel         String?
+  status            ContractorMigrationBatchStatus @default(OPEN)
+  startedAt         DateTime                      @default(now())
+  completedAt       DateTime?
+  statsJson         Json?
+  stagingRows       HcmContractorStaging[]
+  contractors       Contractor[]
+  auditEntries      ContractorMigrationAudit[]
+
+  @@index([organizationId, status])
+  @@index([sourceSystem, startedAt])
+}
+
+/// Raw Oracle HCM import — never overwrite source_payload (GOV-CTR-1).
+model HcmContractorStaging {
+  id                    String                      @id @default(uuid())
+  organizationId        String
+  organization            Organization                @relation(fields: [organizationId], references: [id])
+  migrationBatchId      String?
+  migrationBatch        ContractorMigrationBatch?     @relation(fields: [migrationBatchId], references: [id], onDelete: SetNull)
+  contractorSourceSyncRunId String?
+  contractorSourceSyncRun   ContractorSourceSyncRun?  @relation(fields: [contractorSourceSyncRunId], references: [id], onDelete: SetNull)
+  sourceSystem          MigrationSourceSystem       @default(ORACLE_HCM)
+  sourcePersonId        String
+  sourcePersonNumber    String?
+  sourcePayloadJson     Json
+  sourceHash            String
+  normalizedPayloadJson Json?
+  extractTimestamp      DateTime                    @default(now())
+  recordAction          HcmStagingRecordAction      @default(SNAPSHOT)
+  pipelineStatus        HcmMigrationPipelineStatus  @default(EXTRACTED)
+  validationStatus      HcmStagingValidationStatus  @default(PENDING)
+  validationErrorsJson  Json?
+  responsibleManagerValidationStatus HcmResponsibleManagerValidationStatus?
+  correlationMatchStatus  HcmContractorCorrelationMatchStatus @default(NEW)
+  correlationConfidence   HcmContractorCorrelationConfidence?
+  correlationMatchReason  String?
+  proposedContractorId    String?
+  proposedContractor      Contractor?                 @relation("HcmStagingProposedContractor", fields: [proposedContractorId], references: [id], onDelete: SetNull)
+  promotedContractorId  String?
+  promotedAt            DateTime?
+  issuedContractorBusinessId String?
+  quarantineEntries     HcmContractorQuarantine[]
+  auditEntries          ContractorMigrationAudit[]
+  sourceDrifts          ContractorSourceDrift[]
+
+  @@index([migrationBatchId, validationStatus])
+  @@index([organizationId, sourcePersonId])
+  @@index([contractorSourceSyncRunId])
+  @@index([correlationMatchStatus])
+  @@index([sourceHash])
+  @@index([validationStatus, pipelineStatus])
+  @@unique([migrationBatchId, sourcePersonId, sourceHash])
+  @@unique([organizationId, sourceSystem, sourcePersonId])
+  @@map("hcm_contractor_staging")
+}
+
+/// PR-CTR-CONNECTOR-1A — ledger for Oracle HCM contractor connector sync
+model ContractorSourceSyncRun {
+  id                    String                      @id @default(uuid())
+  organizationId        String
+  organization          Organization                @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  sourceSystem          MigrationSourceSystem       @default(ORACLE_HCM)
+  status                ContractorSourceSyncRunStatus @default(RUNNING)
+  mode                  ContractorSourceSyncRunMode
+  startedAt             DateTime                    @default(now())
+  finishedAt            DateTime?
+  requestedByUserId     String?
+  requestedByUser       User?                       @relation(fields: [requestedByUserId], references: [id], onDelete: SetNull)
+  checkpointFrom        DateTime?
+  checkpointTo          DateTime?
+  nextCursor            String?
+  importedCount         Int                         @default(0)
+  matchedCount          Int                         @default(0)
+  newCount              Int                         @default(0)
+  correlationFailures   Int                         @default(0)
+  failedCount           Int                         @default(0)
+  errorCode             String?
+  errorMessage          String?
+  stagingRows           HcmContractorStaging[]
+  detectedDrifts        ContractorSourceDrift[]
+  createdAt             DateTime                    @default(now())
+  updatedAt             DateTime                    @updatedAt
+
+  @@index([organizationId, startedAt(sort: Desc)])
+  @@index([organizationId, status])
+  @@map("contractor_source_sync_runs")
+}
+
+/// PR-CTR-CONNECTOR-1F — workforce identity drift registry (detect → classify → govern)
+model ContractorSourceDrift {
+  id                    String                      @id @default(uuid())
+  organizationId        String
+  organization          Organization                @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  contractorId          String?
+  contractor            Contractor?                 @relation(fields: [contractorId], references: [id], onDelete: SetNull)
+  stagingId             String?
+  staging               HcmContractorStaging?       @relation(fields: [stagingId], references: [id], onDelete: SetNull)
+  sourceSystem          MigrationSourceSystem       @default(ORACLE_HCM)
+  sourcePersonId        String?
+  driftType             ContractorSourceDriftType
+  severity              ContractorSourceDriftSeverity
+  status                ContractorSourceDriftStatus @default(DETECTED)
+  signalCategory        GovernanceSignalCategory    @default(OPERATIONAL)
+  detectedPhase         GovernanceSignalCategory    @default(OPERATIONAL)
+  expiresAt             DateTime?
+  suppressAfterCutover  Boolean                     @default(false)
+  lineageOnly           Boolean                     @default(false)
+  operationalImpact     GovernanceOperationalImpact @default(ACTIVE)
+  governanceOwner       GovernanceSignalOwner       @default(OPERATIONS)
+
+  /// PR-GOV-SIGNAL-LIFECYCLE-3 — temporal decay lifecycle (system-driven, not operator-driven)
+  signalLifecycleState  SignalLifecycleState         @default(ACTIVE)
+  decayStartedAt        DateTime?   // Set when org enters POST_CUTOVER and signal becomes eligible
+  archivedAt            DateTime?   // Set when grace period expires
+  archivedReason        String?     // POST_CUTOVER_BOOTSTRAP_DECAY
+  retentionUntil        DateTime?   // archivedAt + retention window; anchor for future purge job
+
+  driftFingerprint      String
+  detectedAt            DateTime                    @default(now())
+  classifiedAt          DateTime?
+  reviewedAt            DateTime?
+  resolvedAt            DateTime?
+  detectedByRunId       String?
+  detectedByRun         ContractorSourceSyncRun?    @relation(fields: [detectedByRunId], references: [id], onDelete: SetNull)
+  sourceSnapshot        Json?
+  governanceSnapshot    Json?
+  correlationSnapshot   Json?
+  resolutionNotes       String?
+  assignedToUserId      String?
+  assignedToUser        User?                       @relation(fields: [assignedToUserId], references: [id], onDelete: SetNull)
+  createdAt             DateTime                    @default(now())
+  updatedAt             DateTime                    @updatedAt
+
+  @@unique([organizationId, driftFingerprint])
+  @@index([organizationId, status])
+  @@index([organizationId, severity])
+  @@index([organizationId, driftType])
+  @@index([organizationId, signalCategory, status])
+  @@index([organizationId, signalCategory, signalLifecycleState])
+  @@index([signalLifecycleState, suppressAfterCutover])
+  @@index([expiresAt])
+  @@index([contractorId])
+  @@index([stagingId])
+  remediation           ContractorGovernanceRemediation?
+  @@map("contractor_source_drifts")
+}
+
+/// PR-CTR-CONNECTOR-1G — governed remediation workflow (reacts to drift; no auto-mutation)
+model ContractorGovernanceRemediation {
+  id                      String                            @id @default(uuid())
+  organizationId          String
+  organization            Organization                      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  driftId                 String                            @unique
+  drift                   ContractorSourceDrift             @relation(fields: [driftId], references: [id], onDelete: Cascade)
+  contractorId            String?
+  contractor              Contractor?                       @relation(fields: [contractorId], references: [id], onDelete: SetNull)
+  remediationType         ContractorGovernanceRemediationType
+  remediationStatus       ContractorGovernanceRemediationStatus @default(OPEN)
+  assignedToUserId        String?
+  assignedToUser          User?                             @relation(fields: [assignedToUserId], references: [id], onDelete: SetNull)
+  dueAt                   DateTime?
+  escalationLevel         Int                               @default(0)
+  downstreamActions       Json?
+  pdpRestrictionsApplied Boolean                          @default(false)
+  verifiedAt              DateTime?
+  closedAt                DateTime?
+  auditTrail              Json?
+  createdAt               DateTime                          @default(now())
+  updatedAt               DateTime                          @updatedAt
+
+  @@index([organizationId, remediationStatus], map: "cgr_org_remediation_status_idx")
+  @@index([organizationId, remediationType], map: "cgr_org_remediation_type_idx")
+  @@index([contractorId], map: "cgr_contractor_id_idx")
+  @@index([dueAt], map: "cgr_due_at_idx")
+  @@map("contractor_governance_remediations")
+}
+
+/// Quarantined staging rows — explicit exception queue (GOV-CTR-2).
+model HcmContractorQuarantine {
+  id              String                  @id @default(uuid())
+  organizationId  String
+  organization    Organization            @relation(fields: [organizationId], references: [id])
+  stagingId       String
+  staging         HcmContractorStaging    @relation(fields: [stagingId], references: [id], onDelete: Cascade)
+  reasonCode      HcmQuarantineReasonCode
+  detailsJson     Json?
+  resolvedAt      DateTime?
+  resolvedByUserId String?
+  overrideReason  String?
+  createdAt       DateTime                @default(now())
+
+  @@index([organizationId, reasonCode])
+  @@index([stagingId])
+  @@map("hcm_contractor_quarantine")
+}
+
+/// Cross-system identity — CTR-* is immutable business key (GOV-CTR-3).
+model ContractorIdentityMap {
+  id                      String                      @id @default(uuid())
+  contractorId            String
+  contractor              Contractor                  @relation(fields: [contractorId], references: [id], onDelete: Cascade)
+  contractorBusinessId    String
+  legacyHcmPersonId       String?
+  legacyHcmPersonNumber   String?
+  externalPersonId        String?
+  igaIdentityId           String?
+  adObjectId              String?
+  status                  ContractorIdentityMapStatus @default(ACTIVE)
+  authoritativeSource     MigrationSourceSystem
+  effectiveFrom           DateTime                    @default(now())
+  effectiveTo             DateTime?
+  createdAt               DateTime                    @default(now())
+  updatedAt               DateTime                    @updatedAt
+
+  @@index([contractorId])
+  @@index([contractorBusinessId])
+  @@index([legacyHcmPersonId])
+  @@index([legacyHcmPersonNumber])
+  @@unique([contractorBusinessId])
+  @@map("contractor_identity_map")
+}
+
+/// Append-only migration audit trail.
+model ContractorMigrationAudit {
+  id                String                        @id @default(uuid())
+  organizationId    String
+  migrationBatchId  String?
+  migrationBatch    ContractorMigrationBatch?       @relation(fields: [migrationBatchId], references: [id])
+  stagingId         String?
+  staging           HcmContractorStaging?           @relation(fields: [stagingId], references: [id])
+  contractorId      String?
+  contractor        Contractor?                     @relation(fields: [contractorId], references: [id])
+  action            ContractorMigrationAuditAction
+  actorUserId       String?
+  detailsJson       Json?
+  createdAt         DateTime                      @default(now())
+
+  @@index([migrationBatchId, createdAt])
+  @@index([stagingId])
+  @@index([contractorId])
+  @@map("contractor_migration_audit")
+}
+
+/// CTR-* sequence issuance — not derived from HCM (PR-CTR-2 / PR-CTR-5).
+model CtrSequenceRegistry {
+  id              String         @id @default(uuid())
+  organizationId  String         @unique
+  organization    Organization   @relation(fields: [organizationId], references: [id])
+  orgCode         String
+  nextValue       Int            @default(1)
+  lastIssuedAt    DateTime?
+  lastIssuedTo    String?
+  updatedAt       DateTime       @updatedAt
+
+  @@map("ctr_sequence_registry")
+}
+
+/// Responsible manager accountability work items (certification, access confirmation, renewal/offboarding).
+model ResponsibleManagerAccountabilityTask {
+  id                String            @id @default(uuid())
+  organizationId    String
+  organization      Organization      @relation(fields: [organizationId], references: [id])
+
+  engagementId      String
+  engagement        ContractorEngagement @relation(fields: [engagementId], references: [id], onDelete: Cascade)
+
+  contractorId      String
+  responsibleManagerEmployeeId String
+
+  taskType          ResponsibleManagerTaskType
+  status            ResponsibleManagerTaskStatus @default(OPEN)
+  title             String
+  description       String?
+
+  dueAt             DateTime?
+  completedAt       DateTime?
+  completedByUserId String?
+  outcome           Json?
+
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  @@index([responsibleManagerEmployeeId, status])
+  @@index([engagementId, taskType])
+  @@index([organizationId])
+  @@map("responsible_manager_accountability_tasks")
 }
 
 // ============================================================================

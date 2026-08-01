@@ -17,6 +17,26 @@ services:
       timeout: 5s
       retries: 5
 
+  mock-oracle:
+    image: node:20-alpine
+    container_name: contractor-cms-mock-oracle
+    restart: unless-stopped
+    working_dir: /app/mock-oracle
+    command: node server.js
+    ports:
+      - '8088:8080'
+    environment:
+      MOCK_ORACLE_PORT: 8080
+    volumes:
+      - ./mock-oracle:/app/mock-oracle
+      - ./backend/test/fixtures:/app/backend/test/fixtures:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -qO- http://127.0.0.1:8080/health || exit 1']
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
   backend:
     build:
       context: ./backend
@@ -31,11 +51,29 @@ services:
       API_KEY_SALT: ${API_KEY_SALT:-dev-api-key-salt}
       CORS_ORIGIN: http://localhost:3001
       PORT: 3000
+      DEMO_MODE: ${DEMO_MODE:-true}
+      # PR-DEMO-CONNECTOR-1 — mock upstream Oracle REST (see mock-oracle service)
+      ORACLE_PROCUREMENT_REST_ENABLED: ${ORACLE_PROCUREMENT_REST_ENABLED:-true}
+      ORACLE_PROCUREMENT_REST_BASE_URL: ${ORACLE_PROCUREMENT_REST_BASE_URL:-http://mock-oracle:8080/mock-oracle/procurement}
+      ORACLE_PROCUREMENT_REST_SUPPLIERS_PATH: ${ORACLE_PROCUREMENT_REST_SUPPLIERS_PATH:-/suppliers}
+      ORACLE_PROCUREMENT_REST_USERNAME: ${ORACLE_PROCUREMENT_REST_USERNAME:-demo}
+      ORACLE_PROCUREMENT_REST_PASSWORD: ${ORACLE_PROCUREMENT_REST_PASSWORD:-demo}
+      HCM_ORACLE_REST_ENABLED: ${HCM_ORACLE_REST_ENABLED:-true}
+      HCM_ORACLE_REST_BASE_URL: ${HCM_ORACLE_REST_BASE_URL:-http://mock-oracle:8080/mock-oracle/hcm}
+      HCM_ORACLE_REST_WORKERS_PATH: ${HCM_ORACLE_REST_WORKERS_PATH:-/workers}
+      HCM_ORACLE_REST_USERNAME: ${HCM_ORACLE_REST_USERNAME:-demo}
+      HCM_ORACLE_REST_PASSWORD: ${HCM_ORACLE_REST_PASSWORD:-demo}
+      # PR-SPONSOR-REFERENCE-ONLY-1 — must match seed when using sponsor@ demo inbox
+      RESPONSIBLE_MANAGER_ACCOUNTABILITY_INBOX_ENABLED: ${RESPONSIBLE_MANAGER_ACCOUNTABILITY_INBOX_ENABLED:-false}
     volumes:
       - ./backend/src:/app/src
       - ./backend/prisma:/app/prisma
+      - ./backend/scripts:/app/scripts
+      - ./backend/package.json:/app/package.json
     depends_on:
       postgres:
+        condition: service_healthy
+      mock-oracle:
         condition: service_healthy
     healthcheck:
       test: ['CMD-SHELL', 'wget -qO- http://localhost:3000/api/v1/health/liveness || exit 1']
@@ -54,6 +92,7 @@ services:
       - '3001:3001'
     environment:
       NEXT_PUBLIC_API_URL: http://localhost:3000/api/v1
+      NEXT_PUBLIC_DEMO_MODE: ${DEMO_MODE:-true}
       BACKEND_URL: http://backend:3000
     volumes:
       - ./frontend/next.config.js:/app/next.config.js

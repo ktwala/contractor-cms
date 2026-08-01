@@ -2,6 +2,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   WorkerClassification,
   EngagementModel,
+  AcquisitionModel,
   SupplierType,
   ContractorPersonType,
   ContractorAccessIntent,
@@ -9,14 +10,22 @@ import {
   AccessEnablementPlaneStatus,
   GovernanceRiskTier,
   WorkerArchetypeKind,
+  ContractorWorkforceState,
 } from '@prisma/client';
 
 export class ContractorResponseDto {
   @ApiProperty()
   id: string;
 
-  @ApiProperty()
-  supplierId: string;
+  @ApiPropertyOptional({ nullable: true })
+  supplierId?: string | null;
+
+  @ApiProperty({
+    enum: AcquisitionModel,
+    description:
+      'ADR-013 — who is authoritative for bringing this worker into EWP (not worker type).',
+  })
+  acquisitionModel: AcquisitionModel;
 
   @ApiProperty()
   firstName: string;
@@ -56,6 +65,9 @@ export class ContractorResponseDto {
 
   @ApiProperty()
   isActive: boolean;
+
+  @ApiProperty({ enum: ContractorWorkforceState, enumName: 'ContractorWorkforceState' })
+  workforceState: ContractorWorkforceState;
 
   @ApiProperty({ required: false })
   accessExpiresAt?: Date;

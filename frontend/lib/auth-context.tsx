@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { api } from './api';
 import { Permission } from './permissions.generated';
+import { TenantAuthorityProfile } from './tenant-authority';
 
 export interface User {
   id: string;
@@ -14,6 +15,12 @@ export interface User {
   organizationId: string;
   /** PR-SUPPLIER-SCOPING-1 — set when user has an active SupplierMembership */
   supplierId?: string | null;
+  /** PR-HCM-SPONSOR-USERS-1 — HCM employee ref; enables sponsor row scope when sponsor reads are granted */
+  externalId?: string | null;
+  /** PR-SPONSOR-REFERENCE-ONLY-1 — CMS sponsor inbox + row scope (default off in production) */
+  responsibleManagerAccountabilityInboxEnabled?: boolean;
+  /** PR-CMS-AUTHORITY-1 — tenant upstream authority modes */
+  tenantAuthority?: TenantAuthorityProfile;
 }
 
 interface AuthContextType {
@@ -44,6 +51,10 @@ function mapProfileToUser(profile: Record<string, unknown>): User {
     lastName: profile.lastName as string,
     organizationId: (profile.organizationId as string) || '',
     supplierId: (profile.supplierId as string | null) ?? null,
+    externalId: (profile.externalId as string | null) ?? null,
+    responsibleManagerAccountabilityInboxEnabled:
+      profile.responsibleManagerAccountabilityInboxEnabled === true,
+    tenantAuthority: profile.tenantAuthority as TenantAuthorityProfile | undefined,
     roles: roleNames.length > 0 ? roleNames : roles,
     effectivePermissions: (profile.effectivePermissions as string[]) || [],
   };
@@ -51,6 +62,37 @@ function mapProfileToUser(profile: Record<string, unknown>): User {
 
 function persistUser(user: User) {
   localStorage.setItem('user', JSON.stringify(user));
+}
+
+function mapAuthResponseToUser(response: {
+  user: {
+    id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    organizationId: string | null;
+    supplierId?: string | null;
+    externalId?: string | null;
+    roles: string[];
+    effectivePermissions: string[];
+    tenantAuthority?: TenantAuthorityProfile;
+    responsibleManagerAccountabilityInboxEnabled?: boolean;
+  };
+}): User {
+  return {
+    id: response.user.id,
+    email: response.user.email,
+    firstName: response.user.firstName,
+    lastName: response.user.lastName,
+    organizationId: response.user.organizationId || '',
+    supplierId: response.user.supplierId ?? null,
+    externalId: response.user.externalId ?? null,
+    responsibleManagerAccountabilityInboxEnabled:
+      response.user.responsibleManagerAccountabilityInboxEnabled === true,
+    tenantAuthority: response.user.tenantAuthority,
+    roles: response.user.roles,
+    effectivePermissions: response.user.effectivePermissions,
+  };
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -101,38 +143,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (email: string, password: string) => {
     const response = await api.login(email, password);
     localStorage.setItem('auth_token', response.accessToken);
-    const nextUser: User = {
-      id: response.user.id,
-      email: response.user.email,
-      firstName: response.user.firstName,
-      lastName: response.user.lastName,
-      organizationId: response.user.organizationId || '',
-      supplierId: response.user.supplierId ?? null,
-      roles: response.user.roles,
-      effectivePermissions: response.user.effectivePermissions,
-    };
+    const nextUser = mapAuthResponseToUser(response);
     persistUser(nextUser);
     setUser(nextUser);
-    try {
-      await refreshProfile();
-    } catch {
-      // login response is sufficient
-    }
   };
 
   const register = async (data: any) => {
     const response = await api.register(data);
     localStorage.setItem('auth_token', response.accessToken);
-    const nextUser: User = {
-      id: response.user.id,
-      email: response.user.email,
-      firstName: response.user.firstName,
-      lastName: response.user.lastName,
-      organizationId: response.user.organizationId || '',
-      supplierId: response.user.supplierId ?? null,
-      roles: response.user.roles,
-      effectivePermissions: response.user.effectivePermissions,
-    };
+    const nextUser = mapAuthResponseToUser(response);
     persistUser(nextUser);
     setUser(nextUser);
   };

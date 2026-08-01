@@ -1,3 +1,5 @@
+import { api } from '@/lib/api';
+
 export interface PdpActivationRule {
   id: string;
   reasonCode?: string;
@@ -42,74 +44,55 @@ export interface PreviewEvaluationResponse {
   isShadow: boolean;
 }
 
-// In a real application, this would use the configured Axios instance.
-// Using fetch for the simulation.
-const API_BASE = '/api/v1/pdp/activation';
-
-function getAuthHeaders() {
-  const token = localStorage.getItem('auth_token');
-  return {
-    'Content-Type': 'application/json',
-    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-  };
+function formatApiError(err: unknown, fallback: string): string {
+  if (err && typeof err === 'object' && 'response' in err) {
+    const data = (err as { response?: { data?: { message?: string | string[] } } }).response?.data;
+    const message = data?.message;
+    if (Array.isArray(message)) return message.join(', ');
+    if (typeof message === 'string' && message.trim()) return message;
+  }
+  if (err instanceof Error && err.message) return err.message;
+  return fallback;
 }
 
 export const pdpActivationService = {
   async listRules(): Promise<PdpActivationListResponse> {
-    const res = await fetch(API_BASE, { headers: getAuthHeaders() });
-    if (!res.ok) throw new Error('Failed to fetch activation rules');
-    return res.json();
+    try {
+      return (await api.listPdpActivationRules()) as PdpActivationListResponse;
+    } catch (err) {
+      throw new Error(formatApiError(err, 'Failed to fetch activation rules'));
+    }
   },
 
   async createRule(dto: Partial<PdpActivationRule>): Promise<PdpActivationRule> {
-    const res = await fetch(API_BASE, {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify(dto)
-    });
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.message || 'Failed to create rule');
+    try {
+      return (await api.createPdpActivationRule(dto)) as PdpActivationRule;
+    } catch (err) {
+      throw new Error(formatApiError(err, 'Failed to create rule'));
     }
-    return res.json();
   },
 
   async updateRule(id: string, dto: Partial<PdpActivationRule>): Promise<PdpActivationRule> {
-    const res = await fetch(`${API_BASE}/${id}`, {
-      method: 'PUT',
-      headers: getAuthHeaders(),
-      body: JSON.stringify(dto)
-    });
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.message || 'Failed to update rule');
+    try {
+      return (await api.updatePdpActivationRule(id, dto)) as PdpActivationRule;
+    } catch (err) {
+      throw new Error(formatApiError(err, 'Failed to update rule'));
     }
-    return res.json();
   },
 
   async disableRule(id: string, notes?: string): Promise<PdpActivationRule> {
-    const res = await fetch(`${API_BASE}/${id}`, {
-      method: 'DELETE',
-      headers: getAuthHeaders(),
-      body: JSON.stringify({ notes })
-    });
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.message || 'Failed to disable rule');
+    try {
+      return (await api.disablePdpActivationRule(id, notes)) as PdpActivationRule;
+    } catch (err) {
+      throw new Error(formatApiError(err, 'Failed to disable rule'));
     }
-    return res.json();
   },
 
   async previewEvaluation(dto: PreviewEvaluationDto): Promise<PreviewEvaluationResponse> {
-    const res = await fetch(`${API_BASE}/preview`, {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify(dto)
-    });
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.message || 'Failed to preview evaluation');
+    try {
+      return (await api.previewPdpEvaluation(dto)) as PreviewEvaluationResponse;
+    } catch (err) {
+      throw new Error(formatApiError(err, 'Failed to preview evaluation'));
     }
-    return res.json();
-  }
+  },
 };

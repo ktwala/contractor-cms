@@ -10,8 +10,8 @@ export const IGA_EVENT_SOURCE = 'contractor-cms' as const;
 export const IgaEventType = {
   EXTERNAL_PERSON_CREATED: 'EXTERNAL_PERSON_CREATED',
   EXTERNAL_PERSON_UPDATED: 'EXTERNAL_PERSON_UPDATED',
-  EXTERNAL_PERSON_SPONSOR_ASSIGNED: 'EXTERNAL_PERSON_SPONSOR_ASSIGNED',
-  EXTERNAL_PERSON_SPONSOR_REMOVED: 'EXTERNAL_PERSON_SPONSOR_REMOVED',
+  EXTERNAL_PERSON_RESPONSIBLE_MANAGER_ASSIGNED: 'EXTERNAL_PERSON_RESPONSIBLE_MANAGER_ASSIGNED',
+  EXTERNAL_PERSON_RESPONSIBLE_MANAGER_REMOVED: 'EXTERNAL_PERSON_RESPONSIBLE_MANAGER_REMOVED',
   EXTERNAL_PERSON_SUSPENDED: 'EXTERNAL_PERSON_SUSPENDED',
   EXTERNAL_PERSON_TERMINATED: 'EXTERNAL_PERSON_TERMINATED',
 } as const;
@@ -33,9 +33,9 @@ export interface IgaOutboundExternalWorkforceEventV1 {
   engagementId: string | null;
   personType: string | null;
   workerArchetype: string | null;
-  supplierId: string;
-  sponsorEmployeeId: string | null;
-  sponsorStatus: string | null;
+  supplierId: string | null;
+  responsibleManagerEmployeeId: string | null;
+  responsibleManagerStatus: string | null;
   accessIntent: string | null;
   riskTier: string | null;
   igaIntegrationStatus: string;

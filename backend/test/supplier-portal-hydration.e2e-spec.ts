@@ -123,6 +123,7 @@ describe('Supplier portal hydration (PR-SUPPLIER-PORTAL-HYDRATION-FIX-1)', () =>
       .set('Authorization', `Bearer ${token}`)
       .expect(403);
 
+    expect(res.body.code).toBe('SUPPLIER_MEMBERSHIP_REQUIRED');
     expect(res.body.message).toMatch(/supplier membership/i);
   });
 });

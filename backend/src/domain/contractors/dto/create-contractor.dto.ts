@@ -42,7 +42,11 @@ export class CreateContractorDto {
   @IsString()
   passportNumber?: string;
 
-  @ApiProperty({ enum: WorkerClassification, default: WorkerClassification.INDEPENDENT_CONTRACTOR })
+  @ApiProperty({
+    enum: WorkerClassification,
+    description:
+      'Required worker subtype — not implied by registry role. Use SUPPLIER_CONTRACTOR for vendor-linked workforce.',
+  })
   @IsEnum(WorkerClassification)
   workerClassification: WorkerClassification;
 
@@ -74,4 +78,9 @@ export class CreateContractorDto {
   @IsOptional()
   @IsDateString()
   accessExpiresAt?: string;
+
+  @ApiPropertyOptional({ description: 'Optional governance note/sponsor context' })
+  @IsOptional()
+  @IsString()
+  sponsorNote?: string;
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import DashboardLayout from '@/components/dashboard-layout';
 import Modal from '@/components/ui/modal';
 import FormInput from '@/components/ui/form-input';
@@ -9,13 +9,28 @@ import StatusBadge from '@/components/ui/status-badge';
 import { api } from '@/lib/api';
 import { useToast } from '@/lib/toast';
 import { Plus, Edit, Trash2, Search, FileText, Download } from 'lucide-react';
-import { format } from 'date-fns';
 import { exportContractsToCSV } from '@/lib/csv-export';
 import RequirePermission from '@/components/RequirePermission';
 import { PERMISSIONS } from '@/lib/permissions.generated';
 import { useAuth } from '@/lib/auth-context';
 import ValidityBadge from '@/components/ui/validity-badge';
 import { getDaysUntilExpiry, getContractValidityState } from '@/lib/date-utils';
+import {
+  safeFormatDate,
+  safeIsoDatePart,
+  safeLower,
+  safeString,
+} from '@/lib/safe-string';
+import {
+  formatContractTypeLabel,
+  formatCurrencyDisplay,
+} from '@/lib/display-format';
+import {
+  isOperationalTrustGranted,
+  OPERATIONAL_TRUST_LABELS,
+  supplierSelectLabel,
+} from '@/lib/operational-trust-labels';
+import { useOperationalTrustChanged } from '@/lib/operational-trust-events';
 
 interface Contract {
   id: string;
@@ -68,17 +83,13 @@ export default function ContractsPage() {
   const { showToast } = useToast();
   const { can } = useAuth();
 
-  useEffect(() => {
-    loadData();
-  }, [expiryFilter]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
-      const params: any = { page: 1, limit: 100 };
+      const params: Record<string, unknown> = { page: 1, limit: 100 };
       if (expiryFilter !== 'all') {
         params.expiryState = expiryFilter;
       }
-      
+
       const [contractsRes, contractorsRes, suppliersRes] = await Promise.all([
         api.getContracts(params),
         api.getContractors({ page: 1, limit: 100 }),
@@ -87,12 +98,20 @@ export default function ContractsPage() {
       setContracts(contractsRes.data);
       setContractors(contractorsRes.data);
       setSuppliers(suppliersRes.data);
-    } catch (err: any) {
+    } catch {
       showToast('error', 'Failed to load data');
     } finally {
       setLoading(false);
     }
-  };
+  }, [expiryFilter, showToast]);
+
+  useEffect(() => {
+    void loadData();
+  }, [loadData]);
+
+  useOperationalTrustChanged(() => {
+    void loadData();
+  });
 
   const handleOpenModal = (contract?: Contract) => {
     if (contract) {
@@ -103,8 +122,8 @@ export default function ContractsPage() {
         contractNumber: contract.contractNumber,
         title: contract.title,
         type: contract.type,
-        startDate: contract.startDate.split('T')[0],
-        endDate: contract.endDate ? contract.endDate.split('T')[0] : '',
+        startDate: safeIsoDatePart(contract.startDate),
+        endDate: safeIsoDatePart(contract.endDate),
         rate: contract.rate.toString(),
         rateType: contract.rateType,
         currency: contract.currency,
@@ -137,9 +156,15 @@ export default function ContractsPage() {
   };
 
   const validateForm = () => {
-    const errors: any = {};
+    const errors: Record<string, string> = {};
     if (!formData.contractorId) errors.contractorId = 'Contractor is required';
     if (!formData.supplierId) errors.supplierId = 'Supplier is required';
+    else if (!editingContract) {
+      const supplier = suppliers.find((s) => s.id === formData.supplierId);
+      if (supplier?.status && !isOperationalTrustGranted(supplier.status)) {
+        errors.supplierId = OPERATIONAL_TRUST_LABELS.workerBlockTrustNotGranted;
+      }
+    }
     if (!formData.contractNumber) errors.contractNumber = 'Contract number is required';
     if (!formData.title) errors.title = 'Title is required';
     if (!formData.startDate) errors.startDate = 'Start date is required';
@@ -192,28 +217,24 @@ export default function ContractsPage() {
   };
 
   const filteredContracts = contracts.filter((contract) => {
-    const searchLower = searchTerm.toLowerCase();
+    const searchLower = safeLower(searchTerm);
+    const contractorName = contract.contractor
+      ? safeLower(
+          `${safeString(contract.contractor.firstName)} ${safeString(contract.contractor.lastName)}`,
+        )
+      : '';
     return (
-      contract.contractNumber.toLowerCase().includes(searchLower) ||
-      contract.title.toLowerCase().includes(searchLower) ||
-      (contract.contractor &&
-        `${contract.contractor.firstName} ${contract.contractor.lastName}`
-          .toLowerCase()
-          .includes(searchLower))
+      safeLower(contract.contractNumber).includes(searchLower) ||
+      safeLower(contract.title).includes(searchLower) ||
+      contractorName.includes(searchLower)
     );
   });
 
   const getSupplierName = (supplier: any) => {
-    if (!supplier) return '-';
+    if (!supplier) return '—';
     if (supplier.companyName) return supplier.companyName;
-    return `${supplier.firstName} ${supplier.lastName}`;
-  };
-
-  const formatCurrency = (amount: number, currency: string) => {
-    return new Intl.NumberFormat('en-ZA', {
-      style: 'currency',
-      currency: currency,
-    }).format(amount);
+    const name = `${safeString(supplier.firstName)} ${safeString(supplier.lastName)}`.trim();
+    return name || '—';
   };
 
   if (loading) {
@@ -336,20 +357,20 @@ export default function ContractsPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="text-xs px-2 py-1 bg-gray-100 text-gray-800 rounded">
-                          {contract.type.replace('_', ' ')}
+                          {formatContractTypeLabel(contract.type)}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <div>{format(new Date(contract.startDate), 'MMM dd, yyyy')}</div>
+                        <div>{safeFormatDate(contract.startDate, 'MMM dd, yyyy')}</div>
                         {contract.endDate && (
                           <div className="text-xs text-gray-400">
-                            to {format(new Date(contract.endDate), 'MMM dd, yyyy')}
+                            to {safeFormatDate(contract.endDate, 'MMM dd, yyyy')}
                           </div>
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">
-                          {formatCurrency(contract.rate, contract.currency)}
+                          {formatCurrencyDisplay(contract.rate, contract.currency)}
                         </div>
                         <div className="text-xs text-gray-500">{contract.rateType}</div>
                       </td>
@@ -435,10 +456,13 @@ export default function ContractsPage() {
               onChange={(e) => setFormData({ ...formData, supplierId: e.target.value })}
               options={suppliers.map((s) => ({
                 value: s.id,
-                label:
-                  s.type === 'COMPANY'
-                    ? s.companyName
-                    : `${s.firstName} ${s.lastName}`,
+                label: supplierSelectLabel({
+                  name:
+                    s.type === 'COMPANY'
+                      ? String(s.companyName ?? '')
+                      : `${s.firstName ?? ''} ${s.lastName ?? ''}`.trim(),
+                  status: s.status ?? 'PENDING_APPROVAL',
+                }),
               }))}
               error={formErrors.supplierId}
               required

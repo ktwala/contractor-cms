@@ -397,6 +397,18 @@ withholding.instruction.created
 
 Event names are part of the integration contract documented in [`docs/security/`](docs/security/) and [`docs/business/`](docs/business/) ADRs—keep catalogs aligned when extending the bus.
 
+### Connector & governance demo (UAT)
+
+| Document | Purpose |
+|----------|---------|
+| [`docs/CONNECTOR_GOVERNANCE_PLATFORM.md`](docs/CONNECTOR_GOVERNANCE_PLATFORM.md) | Platform doctrine, APIs, personas |
+| [`docs/CONNECTOR_DEMO_UAT.md`](docs/CONNECTOR_DEMO_UAT.md) | Repeatable Docker demo playbook |
+| [`docs/SUPPLIER_GOVERNANCE_OPERATIONS.md`](docs/SUPPLIER_GOVERNANCE_OPERATIONS.md) | Governance tiles, evidence authority, approvals queue |
+| [`docs/CONTRACTOR_BOOTSTRAP_AUTHORITY.md`](docs/CONTRACTOR_BOOTSTRAP_AUTHORITY.md) | HCM bootstrap vs CMS contractor authority |
+| [`docs/GOVERNANCE_SIGNAL_LIFECYCLE.md`](docs/GOVERNANCE_SIGNAL_LIFECYCLE.md) | Bootstrap vs operational signal decay |
+| [`docs/DEMO_LOGIN_CREDENTIALS.md`](docs/DEMO_LOGIN_CREDENTIALS.md) | Demo passwords |
+| [`docs/GOVERNANCE_TEST_PERSONAS.md`](docs/GOVERNANCE_TEST_PERSONAS.md) | RBAC personas for UI validation |
+
 ### Business & operating model (governance docs)
 
 | Document | Purpose |

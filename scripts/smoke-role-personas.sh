@@ -118,11 +118,12 @@ EOF
       ;;
     SPONSOR)
       cat <<'EOF'
+  Client-side — Business Sponsor (internal employee; demo login is test scaffolding):
   Operations:
     - Dashboard
-    - Contractors
-    - Engagements
-  (no Suppliers, Contracts, Timesheets, Invoices, Governance, Administration)
+    - Sponsored contractors
+    - My sponsored engagements
+  (scoped to sponsorEmployeeId on engagements; no Suppliers, Contracts, Timesheets, Invoices, supplier portal, Governance, Administration)
 EOF
       ;;
     *)
@@ -194,16 +195,24 @@ echo "Reseed first: cd backend && npm run db:seed"
 echo
 
 echo "── Legacy demo users (updated role bundles on same emails) ──"
-run_persona "CMS_ADMIN" "CMS Admin" "admin@contractor-cms.com" "Admin123!"
-run_persona "FINANCE_USER" "Finance User" "finance@contractor-cms.com" "Finance123!"
-run_persona "CONTRACTOR_MANAGER" "Contractor Manager" "manager@contractor-cms.com" "Manager123!"
-run_persona "CONTRACTOR" "Contractor" "contractor@contractor-cms.com" "Contractor123!"
+run_persona "CMS_ADMIN" "CMS Admin" "ops.admin@ewp.demo" "Admin123!"
+run_persona "FINANCE_USER" "Finance User" "finance@ewp.demo" "Finance123!"
+run_persona "CONTRACTOR_MANAGER" "Contractor Manager" "ops.manager@ewp.demo" "Manager123!"
+run_persona "CONTRACTOR" "Contractor" "external.worker@ewp.demo" "Contractor123!"
 
 echo
-echo "── Target doctrine personas (PR-SEED-PERSONA-USERS-1) ──"
-run_persona "SUPPLIER_ADMIN" "Supplier Admin" "supplier.admin@contractor-cms.com" "SupplierAdmin123!"
-run_persona "SUPPLIER_MANAGER" "Supplier Manager" "supplier.manager@contractor-cms.com" "SupplierManager123!"
-run_persona "SPONSOR" "Sponsor" "sponsor@contractor-cms.com" "Sponsor123!"
+echo "── External supplier personas (supplier portal) ──"
+run_persona "SUPPLIER_ADMIN" "Supplier Admin" "supplier.admin@ewp.demo" "SupplierAdmin123!"
+run_persona "SUPPLIER_MANAGER" "Supplier Manager" "supplier.manager@ewp.demo" "SupplierManager123!"
+
+if [[ "${SPONSOR_ACCOUNTABILITY_INBOX_ENABLED:-}" == "true" ]]; then
+  echo
+  echo "── Client-side business sponsor (demo inbox — SPONSOR_ACCOUNTABILITY_INBOX_ENABLED=true) ──"
+  run_persona "SPONSOR" "Business Sponsor" "sponsor@ewp.demo" "Sponsor123!"
+else
+  echo
+  echo "── SPONSOR persona skipped (set SPONSOR_ACCOUNTABILITY_INBOX_ENABLED=true + reseed for demo inbox) ──"
+fi
 
 echo
 echo "Done."

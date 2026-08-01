@@ -10,7 +10,7 @@ import type { IgaEventContractorSlice } from './iga-event.builder';
 /** Map a contractor row (or select slice) to the IGA event builder input. */
 export function toIgaEventContractorSlice(row: {
   id: string;
-  supplierId: string;
+  supplierId: string | null;
   externalPersonId: string | null;
   personType: ContractorPersonType | null;
   workerArchetype: WorkerArchetypeKind | null;

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { auditApi } from '@/lib/api-audit';
+import { PERMISSIONS } from '@/lib/permissions.generated';
 import SummaryCards from '@/components/audit-insights/SummaryCards';
 import HighRiskTable from '@/components/audit-insights/HighRiskTable';
 import RoleChangeTimeline from '@/components/audit-insights/RoleChangeTimeline';
@@ -22,7 +23,7 @@ export default function AuditInsightsPage() {
   const [endDate, setEndDate] = useState(new Date().toISOString().split('T')[0]);
 
   useEffect(() => {
-    if (!can('audit:read' as any)) return;
+    if (!can(PERMISSIONS.AUDIT.READ)) return;
     loadInsights();
   }, [can]);
 
@@ -55,7 +56,7 @@ export default function AuditInsightsPage() {
     loadInsights();
   };
 
-  if (!can('audit:read' as any)) {
+  if (!can(PERMISSIONS.AUDIT.READ)) {
     return (
       <div className="flex justify-center items-center h-64">
         <p className="text-gray-500">You do not have permission to view audit insights.</p>

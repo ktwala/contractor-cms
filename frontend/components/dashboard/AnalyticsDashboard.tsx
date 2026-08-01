@@ -18,8 +18,6 @@ import { PdpShadowTelemetryWidget } from './PdpShadowTelemetryWidget';
 import {
   BarChart,
   Bar,
-  LineChart,
-  Line,
   PieChart,
   Pie,
   Cell,
@@ -30,6 +28,9 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
+import { ChartPanel, hasNumericSeriesData } from '@/components/ui/chart-panel';
+import { EXTERNAL_WORKFORCE_LABELS } from '@/lib/external-workforce-labels';
+import CapabilityOverview from './CapabilityOverview';
 
 interface DashboardData {
   financial: {
@@ -146,6 +147,18 @@ export default function AnalyticsDashboard() {
 
   return (
     <div className="space-y-6">
+      <div>
+        <h2 className="text-xl font-semibold text-gray-900">{EXTERNAL_WORKFORCE_LABELS.overview}</h2>
+        <p className="text-sm text-gray-500 mt-1">
+          Capability health across the platform — then detailed analytics below.
+        </p>
+      </div>
+      <CapabilityOverview />
+      <div>
+        <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-500">
+          Detailed analytics
+        </h3>
+      </div>
       {/* Top Stats Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="card">
@@ -230,57 +243,57 @@ export default function AnalyticsDashboard() {
 
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="card">
-          <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
-            <Receipt className="w-5 h-5 mr-2 text-gray-400" />
-            Invoice Status
-          </h3>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={invoiceStatusData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={80}
-                  paddingAngle={5}
-                  dataKey="value"
-                >
-                  {invoiceStatusData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip 
-                  formatter={(value: number) => formatCurrency(value)}
-                />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
+        <ChartPanel
+          title="Invoice Status"
+          icon={<Receipt className="w-5 h-5 mr-2 text-content-muted" />}
+          hasData={hasNumericSeriesData(invoiceStatusData)}
+          emptyDescription="Invoice payments and pending amounts will appear here once invoices are recorded."
+        >
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={invoiceStatusData}
+                cx="50%"
+                cy="50%"
+                innerRadius={60}
+                outerRadius={80}
+                paddingAngle={5}
+                dataKey="value"
+              >
+                {invoiceStatusData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Pie>
+              <Tooltip formatter={(value: number) => formatCurrency(value)} />
+              <Legend />
+            </PieChart>
+          </ResponsiveContainer>
+        </ChartPanel>
 
-        <div className="card">
-          <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
-            <Clock className="w-5 h-5 mr-2 text-gray-400" />
-            Timesheet Status
-          </h3>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={timesheetStatusData} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-                <XAxis type="number" />
-                <YAxis dataKey="name" type="category" />
-                <Tooltip />
-                <Bar dataKey="value" radius={[0, 4, 4, 0]}>
-                  {timesheetStatusData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
+        <ChartPanel
+          title="Timesheet Status"
+          icon={<Clock className="w-5 h-5 mr-2 text-content-muted" />}
+          hasData={hasNumericSeriesData(timesheetStatusData)}
+          emptyDescription="Timesheet approvals and rejections will appear here once timesheets are submitted."
+        >
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              data={timesheetStatusData}
+              layout="vertical"
+              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+              <XAxis type="number" />
+              <YAxis dataKey="name" type="category" />
+              <Tooltip />
+              <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+                {timesheetStatusData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </ChartPanel>
       </div>
 
       {/* Financial Breakdown Row */}
@@ -314,12 +327,14 @@ export default function AnalyticsDashboard() {
           </div>
         </div>
 
-        <div className="card">
-          <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
-            <DollarSign className="w-5 h-5 mr-2 text-gray-400" />
-            Tax Withholding
-          </h3>
-          <div className="h-48">
+        <div className="space-y-3">
+          <ChartPanel
+            title="Tax Withholding"
+            icon={<DollarSign className="w-5 h-5 mr-2 text-content-muted" />}
+            heightClassName="h-48"
+            hasData={hasNumericSeriesData(taxBreakdownData)}
+            emptyDescription="PAYE, SDL, and UIF withholding breakdowns will appear here once tax instructions exist."
+          >
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
@@ -339,10 +354,10 @@ export default function AnalyticsDashboard() {
                 <Legend />
               </PieChart>
             </ResponsiveContainer>
-          </div>
-          <div className="text-center mt-2">
-            <p className="text-sm text-gray-500">Total Withheld</p>
-            <p className="text-lg font-bold text-gray-900">
+          </ChartPanel>
+          <div className="text-center">
+            <p className="text-sm text-content-muted">Total Withheld</p>
+            <p className="text-lg font-bold text-content">
               {formatCurrency(data.tax.totalWithheld)}
             </p>
           </div>

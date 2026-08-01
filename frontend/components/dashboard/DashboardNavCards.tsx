@@ -9,14 +9,14 @@ import {
 } from '@/lib/supplier-portal-modules';
 
 export default function DashboardNavCards() {
-  const { can } = useAuth();
+  const { can, user } = useAuth();
   const modules = isSupplierPortalUser(can)
     ? filterSupplierPortalModules(can)
-    : filterDashboardModules(can);
+    : filterDashboardModules(can, user, user?.tenantAuthority);
 
   if (modules.length === 0) {
     return (
-      <p className="text-sm text-gray-500">
+      <p className="text-sm text-content-muted">
         No module shortcuts available for your current permissions.
       </p>
     );
@@ -36,8 +36,8 @@ export default function DashboardNavCards() {
                   <Icon className={`w-6 h-6 ${mod.iconClass}`} />
                 </div>
                 <div>
-                  <h3 className="text-lg font-medium text-gray-900">{mod.title}</h3>
-                  <p className="text-sm text-gray-500">{mod.description}</p>
+                  <h3 className="text-lg font-medium text-content">{mod.title}</h3>
+                  <p className="text-sm text-content-muted">{mod.description}</p>
                 </div>
               </div>
             </div>

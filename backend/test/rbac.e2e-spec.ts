@@ -1,7 +1,11 @@
 import { INestApplication, HttpStatus } from '@nestjs/common';
 import request from 'supertest';
 import { TestHelper } from './utils/test-helper';
-import { ALL_PERMISSIONS } from '../src/core/auth/permissions.constants';
+import {
+  ALL_PERMISSIONS,
+  PERMISSIONS,
+} from '../src/core/auth/permissions.constants';
+import { FINANCE_SENSITIVE_PERMISSIONS } from '../src/core/auth/utils/permission-evaluation';
 
 /**
  * RBAC Permission Engine E2E Tests
@@ -473,7 +477,7 @@ describe('RBAC Permission Engine E2E', () => {
       expect(response.body.effectivePermissions).toContain('suppliers:read');
     });
 
-    it('CMS_ADMIN effectivePermissions contains all catalog permissions', async () => {
+    it('CMS_ADMIN effectivePermissions include operations but not finance-sensitive grants', async () => {
       const org = await TestHelper.createTestOrganization();
       await TestHelper.createUserWithRoles(org.id, {
         email: 'admin-full@test.com',
@@ -492,10 +496,14 @@ describe('RBAC Permission Engine E2E', () => {
         .set('Authorization', `Bearer ${login.token}`)
         .expect(200);
 
-      // effectivePermissions should contain every permission in the catalog
-      for (const perm of ALL_PERMISSIONS) {
-        expect(response.body.effectivePermissions).toContain(perm);
+      expect(response.body.effectivePermissions).toContain(PERMISSIONS.INVOICES.READ);
+      expect(response.body.effectivePermissions).toContain(PERMISSIONS.SUPPLIERS.READ);
+      for (const perm of FINANCE_SENSITIVE_PERMISSIONS) {
+        expect(response.body.effectivePermissions).not.toContain(perm);
       }
+      expect(ALL_PERMISSIONS.size).toBeGreaterThan(
+        response.body.effectivePermissions.length,
+      );
     });
 
     it('resource wildcard expands correctly in effectivePermissions', async () => {

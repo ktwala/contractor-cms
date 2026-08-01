@@ -3,7 +3,11 @@ import { IgaIntegrationPlaneStatus } from '@prisma/client';
 import { ContractorsService } from './contractors.service';
 import { PrismaService } from '../../core/database/prisma.service';
 import { AuditService } from '../../core/audit/audit.service';
-import { IgaWorkforceEventWriter } from '../../core/iga/iga-workforce-event-writer.service';
+import { AccessIntegrationPublishService } from '../access-integration/access-integration-publish.service';
+import { ContractorWorkforceStateService } from './contractor-workforce-state.service';
+import { ContractorWorkforceHistoryService } from './contractor-workforce-history.service';
+import { ContractorWorkforceEventPublisherService } from './contractor-workforce-event-publisher.service';
+import { HcmResponsibleManagerLookupService } from '../../core/hcm/hcm-responsible-manager-lookup.service';
 import { AccessContext } from '../../core/auth/interfaces/access-context.interface';
 
 describe('ContractorsService IGA event writes (PR-IGA-EVENT-WRITE-1)', () => {
@@ -18,7 +22,9 @@ describe('ContractorsService IGA event writes (PR-IGA-EVENT-WRITE-1)', () => {
     actorOrganizationId: 'org-1',
     targetOrganizationId: 'org-1',
     isGlobalAccess: false,
+    effectivePermissions: new Set(['contractors:create']),
     supplierScopeId: null,
+    responsibleManagerEmployeeId: null,
   };
 
   const contractorRow = {
@@ -62,6 +68,9 @@ describe('ContractorsService IGA event writes (PR-IGA-EVENT-WRITE-1)', () => {
       contractor: {
         findFirst: jest.fn().mockResolvedValue(null),
       },
+      contractorEngagement: {
+        findFirst: jest.fn().mockResolvedValue(null),
+      },
       $transaction: jest.fn(async (fn: (t: typeof tx) => Promise<unknown>) => fn(tx)),
     };
 
@@ -71,11 +80,36 @@ describe('ContractorsService IGA event writes (PR-IGA-EVENT-WRITE-1)', () => {
         { provide: PrismaService, useValue: prisma },
         { provide: AuditService, useValue: { logAction: jest.fn() } },
         {
-          provide: IgaWorkforceEventWriter,
+          provide: AccessIntegrationPublishService,
           useValue: {
-            persistExternalPersonCreated: persistCreated,
-            persistExternalPersonUpdated: persistUpdated,
+            publishExternalPersonCreated: persistCreated,
+            publishExternalPersonUpdated: persistUpdated,
           },
+        },
+        {
+          provide: ContractorWorkforceStateService,
+          useValue: {
+            applyTransition: jest.fn(),
+            applyLegacyIsActiveChange: jest.fn(),
+          },
+        },
+        {
+          provide: ContractorWorkforceEventPublisherService,
+          useValue: {
+            publishNominationIntakeStub: jest.fn(),
+            publishStub: jest.fn(),
+          },
+        },
+        {
+          provide: ContractorWorkforceHistoryService,
+          useValue: {
+            recordTransition: jest.fn(),
+            listForContractor: jest.fn(),
+          },
+        },
+        {
+          provide: HcmResponsibleManagerLookupService,
+          useValue: { assertResponsibleManagerReferencesAllowed: jest.fn() },
         },
       ],
     }).compile();
@@ -84,6 +118,8 @@ describe('ContractorsService IGA event writes (PR-IGA-EVENT-WRITE-1)', () => {
   });
 
   it('create writes one EXTERNAL_PERSON_CREATED outbox event in the transaction', async () => {
+    const recordTransition = (service as any).workforceHistory.recordTransition as jest.Mock;
+
     await service.create(accessContext, {
       supplierId: 's-1',
       firstName: 'A',
@@ -97,6 +133,13 @@ describe('ContractorsService IGA event writes (PR-IGA-EVENT-WRITE-1)', () => {
     expect(persistUpdated).not.toHaveBeenCalled();
     expect(persistCreated.mock.calls[0][1]).toBe('org-1');
     expect(persistCreated.mock.calls[0][2]).toBeDefined();
+    expect(recordTransition).toHaveBeenCalledWith(
+      expect.objectContaining({
+        fromState: null,
+        toState: 'ACTIVE',
+        metadata: expect.objectContaining({ bootstrap: true, cmsDirectCreate: true }),
+      }),
+    );
   });
 
   it('update writes one EXTERNAL_PERSON_UPDATED outbox event in the transaction', async () => {

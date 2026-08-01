@@ -39,19 +39,19 @@ export class PdpController {
   }
 
   @Post('activation')
-  @Permissions(PERMISSIONS.PDP_ACTIVATION.MANAGE)
+  @Permissions(PERMISSIONS.PDP_RESTRICTIONS.MANAGE)
   async createRule(@Body() dto: CreateActivationRuleDto, @Request() req: any) {
     return this.adminService.createRule(dto, req.user.id);
   }
 
   @Put('activation/:id')
-  @Permissions(PERMISSIONS.PDP_ACTIVATION.MANAGE)
+  @Permissions(PERMISSIONS.PDP_RESTRICTIONS.MANAGE)
   async updateRule(@Param('id') id: string, @Body() dto: CreateActivationRuleDto, @Request() req: any) {
     return this.adminService.updateRule(id, dto, req.user.id);
   }
 
   @Delete('activation/:id')
-  @Permissions(PERMISSIONS.PDP_ACTIVATION.MANAGE)
+  @Permissions(PERMISSIONS.PDP_RESTRICTIONS.MANAGE)
   async disableRule(@Param('id') id: string, @Body('notes') notes: string, @Request() req: any) {
     return this.adminService.disableRule(id, req.user.id, notes);
   }
@@ -77,13 +77,13 @@ export class PdpController {
   }
 
   @Post('exceptions/:id/approve')
-  @Permissions(PERMISSIONS.PDP_EXCEPTIONS.MANAGE)
+  @Permissions(PERMISSIONS.PDP_RESTRICTIONS.MANAGE)
   async approveException(@Param('id') id: string, @Body() dto: ApproveExceptionDto, @Request() req: any) {
     return this.exceptionService.approveException(id, dto, req.user.id);
   }
 
   @Post('exceptions/:id/reject')
-  @Permissions(PERMISSIONS.PDP_EXCEPTIONS.MANAGE)
+  @Permissions(PERMISSIONS.PDP_RESTRICTIONS.MANAGE)
   async rejectException(@Param('id') id: string, @Body() dto: RejectExceptionDto, @Request() req: any) {
     return this.exceptionService.rejectException(id, dto, req.user.id);
   }

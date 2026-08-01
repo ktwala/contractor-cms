@@ -169,12 +169,12 @@ export default function AuditDetailDrawer({ logId, onClose }: AuditDetailDrawerP
               </div>
 
               {/* Metadata */}
-              {log.metadata && (
+              {log.metadata != null ? (
                 <>
                   <hr className="border-gray-200" />
                   <JsonViewer data={log.metadata} label="Metadata" />
                 </>
-              )}
+              ) : null}
             </div>
           )}
         </div>
