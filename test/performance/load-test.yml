@@ -1,0 +1,46 @@
+config:
+  target: "http://localhost:3000"
+  phases:
+    - duration: 60
+      arrivalRate: 5
+      name: "Warm up"
+    - duration: 120
+      arrivalRate: 10
+      name: "Ramp up"
+    - duration: 180
+      arrivalRate: 20
+      name: "Sustained load"
+    - duration: 60
+      arrivalRate: 5
+      name: "Cool down"
+  defaults:
+    headers:
+      Content-Type: "application/json"
+  processor: "./test/performance/processors.js"
+
+scenarios:
+  - name: "Health check"
+    flow:
+      - get:
+          url: "/health"
+
+  - name: "Get employees"
+    flow:
+      - function: "generateToken"
+      - get:
+          url: "/api/v1/employees"
+          headers:
+            Authorization: "Bearer {{ token }}"
+
+  - name: "Get payruns"
+    flow:
+      - function: "generateToken"
+      - get:
+          url: "/api/v1/payruns"
+          headers:
+            Authorization: "Bearer {{ token }}"
+
+  - name: "Metrics endpoint"
+    flow:
+      - get:
+          url: "/metrics"

@@ -1,0 +1,52 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build outputs
+dist/
+build/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Test coverage
+coverage/
+
+# JML integration test evidence bundles (optional; keep local only)
+artifacts/
+
+# Prisma
+prisma/*.db
+prisma/*.db-journal
+
+# Local recruitment uploads (server-stored paths referenced in DB)
+uploads/
+
+# Google Drive sync artifacts
+.tmp.driveupload/
+
+# Database dumps generated locally
+*.dump
+payroll_platform.sql
+
+# Test output
+playwright-report/
+test-results/

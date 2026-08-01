@@ -1,0 +1,12 @@
+{
+  "countryCode": "ZA",
+  "tableType": "PAYE",
+  "taxYear": "2025/2026",
+  "effectiveFrom": "2025-03-01",
+  "brackets": [
+    { "seqNo": 1, "bracketFrom": 0, "bracketTo": 237100, "marginalRate": 0.18, "baseTax": 0, "isOpenEnded": false },
+    { "seqNo": 2, "bracketFrom": 237101, "bracketTo": null, "marginalRate": 0.26, "baseTax": 42678, "isOpenEnded": true }
+  ],
+  "fields": [],
+  "description": "ZA draft with no supplemental fields — triggers missing-required-field warnings and fallback usage in compute"
+}

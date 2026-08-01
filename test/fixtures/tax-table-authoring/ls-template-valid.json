@@ -1,0 +1,21 @@
+{
+  "countryCode": "LS",
+  "tableType": "PAYE",
+  "taxYear": "2025/2026",
+  "effectiveFrom": "2025-04-01",
+  "effectiveTo": null,
+  "sourceReference": "Lesotho Revenue Authority",
+  "brackets": [
+    { "seqNo": 1, "bracketFrom": 0, "bracketTo": 237100, "marginalRate": 0.18, "baseTax": 0, "isOpenEnded": false },
+    { "seqNo": 2, "bracketFrom": 237100, "bracketTo": null, "marginalRate": 0.30, "baseTax": 42678, "isOpenEnded": true }
+  ],
+  "fields": [
+    { "fieldCode": "annual_tax_credit", "fieldValue": 11640 }
+  ],
+  "expectedSimulation": {
+    "income_100000": { "annualTax": 6360, "monthlyTax": 530, "effectiveRate": 0.0636 },
+    "income_237100": { "annualTax": 31038, "monthlyTax": 2586.5, "effectiveRate": 0.1309 },
+    "income_500000": { "annualTax": 109548, "monthlyTax": 9129, "effectiveRate": 0.2191 },
+    "income_0": { "annualTax": 0, "monthlyTax": 0, "effectiveRate": 0 }
+  }
+}

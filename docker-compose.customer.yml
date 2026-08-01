@@ -1,0 +1,14 @@
+# Customer/production deployment override
+#
+# Use: docker compose -f docker-compose.yml -f docker-compose.customer.yml up -d
+#
+# Then run bootstrap one-off (secrets not stored in container):
+#   docker compose -f docker-compose.yml -f docker-compose.customer.yml run --rm \
+#     -e BOOTSTRAP_ADMIN_EMAIL=admin@customer.com \
+#     -e BOOTSTRAP_ADMIN_PASSWORD=YourSecurePassword \
+#     app npm run bootstrap:admin
+
+services:
+  app:
+    environment:
+      DEPLOYMENT_MODE: customer

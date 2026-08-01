@@ -1,0 +1,25 @@
+{
+  "countryCode": "ZA",
+  "tableType": "PAYE",
+  "taxYear": "2025/2026",
+  "effectiveFrom": "2025-03-01",
+  "effectiveTo": null,
+  "sourceReference": "SARS",
+  "brackets": [
+    { "seqNo": 1, "bracketFrom": 0, "bracketTo": 237100, "marginalRate": 0.18, "baseTax": 0, "isOpenEnded": false },
+    { "seqNo": 2, "bracketFrom": 237101, "bracketTo": 370500, "marginalRate": 0.26, "baseTax": 42678, "isOpenEnded": false },
+    { "seqNo": 3, "bracketFrom": 370501, "bracketTo": 512800, "marginalRate": 0.31, "baseTax": 77362, "isOpenEnded": false },
+    { "seqNo": 4, "bracketFrom": 512801, "bracketTo": 673000, "marginalRate": 0.36, "baseTax": 121475, "isOpenEnded": false },
+    { "seqNo": 5, "bracketFrom": 673001, "bracketTo": 857900, "marginalRate": 0.39, "baseTax": 179147, "isOpenEnded": false },
+    { "seqNo": 6, "bracketFrom": 857901, "bracketTo": 1817000, "marginalRate": 0.41, "baseTax": 251258, "isOpenEnded": false },
+    { "seqNo": 7, "bracketFrom": 1817001, "bracketTo": null, "marginalRate": 0.45, "baseTax": 644489, "isOpenEnded": true }
+  ],
+  "fields": [
+    { "fieldCode": "primary_rebate", "fieldValue": 17235 },
+    { "fieldCode": "secondary_rebate", "fieldValue": 9444 },
+    { "fieldCode": "tertiary_rebate", "fieldValue": 3145 },
+    { "fieldCode": "tax_threshold_under_65", "fieldValue": 95750 },
+    { "fieldCode": "tax_threshold_65_to_74", "fieldValue": 148217 },
+    { "fieldCode": "tax_threshold_75_plus", "fieldValue": 165689 }
+  ]
+}

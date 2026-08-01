@@ -1,0 +1,313 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: payroll
+          POSTGRES_PASSWORD: payroll_secret
+          POSTGRES_DB: payroll_platform
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma Client
+        run: npm run db:generate
+        env:
+          DATABASE_URL: postgresql://payroll:payroll_secret@localhost:5432/payroll_platform?schema=public
+
+      - name: Run linter
+        run: npm run lint
+
+      - name: Payroll import drift gate
+        run: npm run check:payroll-import-drift
+
+      - name: RBAC role policy drift (PR-RBAC-GOV-1)
+        run: npm run check:rbac-role-policy-drift
+
+      - name: RBAC override test fixture drift (PR-RBAC-GOV-3)
+        run: npm run check:rbac-override-test-fixture-drift
+
+      - name: Tax GOV 2A drift gate (TTA RBAC + legacy route order)
+        run: npm run check:tax-gov-2a-drift
+
+      - name: Statutory Config country copy drift (TAX-GOV-2C.1)
+        run: npm run check:statutory-config-country-copy-drift
+
+      - name: Payrun execution drift gate
+        run: npm run check:payrun-execution-drift
+
+      - name: Payrun cancel drift gate (PR-PAYRUN-CANCEL-1)
+        run: npm run check:payrun-cancel-drift
+
+      - name: Payrun financial control drift gate
+        run: npm run check:payrun-financial-control-drift
+
+      - name: Payrun bank reconciliation drift gate
+        run: npm run check:payrun-bank-reconciliation-drift
+
+      - name: Payrun GL reconciliation drift gate
+        run: npm run check:payrun-gl-reconciliation-drift
+
+      - name: Payrun closed-period governance drift gate
+        run: npm run check:payrun-closed-period-drift
+      - name: Payrun post-reversal impact drift (GOV-4)
+        run: npm run check:payrun-post-reversal-impact-drift
+      - name: Payrun governance dashboard drift (GOV-5A)
+        run: npm run check:payrun-governance-dashboard-drift
+      - name: Payrun governance portfolio drift (GOV-5B)
+        run: npm run check:payrun-governance-portfolio-drift
+      - name: Payrun governance policy registry drift (GOV-6A)
+        run: npm run check:payrun-governance-policy-drift
+
+      - name: Payroll container governance drift (CONTAINER / PR-PAYROLL-CONTAINER-META-1)
+        run: npm run check:payroll-container-drift
+
+      - name: Payroll governance constitution drift (GOV-META-2)
+        run: npm run check:payroll-governance-constitution-drift
+
+      - name: Apply database migrations (PR-PAYROLL-CONTAINER-2 linkage verify)
+        run: npm run db:migrate:prod
+        env:
+          DATABASE_URL: postgresql://payroll:payroll_secret@localhost:5432/payroll_platform?schema=public
+
+      - name: Verify payroll container period linkage (PR-PAYROLL-CONTAINER-2)
+        run: npm run verify:payroll-container-period-linkage
+        env:
+          DATABASE_URL: postgresql://payroll:payroll_secret@localhost:5432/payroll_platform?schema=public
+
+      - name: Run unit tests
+        run: npm run test:cov
+        env:
+          DATABASE_URL: postgresql://payroll:payroll_secret@localhost:5432/payroll_platform?schema=public
+          NODE_ENV: test
+
+      - name: Recruitment permission drift check
+        run: npx jest "src/modules/recruitment/__tests__/recruitment-permission-drift" --no-coverage --verbose
+        env:
+          DATABASE_URL: postgresql://payroll:payroll_secret@localhost:5432/payroll_platform?schema=public
+
+      - name: Recruitment permission registry consistency
+        run: npx jest "src/modules/recruitment/__tests__/recruitment-permission-registry" --no-coverage --verbose
+        env:
+          DATABASE_URL: postgresql://payroll:payroll_secret@localhost:5432/payroll_platform?schema=public
+
+      - name: Recruitment authz behavior verification
+        run: npx jest "src/modules/recruitment/__tests__/recruitment-authz-behavior" --no-coverage --verbose
+        env:
+          DATABASE_URL: postgresql://payroll:payroll_secret@localhost:5432/payroll_platform?schema=public
+
+      - name: CTC Optimiser permission drift check
+        run: npx jest "src/modules/ctc-optimiser/__tests__/ctc-permission-drift" --no-coverage --verbose
+        env:
+          DATABASE_URL: postgresql://payroll:payroll_secret@localhost:5432/payroll_platform?schema=public
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage/unit/lcov.info
+          flags: unit
+          name: unit-tests
+        continue-on-error: true
+
+      - name: Run E2E tests
+        run: npm run test:e2e
+        env:
+          DATABASE_URL: postgresql://payroll:payroll_secret@localhost:5432/payroll_platform?schema=public
+          NODE_ENV: test
+          JWT_SECRET: test-jwt-secret
+
+      - name: Build application
+        run: npm run build
+        env:
+          DATABASE_URL: postgresql://payroll:payroll_secret@localhost:5432/payroll_platform?schema=public
+
+  frontend-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Install employee portal dependencies
+        working-directory: ./employee-portal
+        run: npm ci
+
+      - name: Run Playwright tests
+        run: npx playwright test
+        continue-on-error: true
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+
+  # Blocking: real API + admin + migrated DB (pay groups + pay items from seed + CI legal entity).
+  # Depends on lint-and-test so drift + unit coverage already passed before this heavier job runs.
+  payroll-import-e2e:
+    needs: lint-and-test
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: payroll
+          POSTGRES_PASSWORD: payroll_secret
+          POSTGRES_DB: payroll_platform
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    env:
+      DATABASE_URL: postgresql://payroll:payroll_secret@localhost:5432/payroll_platform?schema=public
+      JWT_SECRET: ci-payroll-playwright-jwt-secret
+      ENCRYPTION_MASTER_KEY: 'ci-test-master-key-at-least-32-characters-long'
+      ENCRYPTION_SALT: 'ci-payroll-encryption-salt-v1'
+      CI: 'true'
+      PLAYWRIGHT_ADMIN_ORIGIN: http://127.0.0.1:3001
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Generate Prisma client + migrate + seed
+        run: |
+          npm run db:generate
+          npm run db:migrate:prod
+          npm run db:seed
+          npm run db:seed:ci-payroll-import
+
+      - name: Verify TTA RBAC in database (seed completeness)
+        run: npm run verify:tta-rbac
+
+      - name: Payroll import contract (Jest)
+        run: npx jest src/modules/data-imports/__tests__/payroll-import-contract.spec.ts --no-coverage
+
+      - name: Build API (Nest)
+        run: npm run build
+
+      - name: Install and build admin portal
+        working-directory: ./admin-portal
+        env:
+          VITE_API_BASE_URL: http://127.0.0.1:4000/v1
+        run: npm ci && npm run build
+
+      - name: Install Playwright (Chromium only)
+        run: npx playwright install chromium --with-deps
+
+      - name: Start API and admin preview
+        run: |
+          set -euo pipefail
+          mkdir -p storage
+          export PORT=4000
+          export NODE_ENV=production
+          nohup node dist/main.js > /tmp/payroll-api-ci.log 2>&1 &
+          echo $! > /tmp/payroll-api-ci.pid
+          for i in $(seq 1 60); do
+            if curl -sf "http://127.0.0.1:${PORT}/v1/bootstrap/status" > /dev/null; then
+              echo "API is up"
+              break
+            fi
+            if [ "$i" -eq 60 ]; then
+              echo "API failed to start"
+              cat /tmp/payroll-api-ci.log || true
+              exit 1
+            fi
+            sleep 2
+          done
+          cd admin-portal
+          nohup npx vite preview --host 127.0.0.1 --port 3001 > /tmp/payroll-admin-ci.log 2>&1 &
+          echo $! > /tmp/payroll-admin-ci.pid
+          for i in $(seq 1 60); do
+            if curl -sf "http://127.0.0.1:3001/" > /dev/null; then
+              echo "Admin preview is up"
+              exit 0
+            fi
+            if [ "$i" -eq 60 ]; then
+              echo "Admin preview failed to start"
+              cat /tmp/payroll-admin-ci.log || true
+              exit 1
+            fi
+            sleep 2
+          done
+
+      - name: Payroll import consoles (Playwright / chromium)
+        run: npm run test:playwright:payroll-imports
+
+      - name: Tax table authoring RBAC (Playwright / chromium)
+        run: npm run test:playwright:tta-rbac
+        env:
+          ADMIN_PORTAL_E2E_URL: http://127.0.0.1:3001
+
+      - name: PR-RBAC-GOV-3 override authority UI (Playwright / chromium)
+        run: npm run test:playwright:pr-rbac-gov-3
+        env:
+          ADMIN_PORTAL_E2E_URL: http://127.0.0.1:3001
+
+      - name: Collect server logs for artifact
+        if: failure()
+        run: |
+          cp /tmp/payroll-api-ci.log payroll-api-ci.log 2>/dev/null || true
+          cp /tmp/payroll-admin-ci.log payroll-admin-ci.log 2>/dev/null || true
+
+      - name: Upload payroll Playwright failure assets
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: payroll-import-e2e-failures
+          path: |
+            test-results/
+            playwright-report/
+            payroll-api-ci.log
+            payroll-admin-ci.log
+          retention-days: 14

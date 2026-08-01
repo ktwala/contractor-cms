@@ -1,0 +1,225 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: payroll-db
+    environment:
+      POSTGRES_USER: payroll
+      POSTGRES_PASSWORD: payroll_secret
+      POSTGRES_DB: payroll_platform
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U payroll -d payroll_platform" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Redis (for caching and job queues)
+  redis:
+    image: redis:7-alpine
+    container_name: payroll-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # SeaweedFS Master Server
+  seaweedfs-master:
+    image: chrislusf/seaweedfs:latest
+    container_name: payroll-seaweedfs-master
+    ports:
+      - "9333:9333"
+    command: "master -ip=seaweedfs-master -ip.bind=0.0.0.0 -mdir=/data -defaultReplication=000"
+    volumes:
+      - seaweed_master_data:/data
+    healthcheck:
+      test: [ "CMD", "wget", "--spider", "-q", "http://localhost:9333/cluster/status" ]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 60s
+    restart: unless-stopped
+
+  # SeaweedFS Volume Server
+  seaweedfs-volume:
+    image: chrislusf/seaweedfs:latest
+    container_name: payroll-seaweedfs-volume
+    ports:
+      - "8080:8080"
+    command: "volume -mserver=seaweedfs-master:9333 -dir=/data -max=100 -ip=seaweedfs-volume -ip.bind=0.0.0.0 -port=8080"
+    volumes:
+      - seaweed_volume_data:/data
+    depends_on:
+      seaweedfs-master:
+        condition: service_started
+    restart: unless-stopped
+
+  # SeaweedFS Filer (file/directory structure)
+  seaweedfs-filer:
+    image: chrislusf/seaweedfs:latest
+    container_name: payroll-seaweedfs-filer
+    ports:
+      - "8888:8888"
+    command: "filer -master=seaweedfs-master:9333 -ip=seaweedfs-filer -ip.bind=0.0.0.0"
+    volumes:
+      - seaweed_filer_data:/data
+    depends_on:
+      seaweedfs-master:
+        condition: service_started
+      seaweedfs-volume:
+        condition: service_started
+    healthcheck:
+      test: [ "CMD", "wget", "--spider", "-q", "http://localhost:8888/" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    restart: unless-stopped
+
+  # SeaweedFS S3 Gateway
+  seaweedfs-s3:
+    image: chrislusf/seaweedfs:latest
+    container_name: payroll-seaweedfs-s3
+    ports:
+      - "8333:8333"
+    command: "s3 -filer=seaweedfs-filer:8888 -ip.bind=0.0.0.0 -config=/etc/seaweedfs/s3.json"
+    volumes:
+      - ./seaweed-config/s3.json:/etc/seaweedfs/s3.json:ro
+    depends_on:
+      seaweedfs-filer:
+        condition: service_started
+    healthcheck:
+      test: [ "CMD", "wget", "--spider", "-q", "http://localhost:8333/" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+    restart: unless-stopped
+
+  # Backend API
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: payroll-app
+    ports:
+      - "4000:4000"
+    environment:
+      NODE_ENV: development
+      DEPLOYMENT_MODE: ${DEPLOYMENT_MODE:-development}
+      DATABASE_URL: postgresql://payroll:payroll_secret@postgres:5432/payroll_platform?schema=public
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: dev-jwt-secret-change-in-production
+      JWT_EXPIRATION: 24h
+      PORT: 4000
+      CORS_ORIGINS: "http://localhost:3000,http://localhost:3001,http://localhost:3002,http://127.0.0.1:3000,http://127.0.0.1:3001,http://127.0.0.1:3002"
+      # Storage Configuration
+      STORAGE_PROVIDER: seaweedfs
+      SEAWEED_ENDPOINT: http://seaweedfs-s3:8333
+      SEAWEED_VOLUME_ENDPOINT: http://seaweedfs-volume:8080
+      SEAWEED_BUCKET: payroll-files
+      SEAWEED_ACCESS_KEY: admin
+      SEAWEED_SECRET_KEY: admin
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    # Nest only listens after prisma db push + seed + start:dev; without this, host curls often hit an empty TCP close.
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          "node -e \"require('http').get('http://127.0.0.1:4000/v1/bootstrap/status',(r)=>{r.resume();process.exit(r.statusCode===200?0:1);}).on('error',()=>process.exit(1));\"",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+      start_period: 180s
+    volumes:
+      - ./src:/app/src:ro
+      - ./prisma:/app/prisma:ro
+      - ./tsconfig.json:/app/tsconfig.json:ro
+      - ./tsconfig.build.json:/app/tsconfig.build.json:ro
+      - ./nest-cli.json:/app/nest-cli.json:ro
+    command: >
+      sh -c "
+        npx prisma generate &&
+        npx prisma db push --accept-data-loss &&
+        (npm run db:seed || true) &&
+        ( [ \"$${DEPLOYMENT_MODE:-development}\" = 'customer' ] || (npm run demo:seed || true) ) &&
+        npm run start:dev
+      "
+
+  # Database Admin UI (optional)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: payroll-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@payroll.local
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    profiles:
+      - admin
+
+  # Employee Portal Frontend
+  employee-portal:
+    build:
+      context: ./employee-portal
+      dockerfile: Dockerfile
+    container_name: payroll-employee-portal
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_API_BASE_URL=http://localhost:4000/v1
+    depends_on:
+      app:
+        condition: service_healthy
+    volumes:
+      - ./employee-portal/src:/app/src:ro
+      - ./employee-portal/public:/app/public:ro
+    command: npm run dev -- --host 0.0.0.0
+
+  # Admin Portal Frontend
+  admin-portal:
+    build:
+      context: ./admin-portal
+      dockerfile: Dockerfile
+    container_name: payroll-admin-portal
+    ports:
+      - "3001:3001"
+    environment:
+      - VITE_API_BASE_URL=http://localhost:4000/v1
+      - VITE_PROXY_TARGET=http://app:4000
+    depends_on:
+      app:
+        condition: service_healthy
+    volumes:
+      - ./admin-portal/src:/app/src:ro
+      - ./admin-portal/public:/app/public:ro
+    command: npm run dev -- --host 0.0.0.0 --port 3001
+
+volumes:
+  postgres_data:
+  redis_data:
+  seaweed_master_data:
+  seaweed_volume_data:
+  seaweed_filer_data:
+
+
+networks:
+  default:
+    name: payroll-network

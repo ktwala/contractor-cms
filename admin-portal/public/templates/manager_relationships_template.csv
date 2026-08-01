@@ -1,0 +1,6 @@
+employee_no,manager_employee_no
+EMP001,EMP010
+EMP002,EMP010
+EMP003,EMP011
+EMP010,
+EMP011,EMP010

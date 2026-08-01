@@ -1,0 +1,792 @@
+{
+  "info": {
+    "name": "JML IGA HCM Test Plan",
+    "description": "Postman test plan mirroring scripts/jml-integration-test.sh. Proves delta (transaction-time) and current_employment (business-time). Run with environment IGA-HCM-Local.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" }
+  ],
+  "item": [
+    {
+      "name": "0 — Bootstrap",
+      "item": [
+        {
+          "name": "Init Run Vars",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const now = new Date();",
+                  "const runId = now.toISOString().replace(/[-:TZ.]/g, '').slice(0, 14);",
+                  "pm.environment.set('runId', runId);",
+                  "const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));",
+                  "const tomorrow = new Date(today.getTime() + 24*60*60*1000);",
+                  "pm.environment.set('today', today.toISOString().slice(0,10));",
+                  "pm.environment.set('tomorrow', tomorrow.toISOString().slice(0,10));",
+                  "pm.environment.set('empNoA', 'E2E-' + runId + '-A');",
+                  "pm.environment.set('empNoB', 'E2E-' + runId + '-B');",
+                  "pm.environment.set('t0', new Date().toISOString());"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Init run vars set', () => {",
+                  "  pm.expect(pm.environment.get('t0')).to.be.a('string');",
+                  "  pm.expect(pm.environment.get('today')).to.match(/^\\d{4}-\\d{2}-\\d{2}$');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/v1/legal-entities", "host": ["{{baseUrl}}"], "path": ["v1", "legal-entities"] },
+            "description": "No auth; only runs pre-request script to set runId, today, tomorrow, empNoA, empNoB, t0."
+          }
+        },
+        {
+          "name": "Admin Login",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Admin login 200', () => pm.response.to.have.status(200));",
+                "const json = pm.response.json();",
+                "pm.environment.set('adminToken', json.access_token);",
+                "pm.test('Has access_token', () => pm.expect(json.access_token).to.be.a('string'));"
+              ],
+              "type": "text/javascript"
+            }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}\n"
+            },
+            "url": { "raw": "{{baseUrl}}/v1/auth/login", "host": ["{{baseUrl}}"], "path": ["v1", "auth", "login"] }
+          }
+        },
+        {
+          "name": "IGA Login",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('IGA login 200', () => pm.response.to.have.status(200));",
+                "const json = pm.response.json();",
+                "pm.environment.set('igaToken', json.access_token);",
+                "pm.test('Has access_token', () => pm.expect(json.access_token).to.be.a('string'));"
+              ],
+              "type": "text/javascript"
+            }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{igaEmail}}\",\n  \"password\": \"{{igaPassword}}\"\n}\n"
+            },
+            "url": { "raw": "{{baseUrl}}/v1/auth/login", "host": ["{{baseUrl}}"], "path": ["v1", "auth", "login"] }
+          }
+        },
+        {
+          "name": "HR Employees with IGA Token (Expect 200)",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('GET /v1/hr/employees with IGA token returns 200', () => pm.response.to.have.status(200));",
+                "const json = pm.response.json();",
+                "pm.test('Response has items', () => pm.expect(json).to.have.property('items'));"
+              ],
+              "type": "text/javascript"
+            }
+          }],
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{igaToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/v1/hr/employees?limit=5",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "hr", "employees"],
+              "query": [{"key": "limit", "value": "5"}]
+            }
+          }
+        },
+        {
+          "name": "Resolve Legal Entity",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Legal entities 200', () => pm.response.to.have.status(200));",
+                "const json = pm.response.json();",
+                "const le = (json.items || json)[0];",
+                "pm.expect(le).to.be.ok;",
+                "pm.environment.set('legalEntityId', le.id);"
+              ],
+              "type": "text/javascript"
+            }
+          }],
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{adminToken}}"}],
+            "url": { "raw": "{{baseUrl}}/v1/legal-entities", "host": ["{{baseUrl}}"], "path": ["v1", "legal-entities"] }
+          }
+        },
+        {
+          "name": "Resolve Pay Group",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Pay groups 200', () => pm.response.to.have.status(200));",
+                "const json = pm.response.json();",
+                "const pg = (json.items || json)[0];",
+                "pm.expect(pg).to.be.ok;",
+                "pm.environment.set('payGroupId', pg.id);"
+              ],
+              "type": "text/javascript"
+            }
+          }],
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{adminToken}}"}],
+            "url": { "raw": "{{baseUrl}}/v1/pay-groups", "host": ["{{baseUrl}}"], "path": ["v1", "pay-groups"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "1 — Baseline Delta",
+      "item": [{
+        "name": "T0: HR Delta changed_since=T0 (expect empty or small)",
+        "event": [{
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('HR delta 200', () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "const count = (json.items || []).length;",
+              "pm.test('changed_since=T0 returns empty or small', () => pm.expect(count).to.be.at.most(10));"
+            ],
+            "type": "text/javascript"
+          }
+        }],
+        "request": {
+          "method": "GET",
+          "header": [{"key": "Authorization", "value": "Bearer {{igaToken}}"}],
+          "url": {
+            "raw": "{{baseUrl}}/v1/hr/employees?changed_since={{t0}}&limit=50",
+            "host": ["{{baseUrl}}"],
+            "path": ["v1", "hr", "employees"],
+            "query": [
+              {"key": "changed_since", "value": "{{t0}}"},
+              {"key": "limit", "value": "50"}
+            ]
+          }
+        }
+      }]
+    },
+    {
+      "name": "2 — Track A (Effective today)",
+      "item": [
+        {
+          "name": "Create Employee A",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Create employee A 201 or 200', () => pm.expect([200,201]).to.include(pm.response.code));",
+                "const json = pm.response.json();",
+                "pm.environment.set('employeeIdA', json.id);",
+                "pm.test('Response has id', () => pm.expect(json.id).to.be.a('string'));"
+              ],
+              "type": "text/javascript"
+            }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{adminToken}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employee_no\": \"{{empNoA}}\",\n  \"first_name\": \"Track\",\n  \"last_name\": \"A\",\n  \"hire_date\": \"{{today}}\"\n}\n"
+            },
+            "url": { "raw": "{{baseUrl}}/v1/employees", "host": ["{{baseUrl}}"], "path": ["v1", "employees"] }
+          }
+        },
+        {
+          "name": "Create Employment A (effective today)",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Create employment A 201 or 200', () => pm.expect([200,201]).to.include(pm.response.code));",
+                "const json = pm.response.json();",
+                "pm.test('Response has id', () => pm.expect(json.id).to.be.a('string'));"
+              ],
+              "type": "text/javascript"
+            }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{adminToken}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"legal_entity_id\": \"{{legalEntityId}}\",\n  \"pay_group_id\": \"{{payGroupId}}\",\n  \"country\": \"ZA\",\n  \"job_title\": \"Junior Payroll\",\n  \"cost_center\": \"CC-100\",\n  \"effective_from\": \"{{today}}\"\n}\n"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/employees/{{employeeIdA}}/employments",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "employees", "{{employeeIdA}}", "employments"]
+            }
+          }
+        },
+        {
+          "name": "A1: HR Delta since T0 includes A",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('HR delta 200', () => pm.response.to.have.status(200));",
+                "const json = pm.response.json();",
+                "pm.environment.set('a1', json.as_of || '');",
+                "const empNo = pm.environment.get('empNoA');",
+                "const found = (json.items || []).find(e => e.employee_no === empNo);",
+                "pm.test('A appears in delta', () => pm.expect(found).to.be.ok);",
+                "pm.test('current_employment.effective_from is today', () => {",
+                "  pm.expect(found.current_employment).to.be.ok;",
+                "  pm.expect(found.current_employment.effective_from).to.eql(pm.environment.get('today'));",
+                "});"
+              ],
+              "type": "text/javascript"
+            }
+          }],
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{igaToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/v1/hr/employees?changed_since={{t0}}&limit=50&include=current_employment,manager",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "hr", "employees"],
+              "query": [
+                {"key": "changed_since", "value": "{{t0}}"},
+                {"key": "limit", "value": "50"},
+                {"key": "include", "value": "current_employment,manager"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "HR By Employee No A",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('By employee no A 200', () => pm.response.to.have.status(200));",
+                "const json = pm.response.json();",
+                "pm.test('Returns same employee_id', () => pm.expect(json.employee_id).to.eql(pm.environment.get('employeeIdA')));"
+              ],
+              "type": "text/javascript"
+            }
+          }],
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{igaToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/v1/hr/employees/by-employee-no/{{empNoA}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "hr", "employees", "by-employee-no", "{{empNoA}}"]
+            }
+          }
+        },
+        {
+          "name": "HR Employment History A (expect 1 open row)",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Employment history 200', () => pm.response.to.have.status(200));",
+                "const hist = pm.response.json().items || pm.response.json();",
+                "pm.test('Exactly 1 employment', () => pm.expect(Array.isArray(hist) ? hist.length : 0).to.eql(1));"
+              ],
+              "type": "text/javascript"
+            }
+          }],
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{igaToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/v1/hr/employees/{{empNoA}}/employments",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "hr", "employees", "{{empNoA}}", "employments"]
+            }
+          }
+        },
+        {
+          "name": "Create Second Employment A (Mover today)",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Create second employment 201 or 200', () => pm.expect([200,201]).to.include(pm.response.code));"
+              ],
+              "type": "text/javascript"
+            }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{adminToken}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"legal_entity_id\": \"{{legalEntityId}}\",\n  \"pay_group_id\": \"{{payGroupId}}\",\n  \"country\": \"ZA\",\n  \"job_title\": \"Payroll Specialist\",\n  \"cost_center\": \"CC-200\",\n  \"effective_from\": \"{{today}}\"\n}\n"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/employees/{{employeeIdA}}/employments",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "employees", "{{employeeIdA}}", "employments"]
+            }
+          }
+        },
+        {
+          "name": "A2: HR Delta since A1 + current_employment updated",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('HR delta 200', () => pm.response.to.have.status(200));",
+                "const json = pm.response.json();",
+                "pm.environment.set('a2', json.as_of || '');",
+                "const empNo = pm.environment.get('empNoA');",
+                "const found = (json.items || []).find(e => e.employee_no === empNo);",
+                "pm.test('A appears in delta after mover', () => pm.expect(found).to.be.ok);",
+                "pm.test('current_employment reflects new job', () => pm.expect(found.current_employment && found.current_employment.job_title).to.eql('Payroll Specialist'));"
+              ],
+              "type": "text/javascript"
+            }
+          }],
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{igaToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/v1/hr/employees?changed_since={{a1}}&limit=50&include=current_employment",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "hr", "employees"],
+              "query": [
+                {"key": "changed_since", "value": "{{a1}}"},
+                {"key": "limit", "value": "50"},
+                {"key": "include", "value": "current_employment"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "HR Employment History A (expect 2 rows)",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "const hist = pm.response.json().items || pm.response.json();",
+                "pm.test('Exactly 2 employments', () => pm.expect(Array.isArray(hist) ? hist.length : 0).to.eql(2));"
+              ],
+              "type": "text/javascript"
+            }
+          }],
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{igaToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/v1/hr/employees/{{empNoA}}/employments",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "hr", "employees", "{{empNoA}}", "employments"]
+            }
+          }
+        },
+        {
+          "name": "Terminate A (status TERMINATED)",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('PATCH employee 200', () => pm.response.to.have.status(200));"
+              ],
+              "type": "text/javascript"
+            }
+          }],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{adminToken}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"TERMINATED\",\n  \"termination_date\": \"{{today}}\"\n}\n"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/employees/{{employeeIdA}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "employees", "{{employeeIdA}}"]
+            }
+          }
+        },
+        {
+          "name": "A3: HR Delta since A2 includes A as TERMINATED",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('HR delta 200', () => pm.response.to.have.status(200));",
+                "const json = pm.response.json();",
+                "pm.environment.set('a3', json.as_of || '');",
+                "const empNo = pm.environment.get('empNoA');",
+                "const found = (json.items || []).find(e => e.employee_no === empNo);",
+                "pm.test('A appears in delta after termination', () => pm.expect(found).to.be.ok);",
+                "pm.test('status is TERMINATED', () => pm.expect(found.status).to.eql('TERMINATED'));"
+              ],
+              "type": "text/javascript"
+            }
+          }],
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{igaToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/v1/hr/employees?changed_since={{a2}}&limit=50",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "hr", "employees"],
+              "query": [
+                {"key": "changed_since", "value": "{{a2}}"},
+                {"key": "limit", "value": "50"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "HR Delta since A3 expect empty",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('HR delta 200', () => pm.response.to.have.status(200));",
+                "const json = pm.response.json();",
+                "const count = (json.items || []).length;",
+                "pm.test('No false positives: empty or zero items', () => pm.expect(count).to.eql(0));"
+              ],
+              "type": "text/javascript"
+            }
+          }],
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{igaToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/v1/hr/employees?changed_since={{a3}}&limit=50",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "hr", "employees"],
+              "query": [
+                {"key": "changed_since", "value": "{{a3}}"},
+                {"key": "limit", "value": "50"}
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3 — Track B (Effective tomorrow)",
+      "item": [
+        {
+          "name": "Create Employee B",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Create employee B 201 or 200', () => pm.expect([200,201]).to.include(pm.response.code));",
+                "const json = pm.response.json();",
+                "pm.environment.set('employeeIdB', json.id);"
+              ],
+              "type": "text/javascript"
+            }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{adminToken}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employee_no\": \"{{empNoB}}\",\n  \"first_name\": \"Track\",\n  \"last_name\": \"B\",\n  \"hire_date\": \"{{today}}\"\n}\n"
+            },
+            "url": { "raw": "{{baseUrl}}/v1/employees", "host": ["{{baseUrl}}"], "path": ["v1", "employees"] }
+          }
+        },
+        {
+          "name": "Create Employment B (effective today, Analyst)",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Create employment B 201 or 200', () => pm.expect([200,201]).to.include(pm.response.code));"
+              ],
+              "type": "text/javascript"
+            }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{adminToken}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"legal_entity_id\": \"{{legalEntityId}}\",\n  \"pay_group_id\": \"{{payGroupId}}\",\n  \"country\": \"ZA\",\n  \"job_title\": \"Analyst\",\n  \"effective_from\": \"{{today}}\"\n}\n"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/employees/{{employeeIdB}}/employments",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "employees", "{{employeeIdB}}", "employments"]
+            }
+          }
+        },
+        {
+          "name": "B1: HR Delta since T0 includes B",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('HR delta 200', () => pm.response.to.have.status(200));",
+                "const json = pm.response.json();",
+                "pm.environment.set('b1', json.as_of || '');",
+                "const empNo = pm.environment.get('empNoB');",
+                "const found = (json.items || []).find(e => e.employee_no === empNo);",
+                "pm.test('B appears in delta', () => pm.expect(found).to.be.ok);"
+              ],
+              "type": "text/javascript"
+            }
+          }],
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{igaToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/v1/hr/employees?changed_since={{t0}}&limit=100&include=current_employment",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "hr", "employees"],
+              "query": [
+                {"key": "changed_since", "value": "{{t0}}"},
+                {"key": "limit", "value": "100"},
+                {"key": "include", "value": "current_employment"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Future Employment B (effective tomorrow)",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Create future employment 201 or 200', () => pm.expect([200,201]).to.include(pm.response.code));"
+              ],
+              "type": "text/javascript"
+            }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{adminToken}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"legal_entity_id\": \"{{legalEntityId}}\",\n  \"pay_group_id\": \"{{payGroupId}}\",\n  \"country\": \"ZA\",\n  \"job_title\": \"Senior Analyst\",\n  \"cost_center\": \"CC-300\",\n  \"effective_from\": \"{{tomorrow}}\"\n}\n"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/employees/{{employeeIdB}}/employments",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "employees", "{{employeeIdB}}", "employments"]
+            }
+          }
+        },
+        {
+          "name": "B2: HR Delta since B1 — current_employment still Analyst",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('HR delta 200', () => pm.response.to.have.status(200));",
+                "const json = pm.response.json();",
+                "pm.environment.set('b2', json.as_of || '');",
+                "const empNo = pm.environment.get('empNoB');",
+                "const found = (json.items || []).find(e => e.employee_no === empNo);",
+                "pm.test('B appears in delta after future employment', () => pm.expect(found).to.be.ok);",
+                "pm.test('current_employment did NOT flip early', () => {",
+                "  pm.expect(found.current_employment).to.be.ok;",
+                "  pm.expect(found.current_employment.job_title).to.eql('Analyst');",
+                "  pm.expect(found.current_employment.effective_from).to.eql(pm.environment.get('today'));",
+                "});"
+              ],
+              "type": "text/javascript"
+            }
+          }],
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{igaToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/v1/hr/employees?changed_since={{b1}}&limit=100&include=current_employment",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "hr", "employees"],
+              "query": [
+                {"key": "changed_since", "value": "{{b1}}"},
+                {"key": "limit", "value": "100"},
+                {"key": "include", "value": "current_employment"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "HR Employment History B (future row Senior Analyst)",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Employment history 200', () => pm.response.to.have.status(200));",
+                "const hist = pm.response.json().items || pm.response.json();",
+                "const tomorrow = pm.environment.get('tomorrow');",
+                "const futureRow = (Array.isArray(hist) ? hist : []).find(r => r.effective_from === tomorrow);",
+                "pm.test('Future employment row exists', () => pm.expect(futureRow).to.be.ok);",
+                "pm.test('Future row job_title is Senior Analyst', () => pm.expect(futureRow && futureRow.job_title).to.eql('Senior Analyst'));"
+              ],
+              "type": "text/javascript"
+            }
+          }],
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{igaToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/v1/hr/employees/{{empNoB}}/employments",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "hr", "employees", "{{empNoB}}", "employments"]
+            }
+          }
+        },
+        {
+          "name": "Patch Termination Date B (tomorrow)",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('PATCH employee B 200', () => pm.response.to.have.status(200));"
+              ],
+              "type": "text/javascript"
+            }
+          }],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{adminToken}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"termination_date\": \"{{tomorrow}}\",\n  \"status\": \"TERMINATED\"\n}\n"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/employees/{{employeeIdB}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "employees", "{{employeeIdB}}"]
+            }
+          }
+        },
+        {
+          "name": "B3: HR Delta since B2 includes B and termination_date",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('HR delta 200', () => pm.response.to.have.status(200));",
+                "const json = pm.response.json();",
+                "pm.environment.set('b3', json.as_of || '');",
+                "const empNo = pm.environment.get('empNoB');",
+                "const found = (json.items || []).find(e => e.employee_no === empNo);",
+                "pm.test('B appears in delta', () => pm.expect(found).to.be.ok);",
+                "pm.test('termination_date is tomorrow', () => pm.expect(found.termination_date).to.eql(pm.environment.get('tomorrow')));"
+              ],
+              "type": "text/javascript"
+            }
+          }],
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{igaToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/v1/hr/employees?changed_since={{b2}}&limit=100",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "hr", "employees"],
+              "query": [
+                {"key": "changed_since", "value": "{{b2}}"},
+                {"key": "limit", "value": "100"}
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4 — Track C (as_of query)",
+      "item": [{
+        "name": "HR Delta as_of=tomorrow (current_employment Senior Analyst)",
+        "event": [{
+          "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('HR delta 200', () => pm.response.to.have.status(200));",
+                "const json = pm.response.json();",
+                "const empNo = pm.environment.get('empNoB');",
+                "const found = (json.items || []).find(e => e.employee_no === empNo);",
+                "pm.test('as_of=tomorrow resolves current_employment to Senior Analyst', () => {",
+                "  pm.expect(found).to.be.ok;",
+                "  pm.expect(found.current_employment && found.current_employment.job_title).to.eql('Senior Analyst');",
+                "});"
+              ],
+              "type": "text/javascript"
+            }
+          }],
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{igaToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/v1/hr/employees?changed_since={{t0}}&limit=100&include=current_employment&as_of={{tomorrow}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "hr", "employees"],
+              "query": [
+                {"key": "changed_since", "value": "{{t0}}"},
+                {"key": "limit", "value": "100"},
+                {"key": "include", "value": "current_employment"},
+                {"key": "as_of", "value": "{{tomorrow}}"}
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

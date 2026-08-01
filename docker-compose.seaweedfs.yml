@@ -1,0 +1,134 @@
+version: '3.8'
+
+services:
+  # SeaweedFS Master Server
+  seaweedfs-master:
+    image: chrislusf/seaweedfs:latest
+    container_name: payroll-seaweedfs-master
+    ports:
+      - "9333:9333"   # Master API port
+      - "19333:19333" # Master gRPC port
+    command: "master -ip=seaweedfs-master -ip.bind=0.0.0.0 -mdir=/data -defaultReplication=001"
+    volumes:
+      - ./seaweed-data/master:/data
+    environment:
+      - WEED_MASTER_VOLUME_GROWTH_STRATEGY=doubling
+    networks:
+      - payroll-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:9333/cluster/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # SeaweedFS Volume Server 1
+  seaweedfs-volume-1:
+    image: chrislusf/seaweedfs:latest
+    container_name: payroll-seaweedfs-volume-1
+    ports:
+      - "8080:8080"   # Volume server HTTP
+      - "18080:18080" # Volume server gRPC
+    command: "volume -mserver=seaweedfs-master:9333 -dir=/data -max=100 -ip=seaweedfs-volume-1 -ip.bind=0.0.0.0 -port=8080"
+    volumes:
+      - ./seaweed-data/volume1:/data
+    networks:
+      - payroll-network
+    depends_on:
+      - seaweedfs-master
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # SeaweedFS Volume Server 2 (for redundancy)
+  seaweedfs-volume-2:
+    image: chrislusf/seaweedfs:latest
+    container_name: payroll-seaweedfs-volume-2
+    ports:
+      - "8081:8080"
+      - "18081:18080"
+    command: "volume -mserver=seaweedfs-master:9333 -dir=/data -max=100 -ip=seaweedfs-volume-2 -ip.bind=0.0.0.0 -port=8080"
+    volumes:
+      - ./seaweed-data/volume2:/data
+    networks:
+      - payroll-network
+    depends_on:
+      - seaweedfs-master
+    restart: unless-stopped
+
+  # SeaweedFS Filer (for file/directory structure)
+  seaweedfs-filer:
+    image: chrislusf/seaweedfs:latest
+    container_name: payroll-seaweedfs-filer
+    ports:
+      - "8888:8888"   # Filer HTTP
+      - "18888:18888" # Filer gRPC
+    command: "filer -master=seaweedfs-master:9333 -ip=seaweedfs-filer -ip.bind=0.0.0.0"
+    volumes:
+      - ./seaweed-data/filer:/data
+    networks:
+      - payroll-network
+    depends_on:
+      - seaweedfs-master
+      - seaweedfs-volume-1
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8888/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # SeaweedFS S3 Gateway
+  seaweedfs-s3:
+    image: chrislusf/seaweedfs:latest
+    container_name: payroll-seaweedfs-s3
+    ports:
+      - "8333:8333" # S3 API endpoint
+    command: >
+      s3
+      -filer=seaweedfs-filer:8888
+      -ip=seaweedfs-s3
+      -ip.bind=0.0.0.0
+      -port=8333
+      -domainName=localhost
+      -config=/etc/seaweedfs/s3.json
+    volumes:
+      - ./seaweed-config/s3.json:/etc/seaweedfs/s3.json
+    environment:
+      - WEED_S3_DEFAULT_BUCKET=payroll-files
+    networks:
+      - payroll-network
+    depends_on:
+      - seaweedfs-filer
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8333/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # SeaweedFS Web UI (optional, for monitoring)
+  seaweedfs-webdav:
+    image: chrislusf/seaweedfs:latest
+    container_name: payroll-seaweedfs-webdav
+    ports:
+      - "7333:7333" # WebDAV interface
+    command: "webdav -filer=seaweedfs-filer:8888"
+    networks:
+      - payroll-network
+    depends_on:
+      - seaweedfs-filer
+    restart: unless-stopped
+
+networks:
+  payroll-network:
+    driver: bridge
+
+volumes:
+  seaweed-master-data:
+  seaweed-volume1-data:
+  seaweed-volume2-data:
+  seaweed-filer-data:

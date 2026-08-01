@@ -1,0 +1,15 @@
+{
+  "countryCode": "LS",
+  "tableType": "PAYE",
+  "taxYear": "2025/2026",
+  "effectiveFrom": "2025-04-01",
+  "effectiveTo": null,
+  "brackets": [
+    { "seqNo": 1, "bracketFrom": 0, "bracketTo": 237100, "marginalRate": 0.20, "baseTax": 0, "isOpenEnded": false },
+    { "seqNo": 2, "bracketFrom": 237100, "bracketTo": null, "marginalRate": 0.32, "baseTax": 47420, "isOpenEnded": true }
+  ],
+  "fields": [
+    { "fieldCode": "annual_tax_credit", "fieldValue": 12000 }
+  ],
+  "description": "Second LS PAYE draft for same effective date — tests overlap/supersession behavior"
+}
