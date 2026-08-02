@@ -23,7 +23,7 @@ import {
 import { useOperationalTrustChanged } from '@/lib/operational-trust-events';
 
 export default function SupplierDetailPage() {
-  const params = useParams();
+  const params = useParams<{ id: string }>();
   const router = useRouter();
   const supplierId = String(params?.id ?? '');
   const { can } = useAuth();

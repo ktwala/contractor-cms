@@ -60,16 +60,16 @@ export default function AuditLogsPage() {
     const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
     return {
-      from: searchParams.get('from') || yesterday.toISOString().slice(0, 10),
-      to: searchParams.get('to') || now.toISOString().slice(0, 10),
-      actorUserId: searchParams.get('actorUserId') || '',
-      action: searchParams.get('action') || '',
-      targetType: searchParams.get('targetType') || '',
-      targetId: searchParams.get('targetId') || '',
-      result: (searchParams.get('result') as 'success' | 'failed') || undefined,
-      search: searchParams.get('search') || '',
-      page: Number(searchParams.get('page')) || 1,
-      pageSize: Number(searchParams.get('pageSize')) || 50,
+      from: searchParams?.get('from') || yesterday.toISOString().slice(0, 10),
+      to: searchParams?.get('to') || now.toISOString().slice(0, 10),
+      actorUserId: searchParams?.get('actorUserId') || '',
+      action: searchParams?.get('action') || '',
+      targetType: searchParams?.get('targetType') || '',
+      targetId: searchParams?.get('targetId') || '',
+      result: (searchParams?.get('result') as 'success' | 'failed') || undefined,
+      search: searchParams?.get('search') || '',
+      page: Number(searchParams?.get('page')) || 1,
+      pageSize: Number(searchParams?.get('pageSize')) || 50,
     };
   });
 

@@ -64,7 +64,8 @@ interface Invoice {
 }
 
 export default function InvoiceDetailPage() {
-  const params = useParams();
+  const params = useParams<{ id: string }>();
+  const invoiceId = params?.id ?? '';
   const router = useRouter();
   const { showToast } = useToast();
   const [invoice, setInvoice] = useState<Invoice | null>(null);
@@ -85,12 +86,12 @@ export default function InvoiceDetailPage() {
 
   useEffect(() => {
     loadInvoice();
-  }, [params.id]);
+  }, [invoiceId]);
 
   const loadInvoice = async () => {
     try {
       const response = await api.getInvoices({ page: 1, limit: 1 });
-      const inv = response.data.find((i: any) => i.id === params.id);
+      const inv = response.data.find((i: any) => i.id === invoiceId);
       if (inv) {
         setInvoice(inv);
         setPaymentData({

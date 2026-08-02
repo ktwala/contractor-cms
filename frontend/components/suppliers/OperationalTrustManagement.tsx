@@ -56,7 +56,7 @@ type StatusTab = 'ACTIVE' | 'SUSPENDED';
 
 export default function OperationalTrustManagement() {
   const searchParams = useSearchParams();
-  const statusParam = searchParams.get('status');
+  const statusParam = searchParams?.get('status');
   const initialTab: StatusTab =
     statusParam === 'SUSPENDED' ? 'SUSPENDED' : 'ACTIVE';
 

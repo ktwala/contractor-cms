@@ -20,6 +20,7 @@ import ContractorWorkforceTimeline from '@/components/workforce/ContractorWorkfo
 import { INTERNAL_ACCOUNTABILITY_LABELS } from '@/lib/external-workforce-labels';
 import { ArrowLeft } from 'lucide-react';
 import { EXTERNAL_WORKFORCE_LABELS } from '@/lib/external-workforce-labels';
+import { safeString, safeReplace, safeFormatDate } from '@/lib/safe-string';
 
 interface PortalContractorDetail {
   id: string;
@@ -49,8 +50,8 @@ interface PortalContractorDetail {
 }
 
 export default function SupplierPortalContractorDetailPage() {
-  const params = useParams();
-  const contractorId = typeof params.id === 'string' ? params.id : '';
+  const params = useParams<{ id: string }>();
+  const contractorId = params?.id ?? '';
   const { ready, supplierLinked, guardApiCall } = useSupplierPortalGate();
   const [contractor, setContractor] = useState<PortalContractorDetail | null>(null);
   const [timeline, setTimeline] = useState<WorkforceHistoryEntry[]>([]);
@@ -185,7 +186,7 @@ export default function SupplierPortalContractorDetailPage() {
                     <div>
                       <dt className="text-gray-500">Start date</dt>
                       <dd className="font-medium text-gray-900">
-                        {safeFormatDate(engagement.startDate)}
+                        {safeFormatDate(engagement.startDate, 'MMM dd, yyyy')}
                       </dd>
                     </div>
                     <div>

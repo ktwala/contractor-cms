@@ -28,7 +28,7 @@ import { CheckCircle, XCircle, ExternalLink } from 'lucide-react';
 
 export default function SupplierApprovalsQueue() {
   const searchParams = useSearchParams();
-  const evidenceIncompleteOnly = searchParams.get('evidenceIncomplete') === 'true';
+  const evidenceIncompleteOnly = searchParams?.get('evidenceIncomplete') === 'true';
   const { showToast } = useToast();
   const { can, user } = useAuth();
   const canGrant = can(PERMISSIONS.SUPPLIERS.APPROVE);

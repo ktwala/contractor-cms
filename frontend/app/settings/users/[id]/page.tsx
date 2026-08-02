@@ -10,7 +10,8 @@ import { User, Shield, Check, X, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
 export default function UserDetailsPage() {
-  const params = useParams();
+  const params = useParams<{ id: string }>();
+  const userId = params?.id ?? '';
   const router = useRouter();
   const { can } = useAuth();
   
@@ -23,16 +24,16 @@ export default function UserDetailsPage() {
   const [selectedRoleIds, setSelectedRoleIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    if (params.id) {
+    if (userId) {
       fetchData();
     }
-  }, [params.id]);
+  }, [userId]);
 
   const fetchData = async () => {
     try {
       setLoading(true);
       const [userData, rolesData] = await Promise.all([
-        api.getUser(params.id as string),
+        api.getUser(userId),
         api.getRoles(),
       ]);
       setUser(userData);

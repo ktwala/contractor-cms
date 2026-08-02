@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { Suspense, useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import DashboardLayout from '@/components/dashboard-layout';
 import { api } from '@/lib/api';
@@ -40,9 +40,9 @@ interface Supplier {
   externalSupplierId?: string | null;
 }
 
-export default function SuppliersPage() {
+function SuppliersPageContent() {
   const searchParams = useSearchParams();
-  const governanceBucket = searchParams.get('governanceBucket');
+  const governanceBucket = searchParams?.get('governanceBucket');
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -348,5 +348,21 @@ export default function SuppliersPage() {
       />
       </DashboardLayout>
     </RequirePermission>
+  );
+}
+
+function SuppliersPageFallback() {
+  return (
+    <div className="flex items-center justify-center min-h-[200px]">
+      <div className="text-gray-500">Loading suppliers…</div>
+    </div>
+  );
+}
+
+export default function SuppliersPage() {
+  return (
+    <Suspense fallback={<SuppliersPageFallback />}>
+      <SuppliersPageContent />
+    </Suspense>
   );
 }

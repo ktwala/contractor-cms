@@ -202,7 +202,7 @@ function userInitials(user: { firstName?: string; lastName?: string; email?: str
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, loading, logout, can, refreshProfile } = useAuth();
   const router = useRouter();
-  const pathname = usePathname();
+  const pathname = usePathname() ?? '/';
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [refreshingPermissions, setRefreshingPermissions] = useState(false);
 

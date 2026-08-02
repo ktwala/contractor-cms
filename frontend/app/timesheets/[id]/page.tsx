@@ -49,7 +49,8 @@ interface Timesheet {
 }
 
 export default function TimesheetDetailPage() {
-  const params = useParams();
+  const params = useParams<{ id: string }>();
+  const timesheetId = params?.id ?? '';
   const router = useRouter();
   const { showToast } = useToast();
   const [timesheet, setTimesheet] = useState<Timesheet | null>(null);
@@ -61,13 +62,13 @@ export default function TimesheetDetailPage() {
 
   useEffect(() => {
     loadTimesheet();
-  }, [params.id]);
+  }, [timesheetId]);
 
   const loadTimesheet = async () => {
     try {
       const response = await api.getTimesheets({ page: 1, limit: 1 });
       // In a real app, we'd fetch by ID
-      const ts = response.data.find((t: any) => t.id === params.id);
+      const ts = response.data.find((t: any) => t.id === timesheetId);
       if (ts) {
         setTimesheet(ts);
       } else {

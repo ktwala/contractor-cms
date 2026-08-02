@@ -12,7 +12,8 @@ import Link from 'next/link';
 
 export default function RoleDetailsPage() {
   const router = useRouter();
-  const params = useParams();
+  const params = useParams<{ id: string }>();
+  const roleId = params?.id ?? '';
   const { can } = useAuth();
   
   const [role, setRole] = useState<any>(null);
@@ -21,14 +22,14 @@ export default function RoleDetailsPage() {
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
-    if (params.id) {
+    if (roleId) {
       fetchRole();
     }
-  }, [params.id]);
+  }, [roleId]);
 
   const fetchRole = async () => {
     try {
-      const data = await api.getRole(params.id as string);
+      const data = await api.getRole(roleId);
       setRole(data);
     } catch (error) {
       console.error('Failed to fetch role', error);
