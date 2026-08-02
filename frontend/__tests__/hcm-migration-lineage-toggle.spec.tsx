@@ -13,6 +13,12 @@
 import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
 import HcmConnectorOperationsPanel from '../components/contractor-sources/HcmConnectorOperationsPanel';
 import { api } from '../lib/api';
+import {
+  WORKFORCE_ASSESSMENT_FINDING_METRICS,
+  WORKFORCE_OPERATIONAL_METRICS,
+  WORKFORCE_GOVERNANCE_SECTIONS,
+  WORKFORCE_READINESS_METRICS,
+} from '../lib/external-workforce-labels';
 
 // ── Mocks ─────────────────────────────────────────────────────────────────────
 
@@ -28,6 +34,14 @@ jest.mock('../lib/api', () => ({
       workforceMigrationCutoverAt: null,
       updatedAt: new Date().toISOString(),
       governancePhase: 'NO_CUTOVER',
+    }),
+    getDemoConfig: jest.fn().mockResolvedValue({
+      demoModeEnabled: false,
+      hcmComparisonAnchorsPresent: false,
+      nodeEnv: 'test',
+    }),
+    getSupplierOperationalTrustWorkforceImpact: jest.fn().mockResolvedValue({
+      findings: [],
     }),
   },
 }));
@@ -441,15 +455,17 @@ describe('HcmConnectorOperationsPanel — migration lineage toggle (render)', ()
 
     await waitFor(() => {
       expect(screen.getByTestId('workforce-drift-section')).toBeInTheDocument();
-      expect(screen.getByTestId('workforce-readiness-section')).toBeInTheDocument();
-      expect(screen.getAllByText('Missing supplier').length).toBeGreaterThan(0);
-      expect(screen.getByText('Manual review')).toBeInTheDocument();
-      expect(screen.getByTestId('governance-lifecycle-section')).toBeInTheDocument();
-      expect(screen.getByText('Operationally ready')).toBeInTheDocument();
-      expect(screen.getByText('Restricted')).toBeInTheDocument();
-      expect(screen.getByTestId('governance-remediation-section')).toBeInTheDocument();
-      expect(screen.getByText('Resolution')).toBeInTheDocument();
-      expect(screen.queryByText('High confidence')).not.toBeInTheDocument();
     });
+    expect(screen.getByTestId('workforce-readiness-section')).toBeInTheDocument();
+    expect(
+      screen.getAllByText(WORKFORCE_ASSESSMENT_FINDING_METRICS.missingSupplier).length,
+    ).toBeGreaterThan(0);
+    expect(screen.getByText(WORKFORCE_READINESS_METRICS.manualReviewRequired)).toBeInTheDocument();
+    expect(screen.getByTestId('governance-lifecycle-section')).toBeInTheDocument();
+    expect(screen.getAllByText(WORKFORCE_OPERATIONAL_METRICS.operationallyReady).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(WORKFORCE_OPERATIONAL_METRICS.restricted).length).toBeGreaterThan(0);
+    expect(screen.getByTestId('governance-remediation-section')).toBeInTheDocument();
+    expect(screen.getByText(WORKFORCE_GOVERNANCE_SECTIONS.resolution.title)).toBeInTheDocument();
+    expect(screen.queryByText('High confidence')).not.toBeInTheDocument();
   });
 });
