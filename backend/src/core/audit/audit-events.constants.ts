@@ -128,6 +128,10 @@ export const AUDIT_EVENTS = {
   // (not via HCM import/materialization). metadata.missingResponsibleManagerAtCreation=true when no sponsor at
   // the time of creation — governance scan will raise MISSING_RESPONSIBLE_MANAGER until sponsor assigned.
   CONTRACTOR_CREATED_IN_CMS: { action: 'CONTRACTOR_CREATED_IN_CMS', defaultSeverity: AUDIT_SEVERITY.INFO },
+  // PR-WORKFORCE-NOMINATE-1 — fired alongside CONTRACTOR_CREATED when the worker is acquired through
+  // the independent channel (nominate intake), not via HCM bootstrap. Records acquisition model,
+  // workforce intake classification, and engagement details for audit trail.
+  CONTRACTOR_ACQUIRED_INDEPENDENT: { action: 'CONTRACTOR_ACQUIRED_INDEPENDENT', defaultSeverity: AUDIT_SEVERITY.INFO },
   CONTRACTOR_UPDATED: { action: 'CONTRACTOR_UPDATED', defaultSeverity: AUDIT_SEVERITY.INFO },
   CONTRACTOR_DELETED: { action: 'CONTRACTOR_DELETED', defaultSeverity: AUDIT_SEVERITY.CRITICAL },
   CONTRACTOR_WORKFORCE_STATE_CHANGED: {
