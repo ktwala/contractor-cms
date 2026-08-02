@@ -1,5 +1,6 @@
 import axios, { AxiosInstance } from 'axios';
 import { resolveApiScope } from './api-contract';
+import type { ContractorApiResponse } from '@/types/contractor-api';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api/v1';
 
@@ -599,13 +600,13 @@ class ApiClient {
     return response.data;
   }
 
-  async createContractor(data: any) {
-    const response = await this.client.post('/contractors', data);
+  async createContractor(data: any): Promise<ContractorApiResponse> {
+    const response = await this.client.post<ContractorApiResponse>('/contractors', data);
     return response.data;
   }
 
-  async updateContractor(id: string, data: any) {
-    const response = await this.client.patch(`/contractors/${id}`, data);
+  async updateContractor(id: string, data: any): Promise<ContractorApiResponse> {
+    const response = await this.client.patch<ContractorApiResponse>(`/contractors/${id}`, data);
     return response.data;
   }
 

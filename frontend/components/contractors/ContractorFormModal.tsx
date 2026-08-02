@@ -20,6 +20,7 @@ import {
   supplierSelectLabel,
 } from '@/lib/operational-trust-labels';
 import { OperationalTrustWorkerBlock } from '@/components/suppliers/OperationalTrustWorkerBlock';
+import type { ContractorApiResponse } from '@/types/contractor-api';
 
 export interface ContractorFormSupplier {
   id: string;
@@ -133,7 +134,7 @@ type ContractorFormModalProps = {
   contractor: ContractorFormContractor | null;
   suppliers: ContractorFormSupplier[];
   onClose: () => void;
-  onSaved: (contractor: Record<string, unknown>, mode: 'create' | 'update') => void;
+  onSaved: (contractor: ContractorApiResponse, mode: 'create' | 'update') => void;
 };
 
 export default function ContractorFormModal({

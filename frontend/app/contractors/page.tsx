@@ -15,6 +15,7 @@ import { useAuth } from '@/lib/auth-context';
 import { formatSupplierDisplayName } from '@/lib/supplier-display';
 import { EXTERNAL_WORKFORCE_LABELS } from '@/lib/external-workforce-labels';
 import { useOperationalTrustChanged } from '@/lib/operational-trust-events';
+import type { ContractorApiResponse } from '@/types/contractor-api';
 
 interface Contractor {
   id: string;
@@ -34,6 +35,32 @@ interface Contractor {
     firstName?: string;
     lastName?: string;
     companyName?: string;
+  };
+}
+
+/** Map API transport type to page-local view model. */
+function toContractorViewModel(response: ContractorApiResponse): Contractor {
+  return {
+    id: response.id,
+    firstName: response.firstName,
+    lastName: response.lastName,
+    email: response.email,
+    phone: response.phone ?? undefined,
+    taxNumber: response.taxNumber ?? undefined,
+    idNumber: response.idNumber ?? undefined,
+    dateOfBirth: response.dateOfBirth ?? undefined,
+    nationality: response.taxResidency,
+    status: response.isActive ? 'ACTIVE' : 'INACTIVE',
+    supplierId: response.supplierId ?? '',
+    supplier: response.supplier
+      ? {
+          id: response.supplier.id,
+          type: response.supplier.type,
+          firstName: response.supplier.firstName,
+          lastName: response.supplier.lastName,
+          companyName: response.supplier.companyName,
+        }
+      : undefined,
   };
 }
 
@@ -69,11 +96,9 @@ export default function ContractorsPage() {
         api.getContractors({ page: 1, limit: 100 }),
         api.getSuppliers({ page: 1, limit: 100 }),
       ]);
-      const mapped = contractorsRes.data.map((c: any) => ({
-        ...c,
-        status: c.isActive ? 'ACTIVE' : 'INACTIVE',
-        nationality: c.taxResidency,
-      }));
+      const mapped = contractorsRes.data.map((c: ContractorApiResponse) =>
+        toContractorViewModel(c),
+      );
       setContractors(mapped);
       setSuppliers(suppliersRes.data);
       setError('');
@@ -118,12 +143,8 @@ export default function ContractorsPage() {
     setEditingContractor(null);
   };
 
-  const handleContractorSaved = (saved: Record<string, unknown>, mode: 'create' | 'update') => {
-    const mapped = {
-      ...(saved as Contractor),
-      status: (saved as { isActive?: boolean }).isActive ? 'ACTIVE' : 'INACTIVE',
-      nationality: (saved as { taxResidency?: string }).taxResidency,
-    };
+  const handleContractorSaved = (saved: ContractorApiResponse, mode: 'create' | 'update') => {
+    const mapped = toContractorViewModel(saved);
     if (mode === 'create') {
       setContractors([mapped, ...contractors]);
     } else {
