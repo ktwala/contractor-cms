@@ -291,7 +291,8 @@ describe('PR-NAV-CAPABILITY-IA-1: buildSidebarNavSections (seed-aligned)', () =>
     const engagement = engagementSection(sections)?.items ?? [];
     expect([...workforce, ...engagement].map((i) => i.name)).toEqual(
       expect.arrayContaining([
-        'Managed external workers',
+        EXTERNAL_WORKFORCE_LABELS.sponsoredWorkers,
+        EXTERNAL_WORKFORCE_LABELS.workforceReview,
         'My managed engagements',
         EXTERNAL_WORKFORCE_LABELS.myResponsibleManagerAccountability,
       ]),

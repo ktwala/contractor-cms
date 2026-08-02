@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { PdpExceptionQueue } from '@/components/pdp/PdpExceptionQueue';
+import { POLICY_EVALUATION_LABELS } from '@/lib/policy-evaluation-labels';
 import { pdpExceptionService } from '../services/pdp-exception.service';
 
 jest.mock('../services/pdp-exception.service', () => ({
@@ -26,8 +27,12 @@ describe('PdpExceptionQueue UI', () => {
 
   it('uses standard titles and light table shell', async () => {
     const { container } = render(<PdpExceptionQueue />);
-    expect(await screen.findByRole('heading', { name: /^Exceptions$/i })).toBeInTheDocument();
-    expect(screen.getByText(/Review and approve temporary policy overrides/i)).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', {
+        name: new RegExp(`^${POLICY_EVALUATION_LABELS.settingsExceptionsTitle}$`, 'i'),
+      }),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/Review and approve temporary policy evaluation overrides/i)).toBeInTheDocument();
     expect(container.querySelector('.bg-slate-900')).toBeNull();
   });
 
