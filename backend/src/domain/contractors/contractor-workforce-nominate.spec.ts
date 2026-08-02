@@ -54,7 +54,7 @@ describe('PR-WORKFORCE-NOMINATE-1 nominate intake', () => {
 
     const prisma = {
       supplier: {
-        findFirst: jest.fn().mockResolvedValue({ id: 'sup-1' }),
+        findFirst: jest.fn().mockResolvedValue({ id: 'sup-1', status: 'ACTIVE' }),
       },
       contractor: {
         findFirst: jest.fn().mockResolvedValue(null),

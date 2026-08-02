@@ -46,6 +46,9 @@ describe('OracleConnectorTelemetryService (PR-CMS-CONNECTOR-1F)', () => {
         findMany: jest.fn().mockResolvedValue([]),
         groupBy: jest.fn().mockResolvedValue([]),
       },
+      organization: {
+        findUnique: jest.fn().mockResolvedValue({ supplierAuthorityMode: 'ORACLE_ONLY' }),
+      },
     };
 
     const config = {
@@ -80,6 +83,7 @@ describe('OracleConnectorTelemetryService (PR-CMS-CONNECTOR-1F)', () => {
       {
         syncObservations: jest.fn().mockResolvedValue({ observations: 0 }),
         listWorkItems: jest.fn().mockResolvedValue([]),
+        countOpenByKind: jest.fn().mockResolvedValue({ possibleMatches: 0, conflicts: 0 }),
       } as never,
     );
 

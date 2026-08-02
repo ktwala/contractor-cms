@@ -90,9 +90,12 @@ describe('PromoteHcmContractorToCmsService (PR-CTR-5)', () => {
         findMany: jest
           .fn()
           .mockResolvedValue([
-            { id: SUPPLIER_ID, companyName: 'Acme Vendor', tradingName: null },
+            { id: SUPPLIER_ID, companyName: 'Acme Vendor', tradingName: null, status: 'ACTIVE' },
           ]),
         findFirst: jest.fn(),
+        findUnique: jest
+          .fn()
+          .mockResolvedValue({ id: SUPPLIER_ID, companyName: 'Acme Vendor', tradingName: null, status: 'ACTIVE' }),
       },
       contractor: {
         findFirst: jest.fn().mockResolvedValue(null),

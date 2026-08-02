@@ -44,7 +44,7 @@ describe('ContractorsService IGA event writes (PR-IGA-EVENT-WRITE-1)', () => {
     igaIntegrationStatus: IgaIntegrationPlaneStatus.IGA_UNKNOWN,
   };
 
-  const supplier = { id: 's-1', organizationId: 'org-1' };
+  const supplier = { id: 's-1', organizationId: 'org-1', status: 'ACTIVE' };
 
   beforeEach(async () => {
     persistCreated = jest.fn().mockResolvedValue(undefined);
