@@ -40,9 +40,9 @@ export default function ContractorWorkforceTimeline({
               ? `${formatWorkforceState(entry.fromState)} → ${formatWorkforceState(entry.toState)}`
               : formatWorkforceState(entry.toState)}
           </div>
-          <div className="text-gray-500">{safeFormatDate(entry.occurredAt)}</div>
+          <div className="text-gray-500">{safeFormatDate(entry.occurredAt, 'MMM dd, yyyy')}</div>
           {entry.effectiveAt && (
-            <div className="text-gray-600">Effective: {safeFormatDate(entry.effectiveAt)}</div>
+            <div className="text-gray-600">Effective: {safeFormatDate(entry.effectiveAt, 'MMM dd, yyyy')}</div>
           )}
           {showReason && entry.reason && (
             <div className="text-gray-600">Reason: {entry.reason}</div>

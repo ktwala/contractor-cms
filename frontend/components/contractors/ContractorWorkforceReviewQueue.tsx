@@ -316,7 +316,7 @@ export default function ContractorWorkforceReviewQueue() {
                                     <div>
                                       <dt className="text-gray-500 inline">Start: </dt>
                                       <dd className="inline text-gray-900">
-                                        {safeFormatDate(item.placementIntent.startDate)}
+                                        {safeFormatDate(item.placementIntent.startDate, 'MMM dd, yyyy')}
                                       </dd>
                                     </div>
                                     <div>

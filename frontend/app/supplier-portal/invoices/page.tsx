@@ -169,10 +169,10 @@ export default function SupplierPortalInvoicesPage() {
                         {inv.invoiceNumber}
                       </td>
                       <td className="py-3 pr-4 text-gray-700">
-                        {safeFormatDate(inv.periodStart)} – {safeFormatDate(inv.periodEnd)}
+                        {safeFormatDate(inv.periodStart, 'MMM dd, yyyy')} – {safeFormatDate(inv.periodEnd, 'MMM dd, yyyy')}
                       </td>
-                      <td className="py-3 pr-4">{safeFormatDate(inv.invoiceDate)}</td>
-                      <td className="py-3 pr-4">{safeFormatDate(inv.dueDate)}</td>
+                      <td className="py-3 pr-4">{safeFormatDate(inv.invoiceDate, 'MMM dd, yyyy')}</td>
+                      <td className="py-3 pr-4">{safeFormatDate(inv.dueDate, 'MMM dd, yyyy')}</td>
                       <td className="py-3 pr-4">
                         <StatusBadge status={inv.status} />
                       </td>

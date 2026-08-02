@@ -451,7 +451,7 @@ export default function CapabilityOverview() {
       const canReadTimesheets = can(PERMISSIONS.TIMESHEETS.READ);
       const canReadInvoices = can(PERMISSIONS.INVOICES.READ);
       const canReadResponsibleManagerTasks =
-        can(PERMISSIONS.RESPONSIBLE_MANAGER_TASKS.READ) && user?.responsibleManagerAccountabilityInboxEnabled;
+        can(PERMISSIONS.RESPONSIBLE_MANAGER_TASKS.READ) && (user?.responsibleManagerAccountabilityInboxEnabled ?? false);
       const canViewPdpExceptions = can(PERMISSIONS.PDP_EXCEPTIONS.VIEW);
       const canViewPdpActivation = can(PERMISSIONS.PDP_ACTIVATION.VIEW);
 

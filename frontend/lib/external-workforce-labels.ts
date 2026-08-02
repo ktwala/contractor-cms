@@ -281,6 +281,8 @@ export const WORKFORCE_IMPORT_NARRATIVE = {
   assessmentAlreadyCurrent: 'Workforce assessment is already up to date for the latest discovery snapshot.',
   discoveryRequiredForAssessment: 'Complete workforce discovery before running workforce assessment.',
   loading: 'Loading workforce discovery…',
+  importLedgerFootnote:
+    'Aggregate telemetry from completed workforce discovery runs.',
 } as const;
 
 export const WORKFORCE_IMPORT_TABS = {

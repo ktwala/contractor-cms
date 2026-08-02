@@ -40,6 +40,9 @@ export type DashboardPayload = {
       message: string;
       count: number;
     }>;
+    totalAnomalyCount: number;
+    organizationId: string;
+    evaluatedAt: string;
   };
   driftSummary: {
     critical: number;

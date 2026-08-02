@@ -1,11 +1,13 @@
 interface FormTextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   label: string;
   error?: string;
+  helperText?: string;
 }
 
 export default function FormTextarea({
   label,
   error,
+  helperText,
   className = '',
   ...props
 }: FormTextareaProps) {
@@ -18,6 +20,7 @@ export default function FormTextarea({
         {...props}
       />
       {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
+      {helperText && !error && <p className="mt-1 text-xs text-gray-500">{helperText}</p>}
     </div>
   );
 }

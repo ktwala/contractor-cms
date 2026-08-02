@@ -853,12 +853,12 @@ class ApiClient {
     };
   }
 
-  async createPdpActivationRule(data: Record<string, unknown>) {
+  async createPdpActivationRule(data: object) {
     const response = await this.client.post('/pdp/activation', data);
     return response.data;
   }
 
-  async updatePdpActivationRule(id: string, data: Record<string, unknown>) {
+  async updatePdpActivationRule(id: string, data: object) {
     const response = await this.client.put(`/pdp/activation/${id}`, data);
     return response.data;
   }
@@ -870,7 +870,7 @@ class ApiClient {
     return response.data;
   }
 
-  async previewPdpEvaluation(data: Record<string, unknown>) {
+  async previewPdpEvaluation(data: object) {
     const response = await this.client.post('/pdp/activation/preview', data);
     return response.data;
   }
@@ -882,7 +882,7 @@ class ApiClient {
     return response.data;
   }
 
-  async createPdpException(data: Record<string, unknown>) {
+  async createPdpException(data: object) {
     const response = await this.client.post('/pdp/exceptions', data);
     return response.data;
   }

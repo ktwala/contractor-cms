@@ -200,7 +200,7 @@ export function SupplierSyncGovernanceTab({
           <>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {tiles.map((tile) => {
-                const clickable = tile.href != null && tile.value !== 0 && tile.value !== '—';
+                const clickable = tile.href != null && tile.value !== 0;
                 const inner = (
                   <>
                     <p className="text-xs text-gray-500 uppercase">{tile.label}</p>
