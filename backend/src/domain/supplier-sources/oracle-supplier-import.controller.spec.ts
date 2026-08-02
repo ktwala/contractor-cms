@@ -88,6 +88,10 @@ describe('OracleSupplierImportController (PR-CMS-INT-3)', () => {
     const names = (paramTypes ?? []).map((t) =>
       typeof t === 'function' ? t.name : String(t),
     );
-    expect(names).toEqual(['SourceIntegrationService', 'DemoSupplierSetupService']);
+    expect(names).toEqual([
+      'SourceIntegrationService',
+      'DemoSupplierSetupService',
+      'DemoMtnStorySetupService',
+    ]);
   });
 });

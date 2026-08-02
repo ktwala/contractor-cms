@@ -29,7 +29,7 @@ describe('prisma/seed.ts', () => {
   });
 
   it('seeds governance operations persona and fixtures', () => {
-    expect(content).toMatch(/governance\.ops@contractor-cms\.com/);
+    expect(content).toMatch(/DEMO_LOGIN_PERSONAS\.workforceImportAdmin/);
     expect(content).toMatch(/GOVERNANCE_OPERATIONS_ADMIN/);
     expect(content).toMatch(/seedGovernanceFixtures/);
   });
