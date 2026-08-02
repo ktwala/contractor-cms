@@ -20,8 +20,14 @@ describe('PDP Core Engine v1.1 - Live Data Shadow Evaluation', () => {
   } as any;
 
   beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2026-05-15T12:00:00.000Z'));
     engine = new PdpEngine(mockPrisma as unknown as PrismaService, mockActivationService);
     jest.clearAllMocks();
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
   });
 
   it('Test Case 1: Valid transaction → evaluated ALLOW', async () => {
