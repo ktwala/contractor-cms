@@ -80,7 +80,7 @@ export class EmployeesService {
       };
     }
 
-    const [items, total] = await Promise.all([
+    const [items, total, statusGroups] = await Promise.all([
       this.prisma.employee.findMany({
         where,
         skip: query.offset,
@@ -88,13 +88,23 @@ export class EmployeesService {
         orderBy: { createdAt: 'desc' },
       }),
       this.prisma.employee.count({ where }),
+      this.prisma.employee.groupBy({
+        by: ['status'],
+        where,
+        _count: { _all: true },
+      }),
     ]);
+
+    const statusCounts = Object.fromEntries(
+      statusGroups.map((group) => [group.status, group._count._all]),
+    );
 
     return {
       items: items.map(this.mapToResponse),
       total,
       offset: query.offset || 0,
       limit: query.limit || 50,
+      status_counts: statusCounts,
     };
   }
 

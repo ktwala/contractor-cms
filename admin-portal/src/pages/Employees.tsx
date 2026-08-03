@@ -149,6 +149,7 @@ export default function Employees() {
   const { can } = useAccess();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [total, setTotal] = useState(0);
+  const [statusCounts, setStatusCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [forbiddenAccess, setForbiddenAccess] = useState(false);
@@ -194,12 +195,14 @@ export default function Employees() {
       const data = response.data;
       setEmployees(data.items || []);
       setTotal(data.total ?? data.items?.length ?? 0);
+      setStatusCounts(data.status_counts ?? {});
       setError(null);
     } catch (err: any) {
       console.error('Failed to load employees:', err);
       const status = err?.response?.status;
       setEmployees([]);
       setTotal(0);
+      setStatusCounts({});
       if (status === 403) {
         setForbiddenAccess(true);
         setError(null);
@@ -302,7 +305,7 @@ export default function Employees() {
     }
   };
 
-  const activeCount = employees.filter((e) => e.status === 'ACTIVE').length;
+  const activeCount = statusCounts.ACTIVE ?? 0;
 
   if (loading && employees.length === 0 && !forbiddenAccess) {
     return (
@@ -352,8 +355,8 @@ export default function Employees() {
             {[
               { label: 'Total Employees', value: total, color: styles.colors.primary },
               { label: 'Active', value: activeCount, color: styles.colors.success },
-              { label: 'Terminated', value: employees.filter((e) => e.status === 'TERMINATED').length, color: styles.colors.danger },
-              { label: 'On Leave', value: employees.filter((e) => e.status === 'ON_LEAVE').length, color: styles.colors.warning },
+              { label: 'Terminated', value: statusCounts.TERMINATED ?? 0, color: styles.colors.danger },
+              { label: 'On Leave', value: statusCounts.ON_LEAVE ?? 0, color: styles.colors.warning },
             ].map((stat, i) => (
               <div key={i} style={{ borderTop: `3px solid ${stat.color}`, paddingTop: 8 }}>
                 <p style={{ fontSize: 12, color: styles.colors.textMuted, marginBottom: 4 }}>{stat.label}</p>

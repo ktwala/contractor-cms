@@ -333,7 +333,10 @@ export class WorkforceIssuesService {
       where: {
         status: 'ACTIVE',
         OR: [
-          { managerId: null },
+          {
+            managerId: null,
+            hierarchyRole: { not: 'TOP_OF_CHAIN' },
+          },
           { employments: { none: { effectiveTo: null } } },
         ],
       },
@@ -343,6 +346,7 @@ export class WorkforceIssuesService {
         firstName: true,
         lastName: true,
         managerId: true,
+        hierarchyRole: true,
         legalEntityId: true,
         employments: { select: { id: true, effectiveTo: true } },
       },
@@ -350,7 +354,7 @@ export class WorkforceIssuesService {
 
     for (const emp of blocked) {
       const reasons: string[] = [];
-      if (!emp.managerId) reasons.push('no manager');
+      if (!emp.managerId && emp.hierarchyRole !== 'TOP_OF_CHAIN') reasons.push('no manager');
       if (!emp.employments.some((e) => !e.effectiveTo)) reasons.push('no active employment');
 
       issues.push({

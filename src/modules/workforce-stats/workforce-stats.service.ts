@@ -783,7 +783,8 @@ export class WorkforceStatsService {
       exportReady: ready,
       exportBlocked: uniqueBlocked,
       totalBlockingIssues: blocked,
-      readinessPercent: total > 0 ? Math.round((ready / total) * 100) : 0,
+      // Never round a partially blocked population up to 100%.
+      readinessPercent: total > 0 ? Math.floor((ready / total) * 100) : 0,
     };
   }
 }
