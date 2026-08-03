@@ -8,6 +8,7 @@ import {
   SHEET_TO_DATASET,
   DATASET_ORDER,
   DATASET_DEPENDENCIES,
+  REQUIRED_BOOTSTRAP_DATASETS,
   DetectedDataset,
 } from './bootstrap-import.types';
 
@@ -57,7 +58,9 @@ export class BootstrapPackParser {
       const rows = rawRows.map((row) => this.normalizeKeys(row));
 
       if (rows.length === 0) {
-        warnings.push(`Sheet "${sheetName}" (${datasetType}) has no data rows — skipping`);
+        if (REQUIRED_BOOTSTRAP_DATASETS.has(datasetType)) {
+          warnings.push(`Required sheet "${sheetName}" (${datasetType}) has no data rows — skipping`);
+        }
         continue;
       }
 
@@ -93,7 +96,9 @@ export class BootstrapPackParser {
         const content = entry.getData();
         const rows = parseImportFile(content as Buffer, basename);
         if (rows.length === 0) {
-          warnings.push(`${basename} (${datasetType}) has no data rows — skipping`);
+          if (REQUIRED_BOOTSTRAP_DATASETS.has(datasetType as DataImportDatasetType)) {
+            warnings.push(`Required dataset ${basename} (${datasetType}) has no data rows — skipping`);
+          }
           continue;
         }
         datasets.set(datasetType as DataImportDatasetType, { source: basename, rows });

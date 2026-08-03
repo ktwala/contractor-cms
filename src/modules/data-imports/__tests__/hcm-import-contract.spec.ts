@@ -35,6 +35,37 @@ describe('HCM-first import contract', () => {
     expect(detected.datasets.find((d) => d.datasetType === 'EMPLOYMENTS')?.status).toBe('ready');
   });
 
+  it('silently skips an empty optional PayGroups sheet', () => {
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet([
+      ['code', 'name', 'legal_entity_code', 'country', 'currency', 'frequency'],
+    ]), 'PayGroups');
+
+    const parsed = new BootstrapPackParser().parse(
+      XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' }),
+      'pilot.xlsx',
+    );
+
+    expect(parsed.datasets.has('PAY_GROUPS')).toBe(false);
+    expect(parsed.warnings).toEqual([]);
+  });
+
+  it('warns when a required sheet has no data rows', () => {
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet([
+      ['employee_no', 'first_name', 'last_name', 'hire_date'],
+    ]), 'Employees');
+
+    const parsed = new BootstrapPackParser().parse(
+      XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' }),
+      'pilot.xlsx',
+    );
+
+    expect(parsed.warnings).toEqual([
+      'Required sheet "Employees" (EMPLOYEES) has no data rows — skipping',
+    ]);
+  });
+
   it('validates an HCM employment without a pay group', async () => {
     const prisma = importPrismaMock();
     const validator = new EmploymentsValidator(prisma);

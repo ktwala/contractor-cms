@@ -12,6 +12,12 @@ export const DATASET_ORDER: DataImportDatasetType[] = [
   'MANAGER_RELATIONSHIPS',
 ];
 
+export const REQUIRED_BOOTSTRAP_DATASETS = new Set<DataImportDatasetType>([
+  'LEGAL_ENTITIES',
+  'EMPLOYEES',
+  'EMPLOYMENTS',
+]);
+
 export const DATASET_DEPENDENCIES: Partial<Record<DataImportDatasetType, DataImportDatasetType[]>> = {
   PAY_GROUPS: ['LEGAL_ENTITIES'],
   ORG_UNITS: ['LEGAL_ENTITIES'],
