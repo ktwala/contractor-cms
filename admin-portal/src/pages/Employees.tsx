@@ -231,9 +231,6 @@ export default function Employees() {
       const response = await api.get(`/pay-groups${params}`);
       const items = response.data?.items ?? response.data ?? [];
       setPayGroups(Array.isArray(items) ? items : []);
-      if (items.length > 0 && !form.pay_group_id) {
-        setForm((f) => ({ ...f, pay_group_id: items[0].id }));
-      }
     } catch (err) {
       console.error('Failed to load pay groups:', err);
     }
@@ -250,8 +247,8 @@ export default function Employees() {
       setError('Please fill in Employee No, First Name, Last Name, and Hire Date');
       return;
     }
-    if (form.add_employment && (!form.legal_entity_id || !form.pay_group_id || !form.effective_from)) {
-      setError('When adding to payroll, please select Legal Entity, Pay Group, and Effective From date');
+    if (form.add_employment && (!form.legal_entity_id || !form.effective_from)) {
+      setError('When adding an employment, please select Legal Entity and Effective From date');
       return;
     }
 
@@ -270,11 +267,11 @@ export default function Employees() {
       const empRes = await api.post('/employees', employeePayload);
       const created = empRes.data;
 
-      if (form.add_employment && form.legal_entity_id && form.pay_group_id && form.effective_from) {
+      if (form.add_employment && form.legal_entity_id && form.effective_from) {
         const legalEntity = legalEntities.find((le) => le.id === form.legal_entity_id);
         await api.post(`/employees/${created.id}/employments`, {
           legal_entity_id: form.legal_entity_id,
-          pay_group_id: form.pay_group_id,
+          pay_group_id: form.pay_group_id || undefined,
           country: legalEntity?.country || 'ZA',
           job_title: form.job_title?.trim() || undefined,
           effective_from: form.effective_from,
@@ -473,7 +470,7 @@ export default function Employees() {
               <div style={modalStyles.field}>
                 <label style={{ ...modalStyles.label, display: 'flex', alignItems: 'center', gap: 8 }}>
                   <input type="checkbox" checked={form.add_employment} onChange={(e) => setForm({ ...form, add_employment: e.target.checked })} />
-                  Add to payroll (assign to legal entity & pay group)
+                  Add employment (assign to a legal entity)
                 </label>
               </div>
               {form.add_employment && (
@@ -490,9 +487,9 @@ export default function Employees() {
                       </select>
                     </div>
                     <div style={modalStyles.field}>
-                      <label style={modalStyles.label}>Pay Group *</label>
+                      <label style={modalStyles.label}>Pay Group (optional — payroll)</label>
                       <select style={{ ...modalStyles.input, ...styles.formSelect }} value={form.pay_group_id} onChange={(e) => setForm({ ...form, pay_group_id: e.target.value })}>
-                        <option value="">Select...</option>
+                        <option value="">Not enrolled in payroll</option>
                         {payGroups.filter((pg) => !form.legal_entity_id || pg.legal_entity_id === form.legal_entity_id).map((pg) => (
                           <option key={pg.id} value={pg.id}>{pg.name}</option>
                         ))}

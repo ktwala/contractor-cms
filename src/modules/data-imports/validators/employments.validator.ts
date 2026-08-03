@@ -34,10 +34,9 @@ export class EmploymentsValidator extends BaseImportValidator {
       const effective_from =
         (payload.effective_from as string) || (payload.hire_date as string) || null;
       const hire_date = (payload.hire_date as string) || effective_from;
-      const employment_status =
-        (payload.employment_status as string)?.trim?.() ?? (payload.employment_status as string);
       const job_title = (payload.job_title as string)?.trim?.() || null;
-      const termination_date = (payload.termination_date as string) || null;
+      const effective_to =
+        (payload.effective_to as string) || (payload.termination_date as string) || null;
       const employment_type = (payload.employment_type as string)?.trim?.() || null;
 
       const mapped = {
@@ -46,10 +45,9 @@ export class EmploymentsValidator extends BaseImportValidator {
         pay_group_code,
         hire_date,
         effective_from: effective_from || hire_date,
-        employment_status,
         employment_type,
         job_title,
-        termination_date,
+        effective_to,
       };
 
       if (!employee_no) {
@@ -70,29 +68,11 @@ export class EmploymentsValidator extends BaseImportValidator {
         });
       }
 
-      if (!pay_group_code) {
-        issues.push({
-          fieldName: 'pay_group_code',
-          errorCode: 'REQUIRED',
-          message: 'pay_group_code is required',
-          severity: 'ERROR',
-        });
-      }
-
       if (!effective_from && !hire_date) {
         issues.push({
           fieldName: 'effective_from',
           errorCode: 'REQUIRED',
           message: 'effective_from or hire_date is required',
-          severity: 'ERROR',
-        });
-      }
-
-      if (!employment_status) {
-        issues.push({
-          fieldName: 'employment_status',
-          errorCode: 'REQUIRED',
-          message: 'employment_status is required',
           severity: 'ERROR',
         });
       }
@@ -128,14 +108,14 @@ export class EmploymentsValidator extends BaseImportValidator {
         }
       }
 
-      if (hire_date && termination_date) {
+      if (hire_date && effective_to) {
         const hire = new Date(hire_date);
-        const term = new Date(termination_date);
+        const term = new Date(effective_to);
         if (term < hire) {
           issues.push({
-            fieldName: 'termination_date',
+            fieldName: 'effective_to',
             errorCode: 'INVALID_DATE_RANGE',
-            message: 'termination_date cannot be before hire_date',
+            message: 'effective_to cannot be before hire_date',
             severity: 'ERROR',
           });
         }

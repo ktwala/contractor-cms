@@ -8,10 +8,10 @@ export class CreateEmploymentDto {
   @IsNotEmpty()
   legal_entity_id: string;
 
-  @ApiProperty({ example: 'pg_za_123' })
+  @ApiPropertyOptional({ example: 'pg_za_123', description: 'Optional payroll assignment. Required only for payroll processing.' })
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  pay_group_id: string;
+  pay_group_id?: string;
 
   @ApiProperty({ enum: Country, example: Country.ZA })
   @IsEnum(Country)

@@ -49,7 +49,7 @@ Typical fields: `employee_no`, `first_name`, `last_name`, `email`, `hire_date`, 
 
 Creates employment records for employees.
 
-Typical fields: `employee_no`, `legal_entity_code`, `pay_group_code`, `employment_type`, `effective_from`
+Typical fields: `employee_no`, `legal_entity_code`, `employment_type`, `effective_from`; `pay_group_code` is optional and enrolls the employment in payroll.
 
 ## 4. Wizard Route
 
@@ -88,7 +88,8 @@ Users download the correct CSV template before uploading data.
 **Employees template — required columns:** `employee_no`, `first_name`, `last_name`, `hire_date`, `status`  
 **Optional:** `email`, `national_id`, `phone`, `date_of_birth`, `country`
 
-**Employments template — required columns:** `employee_no`, `legal_entity_code`, `pay_group_code`, `employment_type`, `effective_from`  
+**Employments template — required columns:** `employee_no`, `legal_entity_code`, `employment_type`, `effective_from`
+**Optional payroll column:** `pay_group_code`
 **Optional:** `job_title`, `cost_center`, `effective_to`, `notes`
 
 ### Step 3 — Upload File
@@ -127,7 +128,7 @@ The wizard checks dataset prerequisites via:
 
 **Response:** `ready`, `checks[]` with `key`, `label`, `ready`, `count`, `href`
 
-For Employments, prerequisites: Employees, Legal Entities, Pay Groups.
+For Employments, prerequisites: Employees and Legal Entities. Pay Groups are required only for rows that provide `pay_group_code` and are intended for payroll.
 
 ## 8. Permissions
 

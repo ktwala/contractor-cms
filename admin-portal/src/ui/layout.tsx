@@ -81,9 +81,9 @@ export function TopBar(props: { left?: React.ReactNode; right?: React.ReactNode 
   );
 }
 
-export function Stack(props: { gap?: number; children: React.ReactNode; style?: React.CSSProperties }) {
+export function Stack(props: { direction?: React.CSSProperties['flexDirection']; gap?: number; children: React.ReactNode; style?: React.CSSProperties }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: props.gap ?? ui.space.lg, ...props.style }}>
+    <div style={{ display: 'flex', flexDirection: props.direction ?? 'column', gap: props.gap ?? ui.space.lg, ...props.style }}>
       {props.children}
     </div>
   );
@@ -98,9 +98,10 @@ export function Grid(props: { cols?: string | number; gap?: number; children: Re
   );
 }
 
-export function Page(props: { title?: React.ReactNode; subtitle?: React.ReactNode; actions?: React.ReactNode; children: React.ReactNode }) {
+export function Page(props: { title?: React.ReactNode; subtitle?: React.ReactNode; breadcrumbs?: React.ReactNode; actions?: React.ReactNode; children: React.ReactNode }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: ui.space.lg }}>
+      {props.breadcrumbs && <div>{props.breadcrumbs}</div>}
       {(props.title || props.actions) && (
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: ui.space.lg }}>
           <div style={{ minWidth: 0 }}>

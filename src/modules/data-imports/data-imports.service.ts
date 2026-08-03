@@ -503,11 +503,6 @@ export class DataImportsService {
             'LEGAL_ENTITIES must be published before EMPLOYMENTS',
           );
         }
-        if (!(await hasPublished('PAY_GROUPS'))) {
-          throw new BadRequestException(
-            'PAY_GROUPS must be published before EMPLOYMENTS',
-          );
-        }
         if (!(await hasPublished('EMPLOYEES'))) {
           throw new BadRequestException(
             'EMPLOYEES must be published before EMPLOYMENTS',

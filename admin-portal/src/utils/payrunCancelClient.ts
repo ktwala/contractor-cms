@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { type AxiosError } from 'axios';
 
 /** Backend code when cancel is blocked by an existing / exported payment batch. */
 export const PAYRUN_CANCEL_BLOCKED_PAYMENT_BATCH = 'PAYRUN_CANCEL_BLOCKED_PAYMENT_BATCH';
@@ -28,7 +28,7 @@ export function canShowCancelPayrunButton(params: {
   );
 }
 
-export function payrunCancelBlockedAxiosExample(): axios.AxiosError {
+export function payrunCancelBlockedAxiosExample(): AxiosError {
   const err = new axios.AxiosError('Conflict');
   err.response = {
     status: 409,

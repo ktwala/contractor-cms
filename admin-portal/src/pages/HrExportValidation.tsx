@@ -23,7 +23,7 @@ interface HrEmployee {
   current_employment?: {
     employment_id: string;
     legal_entity_id: string;
-    pay_group_id: string;
+    pay_group_id: string | null;
     effective_from: string;
     effective_to?: string | null;
     updated_at?: string;

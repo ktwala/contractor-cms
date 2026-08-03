@@ -49,23 +49,26 @@ export class EmploymentsService {
       });
     }
 
-    // Verify pay group exists and matches
-    const payGroup = await this.prisma.payGroup.findUnique({
-      where: { id: dto.pay_group_id },
-    });
-
-    if (!payGroup) {
-      throw new NotFoundException({
-        code: 'PAY_GROUP_NOT_FOUND',
-        message: `Pay group with id '${dto.pay_group_id}' not found`,
+    // Payroll assignment is optional for HCM-only employments. When supplied,
+    // the pay group must exist and belong to the employing legal entity.
+    if (dto.pay_group_id) {
+      const payGroup = await this.prisma.payGroup.findUnique({
+        where: { id: dto.pay_group_id },
       });
-    }
 
-    if (payGroup.legalEntityId !== dto.legal_entity_id) {
-      throw new BadRequestException({
-        code: 'PAY_GROUP_ENTITY_MISMATCH',
-        message: 'Pay group does not belong to the specified legal entity',
-      });
+      if (!payGroup) {
+        throw new NotFoundException({
+          code: 'PAY_GROUP_NOT_FOUND',
+          message: `Pay group with id '${dto.pay_group_id}' not found`,
+        });
+      }
+
+      if (payGroup.legalEntityId !== dto.legal_entity_id) {
+        throw new BadRequestException({
+          code: 'PAY_GROUP_ENTITY_MISMATCH',
+          message: 'Pay group does not belong to the specified legal entity',
+        });
+      }
     }
 
     const effectiveFrom = new Date(dto.effective_from);
@@ -107,7 +110,7 @@ export class EmploymentsService {
       data: {
         employeeId,
         legalEntityId: dto.legal_entity_id,
-        payGroupId: dto.pay_group_id,
+        payGroupId: dto.pay_group_id ?? null,
         country: dto.country,
         jobTitle: dto.job_title,
         costCenter: dto.cost_center,

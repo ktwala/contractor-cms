@@ -61,6 +61,8 @@ export class EmployeesPublisher extends BaseImportPublisher {
             nationalId: (payload.national_id as string) ?? null,
             legalEntityId: legalEntity?.id,
             country: legalEntity?.country,
+            hireDate,
+            status: payload.status as 'ACTIVE' | 'TERMINATED' | 'ON_LEAVE',
           },
         });
         outcome = 'updated';
@@ -80,6 +82,7 @@ export class EmployeesPublisher extends BaseImportPublisher {
             hireDate,
             legalEntityId: legalEntity?.id,
             country: legalEntity?.country,
+            status: payload.status as 'ACTIVE' | 'TERMINATED' | 'ON_LEAVE',
           },
         });
         outcome = 'created';

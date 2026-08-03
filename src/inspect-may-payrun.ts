@@ -3,8 +3,12 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
 
 async function main() {
+  if (!process.env.DATABASE_URL) {
+    throw new Error('DATABASE_URL is required');
+  }
+
   const pool = new Pool({
-    connectionString: process.env.DATABASE_URL || "postgresql://workforce:workforce_secret@localhost:5432/workforce_platform",
+    connectionString: process.env.DATABASE_URL,
   });
   const adapter = new PrismaPg(pool);
   const prisma = new PrismaClient({ adapter });
@@ -18,7 +22,7 @@ async function main() {
             legalEntity: true,
           }
         },
-        results: {
+        employeeResults: {
           include: {
             employee: true,
           }
@@ -42,8 +46,8 @@ async function main() {
           name: payrun?.payGroup?.legalEntity?.name,
         }
       },
-      resultsCount: payrun?.results?.length,
-      employees: payrun?.results?.map(r => `${r.employee?.firstName} ${r.employee?.lastName}`),
+      resultsCount: payrun?.employeeResults?.length,
+      employees: payrun?.employeeResults?.map((result) => `${result.employee?.firstName} ${result.employee?.lastName}`),
     }, null, 2));
 
   } catch (error) {

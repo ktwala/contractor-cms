@@ -69,7 +69,7 @@ All under global prefix `v1` unless noted.
 | `GET`  | `v1/employees` | List employees (query: q, limit, etc.); paginated | `employee:read` |
 | `GET`  | `v1/employees/:employee_id` | Get one employee | `employee:read` |
 | `PATCH`| `v1/employees/:employee_id` | Update employee (limited fields) | `employee:write` |
-| `POST` | `v1/employees/:employee_id/employments` | Add employment (legal entity, pay group, country, job_title, effective_from) | `employment:write` |
+| `POST` | `v1/employees/:employee_id/employments` | Add employment (legal entity, country, job_title, effective_from; optional pay group for payroll) | `employment:write` |
 | `GET`  | `v1/employees/:employee_id/employments` | List employment history | `employment:read` |
 | `GET`  | `v1/employees/:employee_id/compensation` | List compensation history (effective-dated) | `compensation:read` |
 | `POST` | `v1/employees/:employee_id/compensation` | Add compensation record | `compensation:write` |
@@ -88,7 +88,7 @@ All under global prefix `v1` unless noted.
 - **Admin portal — Employees** (`/enterprise/employees`):
   - **List:** `GET /v1/employees?q=...&limit=100` (real API).
   - **Create:** `POST /v1/employees` then optionally `POST /v1/employees/:id/employments` (real API).
-  - **Create modal:** legal entity and pay group loaded from `GET /v1/legal-entities` and `GET /v1/pay-groups`.
+  - **Create modal:** legal entity is required; an optional pay group is loaded from `GET /v1/pay-groups` when payroll enrollment is needed.
   - No detail page or edit form in code; list + create only.
 
 ---

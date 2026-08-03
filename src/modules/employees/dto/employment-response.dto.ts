@@ -11,8 +11,12 @@ export class EmploymentResponseDto {
   @ApiProperty({ example: 'le_za_001' })
   legal_entity_id: string;
 
-  @ApiProperty({ example: 'pg_za_123' })
-  pay_group_id: string;
+  @ApiPropertyOptional({
+    example: 'pg_za_123',
+    nullable: true,
+    description: 'Payroll group; null until the employment is enrolled in payroll',
+  })
+  pay_group_id: string | null;
 
   @ApiProperty({ enum: Country, example: Country.ZA })
   country: Country;

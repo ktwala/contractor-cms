@@ -62,12 +62,13 @@ export class EmploymentsPublisher extends BaseImportPublisher {
         );
       }
 
-      const payGroup = payGroupByKey.get(
-        `${legalEntity.id}::${payload.pay_group_code}`,
-      );
-      if (!payGroup) {
+      const payGroupCode = (payload.pay_group_code as string | null) || null;
+      const payGroup = payGroupCode
+        ? payGroupByKey.get(`${legalEntity.id}::${payGroupCode}`)
+        : null;
+      if (payGroupCode && !payGroup) {
         throw new BadRequestException(
-          `Cannot publish row ${row.rowNumber}: pay_group_code '${payload.pay_group_code}' not found for legal entity`,
+          `Cannot publish row ${row.rowNumber}: pay_group_code '${payGroupCode}' not found for legal entity`,
         );
       }
 
@@ -85,11 +86,11 @@ export class EmploymentsPublisher extends BaseImportPublisher {
       const data = {
         employeeId: employee.id,
         legalEntityId: legalEntity.id,
-        payGroupId: payGroup.id,
+        payGroupId: payGroup?.id ?? null,
         country: legalEntity.country as Country,
         effectiveFrom,
-        effectiveTo: payload.termination_date
-          ? new Date(payload.termination_date as string)
+        effectiveTo: payload.effective_to
+          ? new Date(payload.effective_to as string)
           : null,
         jobTitle: (payload.job_title as string) ?? null,
         employmentType: (['PERMANENT', 'CONTRACT', 'CASUAL'].includes(

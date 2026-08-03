@@ -32,7 +32,7 @@ The importer strictly processes datasets in the following dependency order. If a
 | 4 | **Cost Centers** | Legal Entities | Accounting cost centers. |
 | 5 | **Positions** | Org Units | Job roles within the organization. |
 | 6 | **Employees** | Legal Entities | Personal employee information. |
-| 7 | **Employments** | Employees, Legal Entities, Pay Groups | The employment contract details. |
+| 7 | **Employments** | Employees, Legal Entities | The employment contract details. A Pay Group is optional and only needed for payroll enrollment. |
 | 8 | **Employment Assignments** | Employments, Org Units, Cost Centers | Department and cost center assignments. |
 | 9 | **Manager Relationships**| Employees | Reporting lines (who manages whom). |
 

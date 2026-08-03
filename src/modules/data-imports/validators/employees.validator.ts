@@ -36,6 +36,15 @@ export class EmployeesValidator extends BaseImportValidator {
       const legal_entity_code = (payload.legal_entity_code as string)?.trim?.() ?? (payload.legal_entity_code as string);
       const tax_number = (payload.tax_number as string)?.trim?.() || null;
       const residency_status = (payload.residency_status as string)?.trim?.()?.toUpperCase() || 'RESIDENT';
+      const hire_date = (payload.hire_date as string) || null;
+      const sourceStatus =
+        payload.status ?? payload.employment_status ?? payload.active_in_current_month ?? payload.active_today;
+      const normalizedStatus = String(sourceStatus ?? 'ACTIVE').trim().toUpperCase();
+      const status = ['1', 'Y', 'TRUE', 'YES', 'ACTIVE'].includes(normalizedStatus)
+        ? 'ACTIVE'
+        : ['0', 'N', 'FALSE', 'NO', 'INACTIVE', 'TERMINATED'].includes(normalizedStatus)
+          ? 'TERMINATED'
+          : normalizedStatus;
 
       const mapped = {
         employee_no,
@@ -48,6 +57,8 @@ export class EmployeesValidator extends BaseImportValidator {
         legal_entity_code,
         tax_number,
         residency_status,
+        hire_date,
+        status,
       };
 
       if (!employee_no) {
@@ -98,6 +109,24 @@ export class EmployeesValidator extends BaseImportValidator {
           fieldName: 'residency_status',
           errorCode: 'INVALID_ENUM',
           message: `residency_status '${residency_status}' is invalid`,
+          severity: 'ERROR',
+        });
+      }
+
+      if (!hire_date) {
+        issues.push({
+          fieldName: 'hire_date',
+          errorCode: 'REQUIRED',
+          message: 'hire_date is required',
+          severity: 'ERROR',
+        });
+      }
+
+      if (!['ACTIVE', 'TERMINATED', 'ON_LEAVE'].includes(status)) {
+        issues.push({
+          fieldName: 'status',
+          errorCode: 'INVALID_ENUM',
+          message: `status '${status}' is invalid`,
           severity: 'ERROR',
         });
       }

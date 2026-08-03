@@ -37,7 +37,7 @@ interface Employment {
   id: string;
   employee_id: string;
   legal_entity_id: string;
-  pay_group_id: string;
+  pay_group_id: string | null;
   country: string;
   job_title?: string | null;
   cost_center?: string | null;
@@ -512,7 +512,7 @@ export default function EmployeeDetail() {
 
       await api.post(`/employees/${employeeId}/employments`, {
         legal_entity_id: currentEmployment.legal_entity_id,
-        pay_group_id: currentEmployment.pay_group_id,
+        pay_group_id: currentEmployment.pay_group_id || undefined,
         country: currentEmployment.country,
         org_unit_id: moverForm.org_unit_id,
         cost_center_id: moverForm.cost_center_id || undefined,
@@ -543,7 +543,7 @@ export default function EmployeeDetail() {
 
       await api.post(`/employees/${employeeId}/employments`, {
         legal_entity_id: form.legal_entity_id,
-        pay_group_id: form.pay_group_id,
+        pay_group_id: form.pay_group_id || undefined,
         org_unit_id: form.org_unit_id,
         country: form.country,
         job_title: form.job_title || undefined,
@@ -587,7 +587,7 @@ export default function EmployeeDetail() {
   };
 
   const handleRehire = async () => {
-    if (!employeeId || !rehireForm.rehire_date || !rehireForm.legal_entity_id || !rehireForm.pay_group_id || !rehireForm.country) return;
+    if (!employeeId || !rehireForm.rehire_date || !rehireForm.legal_entity_id || !rehireForm.country) return;
     try {
       setRehiring(true);
       setError(null);
@@ -597,7 +597,7 @@ export default function EmployeeDetail() {
       });
       await api.post(`/employees/${employeeId}/employments`, {
         legal_entity_id: rehireForm.legal_entity_id,
-        pay_group_id: rehireForm.pay_group_id,
+        pay_group_id: rehireForm.pay_group_id || undefined,
         org_unit_id: rehireForm.org_unit_id,
         country: rehireForm.country,
         job_title: rehireForm.job_title || undefined,
@@ -741,7 +741,7 @@ export default function EmployeeDetail() {
   }
 
   const le = currentEmployment ? legalEntityById.get(currentEmployment.legal_entity_id) : undefined;
-  const pg = currentEmployment ? payGroupById.get(currentEmployment.pay_group_id) : undefined;
+  const pg = currentEmployment?.pay_group_id ? payGroupById.get(currentEmployment.pay_group_id) : undefined;
 
   const statusStyle =
     employee.status === 'ACTIVE'
@@ -836,7 +836,7 @@ export default function EmployeeDetail() {
               {currentEmployment ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                   <div><strong>Legal entity:</strong> {le ? `${le.name} (${le.code})` : currentEmployment.legal_entity_id}</div>
-                  <div><strong>Pay group:</strong> {pg ? `${pg.name}${pg.code ? ` (${pg.code})` : ''}` : currentEmployment.pay_group_id}</div>
+                  <div><strong>Pay group:</strong> {pg ? `${pg.name}${pg.code ? ` (${pg.code})` : ''}` : currentEmployment.pay_group_id || 'Not enrolled in payroll'}</div>
                   <div><strong>Org unit:</strong> {currentEmployment.current_assignment?.org_unit ? `${currentEmployment.current_assignment.org_unit.name} (${currentEmployment.current_assignment.org_unit.code})` : '—'}</div>
                   {currentEmployment.current_assignment?.position && (
                     <div><strong>Position:</strong> {currentEmployment.current_assignment.position.title} ({currentEmployment.current_assignment.position.code})</div>
@@ -886,7 +886,7 @@ export default function EmployeeDetail() {
             {currentEmployment ? (
               <div style={styles.grid2}>
                 <div><div style={styles.formLabel}>Legal entity</div><div style={{ color: styles.colors.textPrimary }}>{le ? `${le.name} (${le.code})` : currentEmployment.legal_entity_id}</div></div>
-                <div><div style={styles.formLabel}>Pay group</div><div style={{ color: styles.colors.textPrimary }}>{pg ? `${pg.name}${pg.code ? ` (${pg.code})` : ''}` : currentEmployment.pay_group_id}</div></div>
+                <div><div style={styles.formLabel}>Pay group</div><div style={{ color: styles.colors.textPrimary }}>{pg ? `${pg.name}${pg.code ? ` (${pg.code})` : ''}` : currentEmployment.pay_group_id || 'Not enrolled in payroll'}</div></div>
                 <div><div style={styles.formLabel}>Org unit</div><div style={{ color: styles.colors.textPrimary }}>{currentEmployment.current_assignment?.org_unit ? `${currentEmployment.current_assignment.org_unit.name} (${currentEmployment.current_assignment.org_unit.code})` : '—'}</div></div>
                 {currentEmployment.current_assignment?.position && (
                   <div><div style={styles.formLabel}>Position</div><div style={{ color: styles.colors.textPrimary }}>{currentEmployment.current_assignment.position.title} ({currentEmployment.current_assignment.position.code})</div></div>
@@ -941,11 +941,11 @@ export default function EmployeeDetail() {
                   ) : (
                     employments.map((e) => {
                       const leRow = legalEntityById.get(e.legal_entity_id);
-                      const pgRow = payGroupById.get(e.pay_group_id);
+                      const pgRow = e.pay_group_id ? payGroupById.get(e.pay_group_id) : undefined;
                       return (
                         <tr key={e.id} style={styles.tableRow}>
                           <td style={styles.tableCell}>{leRow ? leRow.code : e.legal_entity_id}</td>
-                          <td style={styles.tableCell}>{pgRow ? (pgRow.code ?? pgRow.name) : e.pay_group_id}</td>
+                          <td style={styles.tableCell}>{pgRow ? (pgRow.code ?? pgRow.name) : e.pay_group_id || 'Not enrolled'}</td>
                           <td style={styles.tableCell}>{e.current_assignment?.org_unit ? `${e.current_assignment.org_unit.code}` : '—'}</td>
                           <td style={styles.tableCell}>{e.current_assignment?.position ? `${e.current_assignment.position.title} (${e.current_assignment.position.code})` : '—'}</td>
                           <td style={styles.tableCell}>{e.job_title || e.current_assignment?.position?.title || '—'}</td>
@@ -1215,14 +1215,14 @@ export default function EmployeeDetail() {
                 </div>
 
                 <div style={modalStyles.field}>
-                  <label style={modalStyles.label}>Pay group</label>
+                  <label style={modalStyles.label}>Pay group (optional — payroll)</label>
                   <select
                     style={{ ...modalStyles.input, ...styles.formSelect }}
                     value={form.pay_group_id}
                     onChange={(e) => onChange('pay_group_id', e.target.value)}
                     disabled={submitting}
                   >
-                    <option value="">Select pay group…</option>
+                    <option value="">Not enrolled in payroll</option>
                     {payGroupsForSelectedEntity.map((pgOpt) => (
                       <option key={pgOpt.id} value={pgOpt.id}>
                         {pgOpt.name} {pgOpt.code ? `(${pgOpt.code})` : ''}
@@ -1348,7 +1348,7 @@ export default function EmployeeDetail() {
               <button
                 style={styles.buttonPrimary}
                 onClick={submitEmploymentChange}
-                disabled={submitting || !form.legal_entity_id || !form.pay_group_id || !form.org_unit_id || !form.country || !form.effective_from}
+                disabled={submitting || !form.legal_entity_id || !form.org_unit_id || !form.country || !form.effective_from}
                 type="button"
               >
                 {submitting ? 'Saving…' : 'Save change'}
@@ -1566,14 +1566,14 @@ export default function EmployeeDetail() {
               </div>
               <div style={modalStyles.formRow}>
                 <div style={modalStyles.field}>
-                  <label style={modalStyles.label}>Pay group</label>
+                  <label style={modalStyles.label}>Pay group (optional — payroll)</label>
                   <select
                     style={{ ...modalStyles.input, ...styles.formSelect }}
                     value={rehireForm.pay_group_id}
                     onChange={(e) => setRehireForm((p) => ({ ...p, pay_group_id: e.target.value }))}
                     disabled={rehiring}
                   >
-                    <option value="">Select pay group…</option>
+                    <option value="">Not enrolled in payroll</option>
                     {payGroupsForRehireEntity.map((pgOpt) => (
                       <option key={pgOpt.id} value={pgOpt.id}>
                         {pgOpt.name} {pgOpt.code ? `(${pgOpt.code})` : ''}
@@ -1652,7 +1652,6 @@ export default function EmployeeDetail() {
                   rehiring ||
                   !rehireForm.rehire_date ||
                   !rehireForm.legal_entity_id ||
-                  !rehireForm.pay_group_id ||
                   !rehireForm.org_unit_id ||
                   !rehireForm.country
                 }

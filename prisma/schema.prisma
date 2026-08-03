@@ -763,7 +763,7 @@ model Employment {
   id             String         @id @default(uuid())
   employeeId     String         @map("employee_id")
   legalEntityId  String         @map("legal_entity_id")
-  payGroupId     String         @map("pay_group_id")
+  payGroupId     String?        @map("pay_group_id")
   country        Country
   jobTitle       String?        @map("job_title")
   costCenter     String?        @map("cost_center")
@@ -776,7 +776,7 @@ model Employment {
 
   employee    Employee    @relation(fields: [employeeId], references: [id])
   legalEntity LegalEntity @relation(fields: [legalEntityId], references: [id])
-  payGroup    PayGroup    @relation(fields: [payGroupId], references: [id])
+  payGroup    PayGroup?   @relation(fields: [payGroupId], references: [id])
   employmentAssignments EmploymentAssignment[]
 
   @@index([employeeId, effectiveFrom])

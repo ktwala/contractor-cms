@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import * as fs from 'fs';
-import * as path from 'path';
+import createPayrunSource from '../CreatePayrun.tsx?raw';
 
 const BANNED_PHRASE = 'All eligible employees will be included';
 
@@ -10,8 +9,6 @@ const BANNED_PHRASE = 'All eligible employees will be included';
  */
 describe('Create Payrun copy drift guard', () => {
   it('does not contain the legacy unqualified eligibility promise', () => {
-    const file = path.resolve(__dirname, '../CreatePayrun.tsx');
-    const content = fs.readFileSync(file, 'utf-8');
-    expect(content).not.toContain(BANNED_PHRASE);
+    expect(createPayrunSource).not.toContain(BANNED_PHRASE);
   });
 });

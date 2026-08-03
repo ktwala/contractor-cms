@@ -549,11 +549,11 @@ export class BootstrapImportService {
 
     const sheets: Record<string, string[]> = {
       LegalEntities: ['code', 'name', 'registration_number', 'tax_number', 'country', 'address'],
-      PayGroups: ['code', 'name', 'legal_entity_code', 'pay_frequency', 'country'],
+      PayGroups: ['code', 'name', 'legal_entity_code', 'country', 'currency', 'frequency'],
       OrgUnits: ['code', 'name', 'legal_entity_code', 'parent_org_unit_code'],
       CostCenters: ['code', 'name', 'legal_entity_code'],
       Positions: ['code', 'title', 'org_unit_code', 'grade', 'headcount'],
-      Employees: ['employee_no', 'first_name', 'last_name', 'email', 'national_id', 'date_of_birth', 'hire_date', 'job_title', 'department', 'legal_entity_code', 'country'],
+      Employees: ['employee_no', 'first_name', 'last_name', 'email', 'national_id', 'date_of_birth', 'hire_date', 'status', 'job_title', 'department', 'legal_entity_code', 'country'],
       Employments: ['employee_no', 'legal_entity_code', 'pay_group_code', 'job_title', 'employment_type', 'effective_from', 'effective_to', 'country'],
       Assignments: ['employee_no', 'legal_entity_code', 'org_unit_code', 'cost_center_code', 'position_code', 'effective_from', 'effective_to'],
       Managers: ['employee_no', 'manager_employee_no'],

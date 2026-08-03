@@ -10,7 +10,7 @@ API base prefix is **`/v1`** (e.g. `POST /v1/auth/login`). Controllers under `ap
 | Capability | Backend API | Data model | Admin UI | Employee UI |
 |------------|-------------|------------|----------|-------------|
 | **Employee CRUD** | ✅ `POST/GET/PATCH /v1/employees`, `GET /v1/employees/:id` | `Employee` | ✅ List + Create (with optional employment); no detail/edit page | — |
-| **Employment (legal entity, pay group, job)** | ✅ `POST/GET /v1/employees/:id/employments` | `Employment` | ✅ Create employment in “Add Employee” flow | — |
+| **Employment (legal entity, job; optional payroll group)** | ✅ `POST/GET /v1/employees/:id/employments` | `Employment` | ✅ Create employment in “Add Employee” flow | Pay group is optional until payroll enrollment |
 | **Compensation (effective-dated)** | ✅ `GET/POST /v1/employees/:id/compensation` | `Compensation` | ❌ No UI | — |
 | **Bank accounts (effective-dated)** | ✅ `GET/POST /v1/employees/:id/bank-accounts` | `BankAccount` | ❌ No UI | — |
 | **Tax profile (effective-dated)** | ✅ `GET/POST /v1/employees/:id/tax-profile` | `TaxProfile` | ❌ No UI | — |
