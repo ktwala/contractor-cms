@@ -22,23 +22,22 @@ describe('Engagements sponsor substrate (e2e)', () => {
   beforeEach(async () => {
     await TestHelper.cleanupDatabase();
     org = await TestHelper.createTestOrganization({ name: 'Sponsor Org' });
-    supplier = await TestHelper.getPrisma().supplier.create({
-      data: {
-        ...DataFactory.supplier(),
-        organization: { connect: { id: org.id } },
-      } as any,
+    supplier = await DataFactory.createSupplier(TestHelper.getPrisma(), {
+      organizationId: org.id,
     });
     contractor = await TestHelper.getPrisma().contractor.create({
       data: {
-        supplierId: supplier.id,
+        organization: { connect: { id: org.id } },
+        supplier: { connect: { id: supplier.id } },
         firstName: 'Jane',
         lastName: 'Contractor',
         email: `contractor-${Date.now()}@example.com`,
+        workerClassification: 'INDEPENDENT_CONTRACTOR',
         engagementModel: 'DIRECT',
         taxResidency: 'ZA',
         skills: [],
         dateOfBirth: new Date('1990-01-15T00:00:00.000Z'),
-      } as any,
+      },
     });
     contract = await TestHelper.getPrisma().supplierContract.create({
       data: {

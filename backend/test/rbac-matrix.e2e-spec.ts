@@ -48,19 +48,13 @@ describe('RBAC Matrix (e2e)', () => {
     tokenGlobalAdmin = (await TestHelper.login('admin@test.com')).token;
 
     // 3. Create resources in each org
-    const supplierA = await TestHelper.getPrisma().supplier.create({
-      data: {
-        ...DataFactory.supplier(),
-        organization: { connect: { id: orgA.id } },
-      } as any,
+    const supplierA = await DataFactory.createSupplier(TestHelper.getPrisma(), {
+      organizationId: orgA.id,
     });
     orgASupplierId = supplierA.id;
 
-    const supplierB = await TestHelper.getPrisma().supplier.create({
-      data: {
-        ...DataFactory.supplier(),
-        organization: { connect: { id: orgB.id } },
-      } as any,
+    const supplierB = await DataFactory.createSupplier(TestHelper.getPrisma(), {
+      organizationId: orgB.id,
     });
     orgBSupplierId = supplierB.id;
   });

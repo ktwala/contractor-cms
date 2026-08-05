@@ -93,8 +93,8 @@ describe('Core Domain (Phase 2) E2E Tests', () => {
         });
         await DataFactory.createSupplier(TestHelper.getPrisma(), {
           organizationId: organization.id,
-          status: 'INACTIVE',
-          email: 'inactive@example.com',
+          status: 'SUSPENDED',
+          email: 'suspended@example.com',
         });
 
         const response = await request(app.getHttpServer())
