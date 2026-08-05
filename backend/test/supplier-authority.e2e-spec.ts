@@ -6,8 +6,7 @@ import { TestHelper } from './utils/test-helper';
 import { DataFactory } from './fixtures/data-factory';
 
 function supplierCreatePayload(orgId: string, override?: Record<string, unknown>) {
-  const { status: _status, ...dto } = DataFactory.supplier(override);
-  return { ...dto, organizationId: orgId };
+  return { ...DataFactory.supplier(override), organizationId: orgId };
 }
 
 describe('Supplier authority modes (PR-CMS-AUTHORITY-1)', () => {

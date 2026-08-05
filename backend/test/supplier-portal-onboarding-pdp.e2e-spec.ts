@@ -100,7 +100,7 @@ describe('Supplier portal onboarding + PDP (PR-CMS-OPERATIONS-1D2)', () => {
 
     const supplier = await prisma.supplier.create({
       data: {
-        organizationId: org.id,
+        organization: { connect: { id: org.id } },
         type: SupplierType.COMPANY,
         status: 'PENDING_APPROVAL',
         companyName: 'Incomplete Portal Co',
@@ -142,7 +142,7 @@ describe('Supplier portal onboarding + PDP (PR-CMS-OPERATIONS-1D2)', () => {
 
     const supplier = await prisma.supplier.create({
       data: {
-        organizationId: org.id,
+        organization: { connect: { id: org.id } },
         type: SupplierType.COMPANY,
         status: 'PENDING_APPROVAL',
         companyName: 'Complete Portal Co',
@@ -203,7 +203,7 @@ describe('Supplier portal onboarding + PDP (PR-CMS-OPERATIONS-1D2)', () => {
 
     const supplier = await prisma.supplier.create({
       data: {
-        organizationId: org.id,
+        organization: { connect: { id: org.id } },
         type: SupplierType.COMPANY,
         status: 'PENDING_APPROVAL',
         companyName: 'Self Block Co',
@@ -259,7 +259,7 @@ describe('Supplier portal onboarding + PDP (PR-CMS-OPERATIONS-1D2)', () => {
 
     const supplier = await prisma.supplier.create({
       data: {
-        organizationId: org.id,
+        organization: { connect: { id: org.id } },
         type: SupplierType.COMPANY,
         status: 'PENDING_APPROVAL',
         companyName: 'PDP Block Co',
@@ -308,7 +308,7 @@ describe('Supplier portal onboarding + PDP (PR-CMS-OPERATIONS-1D2)', () => {
 
     const supplier = await prisma.supplier.create({
       data: {
-        organizationId: org.id,
+        organization: { connect: { id: org.id } },
         type: SupplierType.COMPANY,
         status: 'ACTIVE',
         companyName: 'Expired Evidence Co',
@@ -330,7 +330,8 @@ describe('Supplier portal onboarding + PDP (PR-CMS-OPERATIONS-1D2)', () => {
 
     const contractor = await prisma.contractor.create({
       data: {
-        supplierId: supplier.id,
+        organization: { connect: { id: org.id } },
+        supplier: { connect: { id: supplier.id } },
         firstName: 'Ops',
         lastName: 'Worker',
         email: 'ops.worker@test.com',

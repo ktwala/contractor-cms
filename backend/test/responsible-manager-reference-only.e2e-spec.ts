@@ -84,7 +84,8 @@ describe('Sponsor reference only (PR-SPONSOR-REFERENCE-ONLY-1)', () => {
 
     const sponsored = await prisma.contractor.create({
       data: {
-        supplierId: supplier.id,
+        organization: { connect: { id: org.id } },
+        supplier: { connect: { id: supplier.id } },
         firstName: 'Sponsored',
         lastName: 'One',
         email: 'sponsored-ref@test.com',
@@ -97,7 +98,8 @@ describe('Sponsor reference only (PR-SPONSOR-REFERENCE-ONLY-1)', () => {
 
     const unsponsored = await prisma.contractor.create({
       data: {
-        supplierId: supplier.id,
+        organization: { connect: { id: org.id } },
+        supplier: { connect: { id: supplier.id } },
         firstName: 'Unsponsored',
         lastName: 'Two',
         email: 'unsponsored-ref@test.com',

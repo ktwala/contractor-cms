@@ -42,7 +42,6 @@ describe('Core Domain (Phase 2) E2E Tests', () => {
           firstName: supplierDto.firstName,
           lastName: supplierDto.lastName,
           email: supplierDto.email,
-          status: supplierDto.status,
         });
         expect(response.body).toHaveProperty('id');
         expect(response.body.organizationId).toBe(organization.id);
@@ -70,11 +69,9 @@ describe('Core Domain (Phase 2) E2E Tests', () => {
       it('should list suppliers with pagination', async () => {
         // Create 3 suppliers
         for (let i = 0; i < 3; i++) {
-          await TestHelper.getPrisma().supplier.create({
-            data: {
-              organizationId: organization.id,
-              ...DataFactory.supplier({ email: `supplier${i}@example.com` }),
-            },
+          await DataFactory.createSupplier(TestHelper.getPrisma(), {
+            organizationId: organization.id,
+            email: `supplier${i}@example.com`,
           });
         }
 
@@ -90,17 +87,14 @@ describe('Core Domain (Phase 2) E2E Tests', () => {
       });
 
       it('should filter suppliers by status', async () => {
-        await TestHelper.getPrisma().supplier.create({
-          data: {
-            organizationId: organization.id,
-            ...DataFactory.supplier({ status: 'ACTIVE' }),
-          },
+        await DataFactory.createSupplier(TestHelper.getPrisma(), {
+          organizationId: organization.id,
+          status: 'ACTIVE',
         });
-        await TestHelper.getPrisma().supplier.create({
-          data: {
-            organizationId: organization.id,
-            ...DataFactory.supplier({ status: 'INACTIVE', email: 'inactive@example.com' }),
-          },
+        await DataFactory.createSupplier(TestHelper.getPrisma(), {
+          organizationId: organization.id,
+          status: 'INACTIVE',
+          email: 'inactive@example.com',
         });
 
         const response = await request(app.getHttpServer())
@@ -114,11 +108,8 @@ describe('Core Domain (Phase 2) E2E Tests', () => {
 
     describe('GET /suppliers/:id', () => {
       it('should get supplier by id', async () => {
-        const supplier = await TestHelper.getPrisma().supplier.create({
-          data: {
-            organizationId: organization.id,
-            ...DataFactory.supplier(),
-          },
+        const supplier = await DataFactory.createSupplier(TestHelper.getPrisma(), {
+          organizationId: organization.id,
         });
 
         const response = await request(app.getHttpServer())
@@ -140,11 +131,8 @@ describe('Core Domain (Phase 2) E2E Tests', () => {
 
     describe('PATCH /suppliers/:id', () => {
       it('should update supplier', async () => {
-        const supplier = await TestHelper.getPrisma().supplier.create({
-          data: {
-            organizationId: organization.id,
-            ...DataFactory.supplier(),
-          },
+        const supplier = await DataFactory.createSupplier(TestHelper.getPrisma(), {
+          organizationId: organization.id,
         });
 
         const updateDto = {
@@ -165,11 +153,8 @@ describe('Core Domain (Phase 2) E2E Tests', () => {
 
     describe('DELETE /suppliers/:id', () => {
       it('should delete supplier', async () => {
-        const supplier = await TestHelper.getPrisma().supplier.create({
-          data: {
-            organizationId: organization.id,
-            ...DataFactory.supplier(),
-          },
+        const supplier = await DataFactory.createSupplier(TestHelper.getPrisma(), {
+          organizationId: organization.id,
         });
 
         await request(app.getHttpServer())
@@ -190,11 +175,8 @@ describe('Core Domain (Phase 2) E2E Tests', () => {
     let supplier: any;
 
     beforeEach(async () => {
-      supplier = await TestHelper.getPrisma().supplier.create({
-        data: {
-          organizationId: organization.id,
-          ...DataFactory.supplier(),
-        },
+      supplier = await DataFactory.createSupplier(TestHelper.getPrisma(), {
+        organizationId: organization.id,
       });
     });
 
@@ -213,7 +195,6 @@ describe('Core Domain (Phase 2) E2E Tests', () => {
           firstName: contractorDto.firstName,
           lastName: contractorDto.lastName,
           email: contractorDto.email,
-          status: contractorDto.status,
         });
       });
 
@@ -232,10 +213,10 @@ describe('Core Domain (Phase 2) E2E Tests', () => {
       it('should list contractors', async () => {
         // Create 2 contractors
         for (let i = 0; i < 2; i++) {
-          await TestHelper.getPrisma().contractor.create({
-            data: DataFactory.contractor(supplier.id, {
-              email: `contractor${i}@example.com`,
-            }),
+          await DataFactory.createContractor(TestHelper.getPrisma(), {
+            organizationId: organization.id,
+            supplierId: supplier.id,
+            email: `contractor${i}@example.com`,
           });
         }
 
@@ -248,8 +229,9 @@ describe('Core Domain (Phase 2) E2E Tests', () => {
       });
 
       it('should filter by supplier', async () => {
-        const contractor = await TestHelper.getPrisma().contractor.create({
-          data: DataFactory.contractor(supplier.id),
+        const contractor = await DataFactory.createContractor(TestHelper.getPrisma(), {
+          organizationId: organization.id,
+          supplierId: supplier.id,
         });
 
         const response = await request(app.getHttpServer())
@@ -263,8 +245,9 @@ describe('Core Domain (Phase 2) E2E Tests', () => {
 
     describe('PATCH /contractors/:id', () => {
       it('should update contractor', async () => {
-        const contractor = await TestHelper.getPrisma().contractor.create({
-          data: DataFactory.contractor(supplier.id),
+        const contractor = await DataFactory.createContractor(TestHelper.getPrisma(), {
+          organizationId: organization.id,
+          supplierId: supplier.id,
         });
 
         const updateDto = {
@@ -287,14 +270,12 @@ describe('Core Domain (Phase 2) E2E Tests', () => {
     let contractor: any;
 
     beforeEach(async () => {
-      supplier = await TestHelper.getPrisma().supplier.create({
-        data: {
-          organizationId: organization.id,
-          ...DataFactory.supplier(),
-        },
+      supplier = await DataFactory.createSupplier(TestHelper.getPrisma(), {
+        organizationId: organization.id,
       });
-      contractor = await TestHelper.getPrisma().contractor.create({
-        data: DataFactory.contractor(supplier.id),
+      contractor = await DataFactory.createContractor(TestHelper.getPrisma(), {
+        organizationId: organization.id,
+        supplierId: supplier.id,
       });
     });
 
@@ -334,10 +315,15 @@ describe('Core Domain (Phase 2) E2E Tests', () => {
 
     describe('GET /contracts', () => {
       it('should list contracts', async () => {
-        await TestHelper.getPrisma().contract.create({
+        await TestHelper.getPrisma().supplierContract.create({
           data: {
             organizationId: organization.id,
-            ...DataFactory.contract(contractor.id, supplier.id),
+            supplierId: supplier.id,
+            contractNumber: `CT-${Date.now()}`,
+            title: 'Dev Contract',
+            contractType: 'TIME_AND_MATERIALS',
+            startDate: new Date(),
+            status: 'ACTIVE',
           },
         });
 
@@ -350,10 +336,15 @@ describe('Core Domain (Phase 2) E2E Tests', () => {
       });
 
       it('should filter by status', async () => {
-        await TestHelper.getPrisma().contract.create({
+        await TestHelper.getPrisma().supplierContract.create({
           data: {
             organizationId: organization.id,
-            ...DataFactory.contract(contractor.id, supplier.id, { status: 'ACTIVE' }),
+            supplierId: supplier.id,
+            contractNumber: `CT-ACTIVE-${Date.now()}`,
+            title: 'Active Contract',
+            contractType: 'TIME_AND_MATERIALS',
+            startDate: new Date(),
+            status: 'ACTIVE',
           },
         });
 
@@ -368,10 +359,15 @@ describe('Core Domain (Phase 2) E2E Tests', () => {
 
     describe('PATCH /contracts/:id', () => {
       it('should update contract', async () => {
-        const contract = await TestHelper.getPrisma().contract.create({
+        const contract = await TestHelper.getPrisma().supplierContract.create({
           data: {
             organizationId: organization.id,
-            ...DataFactory.contract(contractor.id, supplier.id),
+            supplierId: supplier.id,
+            contractNumber: `CT-PATCH-${Date.now()}`,
+            title: 'Patch Contract',
+            contractType: 'TIME_AND_MATERIALS',
+            startDate: new Date(),
+            status: 'ACTIVE',
           },
         });
 

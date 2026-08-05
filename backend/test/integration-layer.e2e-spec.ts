@@ -23,31 +23,29 @@ describe('Integration Layer (Phase 5) E2E Tests', () => {
     user = setup.user;
     token = setup.token;
 
-    supplier = await TestHelper.getPrisma().supplier.create({
-      data: {
-        organizationId: organization.id,
-        ...DataFactory.supplier(),
-      },
+    supplier = await DataFactory.createSupplier(TestHelper.getPrisma(), {
+      organizationId: organization.id,
     });
 
-    contractor = await TestHelper.getPrisma().contractor.create({
-      data: DataFactory.contractor(supplier.id),
+    contractor = await DataFactory.createContractor(TestHelper.getPrisma(), {
+      organizationId: organization.id,
+      supplierId: supplier.id,
     });
 
     taxClassification = await TestHelper.getPrisma().contractorTaxClassification.create({
       data: {
         contractorId: contractor.id,
-        taxYear: new Date().getFullYear(),
         classification: 'DEEMED_EMPLOYEE',
-        determinationDate: new Date(),
-        factors: {
+        basis: 'STATUTORY_TEST',
+        assessmentPayload: {
           controlFactor: 'HIGH',
           integrationFactor: 'HIGH',
           economicRealityFactor: 'MEDIUM',
         },
         riskScore: 75,
         dominantImpression: 'Employment relationship exists',
-        status: 'ACTIVE',
+        assessedBy: user.id,
+        validFrom: new Date(),
       },
     });
   });
@@ -169,31 +167,41 @@ describe('Integration Layer (Phase 5) E2E Tests', () => {
         });
 
         // Create engagement and timesheet
-        const contract = await TestHelper.getPrisma().contract.create({
+        const contract = await TestHelper.getPrisma().supplierContract.create({
           data: {
             organizationId: organization.id,
-            ...DataFactory.contract(contractor.id, supplier.id),
+            supplierId: supplier.id,
+            contractNumber: `CT-${Date.now()}`,
+            title: 'Dev Contract',
+            contractType: 'TIME_AND_MATERIALS',
+            startDate: new Date(),
+            status: 'ACTIVE',
           },
         });
 
-        const engagement = await TestHelper.getPrisma().engagement.create({
+        const engagement = await TestHelper.getPrisma().contractorEngagement.create({
           data: {
-            organizationId: organization.id,
-            ...DataFactory.engagement(contract.id, { rate: 1000 }),
+            contractId: contract.id,
+            contractorId: contractor.id,
+            role: 'Engineer',
+            startDate: new Date(),
+            rateAmount: 1000,
+            rateType: 'HOURLY',
+            currency: 'ZAR',
           },
         });
 
         const timesheet = await TestHelper.getPrisma().timesheet.create({
           data: {
-            organizationId: organization.id,
-            engagementId: engagement.id,
+            contractorId: contractor.id,
             projectId: project.id,
             periodStart: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
             periodEnd: new Date(),
-            entries: [{ date: new Date().toISOString().split('T')[0], hours: 10, description: 'Work' }],
+            entries: {
+              create: [{ date: new Date(), hours: 10, description: 'Work' }],
+            },
             totalHours: 10,
             status: 'APPROVED',
-            createdBy: user.id,
             approvedAt: new Date(),
             approvedBy: user.id,
           },
@@ -207,15 +215,16 @@ describe('Integration Layer (Phase 5) E2E Tests', () => {
             invoiceNumber: `INV-${Date.now()}`,
             invoiceDate: new Date(),
             dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+            periodStart: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+            periodEnd: new Date(),
             subtotal: 10000,
-            tax: 0,
+            vatAmount: 0,
             totalAmount: 10000,
             currency: 'ZAR',
-            status: 'PENDING',
+            status: 'APPROVED',
             timesheets: {
               connect: [{ id: timesheet.id }],
             },
-            createdBy: user.id,
           },
         });
 

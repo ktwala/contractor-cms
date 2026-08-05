@@ -5,6 +5,7 @@ import {
   ContractorSourceDriftType,
   MigrationSourceSystem,
   SupplierType,
+  WorkerClassification,
 } from '@prisma/client';
 import request from 'supertest';
 import { TestHelper } from './utils/test-helper';
@@ -83,10 +84,12 @@ describe('Contractor governance remediation (PR-CTR-CONNECTOR-1G)', () => {
 
     const contractor = await prisma.contractor.create({
       data: {
-        supplierId: supplier.id,
+        organization: { connect: { id: org.id } },
+        supplier: { connect: { id: supplier.id } },
         firstName: 'Flagship',
         lastName: 'Worker',
         email: 'flagship.worker@test.com',
+        workerClassification: WorkerClassification.INDEPENDENT_CONTRACTOR,
         engagementModel: 'DIRECT',
         taxResidency: 'ZA',
         isActive: true,

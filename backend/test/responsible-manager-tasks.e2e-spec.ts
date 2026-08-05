@@ -48,7 +48,8 @@ describe('Sponsor accountability tasks (PR-SPONSOR-TASKS-1)', () => {
     });
     const contractor = await prisma.contractor.create({
       data: {
-        supplierId: supplier.id,
+        organization: { connect: { id: orgId } },
+        supplier: { connect: { id: supplier.id } },
         firstName: 'Task',
         lastName: 'Worker',
         email: contractorEmail,

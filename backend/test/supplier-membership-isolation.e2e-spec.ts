@@ -52,7 +52,8 @@ describe('Supplier membership row isolation (PR-SUPPLIER-SCOPING-1)', () => {
 
     const contractorB = await prisma.contractor.create({
       data: {
-        supplierId: supplierB.id,
+        organization: { connect: { id: org.id } },
+        supplier: { connect: { id: supplierB.id } },
         firstName: 'Other',
         lastName: 'Resource',
         email: 'resource-b@test.com',

@@ -49,7 +49,8 @@ describe('Business sponsor row isolation (PR-SPONSOR-SCOPE-VALIDATION-1)', () =>
 
     const sponsoredContractor = await prisma.contractor.create({
       data: {
-        supplierId: supplier.id,
+        organization: { connect: { id: org.id } },
+        supplier: { connect: { id: supplier.id } },
         firstName: 'Sponsored',
         lastName: 'Worker',
         email: 'sponsored-worker@test.com',
@@ -62,7 +63,8 @@ describe('Business sponsor row isolation (PR-SPONSOR-SCOPE-VALIDATION-1)', () =>
 
     const otherContractor = await prisma.contractor.create({
       data: {
-        supplierId: supplier.id,
+        organization: { connect: { id: org.id } },
+        supplier: { connect: { id: supplier.id } },
         firstName: 'Other',
         lastName: 'Worker',
         email: 'other-worker@test.com',
@@ -176,7 +178,8 @@ describe('Business sponsor row isolation (PR-SPONSOR-SCOPE-VALIDATION-1)', () =>
 
     const contractor = await prisma.contractor.create({
       data: {
-        supplierId: supplier.id,
+        organization: { connect: { id: org.id } },
+        supplier: { connect: { id: supplier.id } },
         firstName: 'Only',
         lastName: 'ForA',
         email: 'for-sponsor-a@test.com',
@@ -270,7 +273,8 @@ describe('Business sponsor row isolation (PR-SPONSOR-SCOPE-VALIDATION-1)', () =>
 
     const sponsoredContractor = await prisma.contractor.create({
       data: {
-        supplierId: supplier.id,
+        organization: { connect: { id: org.id } },
+        supplier: { connect: { id: supplier.id } },
         firstName: 'HCM',
         lastName: 'Sponsored',
         email: 'hcm-sponsored@test.com',
@@ -283,7 +287,8 @@ describe('Business sponsor row isolation (PR-SPONSOR-SCOPE-VALIDATION-1)', () =>
 
     await prisma.contractor.create({
       data: {
-        supplierId: supplier.id,
+        organization: { connect: { id: org.id } },
+        supplier: { connect: { id: supplier.id } },
         firstName: 'HCM',
         lastName: 'Unsponsored',
         email: 'hcm-unsponsored@test.com',
@@ -368,7 +373,8 @@ describe('Business sponsor row isolation (PR-SPONSOR-SCOPE-VALIDATION-1)', () =>
 
     await prisma.contractor.create({
       data: {
-        supplierId: supplier.id,
+        organization: { connect: { id: org.id } },
+        supplier: { connect: { id: supplier.id } },
         firstName: 'Wide',
         lastName: 'View',
         email: 'wide-view@test.com',
@@ -418,7 +424,8 @@ describe('Business sponsor row isolation (PR-SPONSOR-SCOPE-VALIDATION-1)', () =>
 
     await prisma.contractor.create({
       data: {
-        supplierId: supplier.id,
+        organization: { connect: { id: org.id } },
+        supplier: { connect: { id: supplier.id } },
         firstName: 'Visible',
         lastName: 'OrgWide',
         email: 'org-wide@test.com',

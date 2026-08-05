@@ -198,28 +198,36 @@ describe('Experience Layer (Phase 6) E2E Tests', () => {
   describe('Analytics Module', () => {
     beforeEach(async () => {
       // Create test data for analytics
-      const supplier = await TestHelper.getPrisma().supplier.create({
+      const supplier = await DataFactory.createSupplier(TestHelper.getPrisma(), {
+        organizationId: organization.id,
+      });
+
+      const contractor = await DataFactory.createContractor(TestHelper.getPrisma(), {
+        organizationId: organization.id,
+        supplierId: supplier.id,
+      });
+
+      const contract = await TestHelper.getPrisma().supplierContract.create({
         data: {
           organizationId: organization.id,
-          ...DataFactory.supplier(),
+          supplierId: supplier.id,
+          contractNumber: `CT-${Date.now()}`,
+          title: 'Dev Contract',
+          contractType: 'TIME_AND_MATERIALS',
+          startDate: new Date(),
+          status: 'ACTIVE',
         },
       });
 
-      const contractor = await TestHelper.getPrisma().contractor.create({
-        data: DataFactory.contractor(supplier.id),
-      });
-
-      const contract = await TestHelper.getPrisma().contract.create({
+      const engagement = await TestHelper.getPrisma().contractorEngagement.create({
         data: {
-          organizationId: organization.id,
-          ...DataFactory.contract(contractor.id, supplier.id),
-        },
-      });
-
-      const engagement = await TestHelper.getPrisma().engagement.create({
-        data: {
-          organizationId: organization.id,
-          ...DataFactory.engagement(contract.id),
+          contractId: contract.id,
+          contractorId: contractor.id,
+          role: 'Engineer',
+          startDate: new Date(),
+          rateAmount: 1000,
+          rateType: 'HOURLY',
+          currency: 'ZAR',
         },
       });
 
@@ -232,15 +240,15 @@ describe('Experience Layer (Phase 6) E2E Tests', () => {
 
       const timesheet = await TestHelper.getPrisma().timesheet.create({
         data: {
-          organizationId: organization.id,
-          engagementId: engagement.id,
+          contractorId: contractor.id,
           projectId: project.id,
           periodStart: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
           periodEnd: new Date(),
-          entries: [{ date: new Date().toISOString().split('T')[0], hours: 40, description: 'Work' }],
+          entries: {
+            create: [{ date: new Date(), hours: 40, description: 'Work' }],
+          },
           totalHours: 40,
           status: 'APPROVED',
-          createdBy: user.id,
           approvedAt: new Date(),
           approvedBy: user.id,
         },
@@ -253,15 +261,16 @@ describe('Experience Layer (Phase 6) E2E Tests', () => {
           invoiceNumber: `INV-${Date.now()}`,
           invoiceDate: new Date(),
           dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+          periodStart: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+          periodEnd: new Date(),
           subtotal: 40000,
-          tax: 0,
+          vatAmount: 0,
           totalAmount: 40000,
           currency: 'ZAR',
           status: 'PAID',
           timesheets: {
             connect: [{ id: timesheet.id }],
           },
-          createdBy: user.id,
           paidAt: new Date(),
         },
       });
@@ -269,12 +278,12 @@ describe('Experience Layer (Phase 6) E2E Tests', () => {
       const taxClassification = await TestHelper.getPrisma().contractorTaxClassification.create({
         data: {
           contractorId: contractor.id,
-          taxYear: new Date().getFullYear(),
           classification: 'DEEMED_EMPLOYEE',
-          determinationDate: new Date(),
-          factors: {},
+          basis: 'STATUTORY_TEST',
+          assessmentPayload: {},
           riskScore: 75,
-          status: 'ACTIVE',
+          assessedBy: user.id,
+          validFrom: new Date(),
         },
       });
 

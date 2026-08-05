@@ -5,6 +5,7 @@ import {
   ContractorSourceDriftType,
   MigrationSourceSystem,
   SupplierType,
+  WorkerClassification,
 } from '@prisma/client';
 import request from 'supertest';
 import { TestHelper } from './utils/test-helper';
@@ -83,10 +84,12 @@ describe('Oracle HCM contractor drift (PR-CTR-CONNECTOR-1F)', () => {
 
     const contractor = await prisma.contractor.create({
       data: {
-        supplierId: supplier.id,
+        organization: { connect: { id: org.id } },
+        supplier: { connect: { id: supplier.id } },
         firstName: 'Active',
         lastName: 'Worker',
         email: 'drift.worker@test.com',
+        workerClassification: WorkerClassification.INDEPENDENT_CONTRACTOR,
         engagementModel: 'DIRECT',
         taxResidency: 'ZA',
         isActive: true,
@@ -151,10 +154,12 @@ describe('Oracle HCM contractor drift (PR-CTR-CONNECTOR-1F)', () => {
 
     const contractor = await prisma.contractor.create({
       data: {
-        supplierId: supplier.id,
+        organization: { connect: { id: org.id } },
+        supplier: { connect: { id: supplier.id } },
         firstName: 'Resolve',
         lastName: 'Worker',
         email: 'resolve.worker@test.com',
+        workerClassification: WorkerClassification.INDEPENDENT_CONTRACTOR,
         engagementModel: 'DIRECT',
         taxResidency: 'ZA',
         isActive: true,

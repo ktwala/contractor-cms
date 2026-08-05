@@ -25,21 +25,24 @@ describe('Work Management (Phase 3) E2E Tests', () => {
     token = setup.token;
 
     // Create base entities
-    supplier = await TestHelper.getPrisma().supplier.create({
-      data: {
-        organizationId: organization.id,
-        ...DataFactory.supplier(),
-      },
+    supplier = await DataFactory.createSupplier(TestHelper.getPrisma(), {
+      organizationId: organization.id,
     });
 
-    contractor = await TestHelper.getPrisma().contractor.create({
-      data: DataFactory.contractor(supplier.id),
+    contractor = await DataFactory.createContractor(TestHelper.getPrisma(), {
+      organizationId: organization.id,
+      supplierId: supplier.id,
     });
 
-    contract = await TestHelper.getPrisma().contract.create({
+    contract = await TestHelper.getPrisma().supplierContract.create({
       data: {
         organizationId: organization.id,
-        ...DataFactory.contract(contractor.id, supplier.id),
+        supplierId: supplier.id,
+        contractNumber: `CT-${Date.now()}`,
+        title: 'Dev Contract',
+        contractType: 'TIME_AND_MATERIALS',
+        startDate: new Date(),
+        status: 'ACTIVE',
       },
     });
 
@@ -91,10 +94,15 @@ describe('Work Management (Phase 3) E2E Tests', () => {
 
     describe('GET /engagements', () => {
       it('should list engagements', async () => {
-        await TestHelper.getPrisma().engagement.create({
+        await TestHelper.getPrisma().contractorEngagement.create({
           data: {
-            organizationId: organization.id,
-            ...DataFactory.engagement(contract.id),
+            contractId: contract.id,
+            contractorId: contractor.id,
+            role: 'Engineer',
+            startDate: new Date(),
+            rateAmount: 1000,
+            rateType: 'HOURLY',
+            currency: 'ZAR',
           },
         });
 
@@ -107,10 +115,16 @@ describe('Work Management (Phase 3) E2E Tests', () => {
       });
 
       it('should filter by status', async () => {
-        await TestHelper.getPrisma().engagement.create({
+        await TestHelper.getPrisma().contractorEngagement.create({
           data: {
-            organizationId: organization.id,
-            ...DataFactory.engagement(contract.id, { status: 'ACTIVE' }),
+            contractId: contract.id,
+            contractorId: contractor.id,
+            role: 'Active Engineer',
+            startDate: new Date(),
+            rateAmount: 1000,
+            rateType: 'HOURLY',
+            currency: 'ZAR',
+            isActive: true,
           },
         });
 
@@ -125,10 +139,15 @@ describe('Work Management (Phase 3) E2E Tests', () => {
 
     describe('PATCH /engagements/:id', () => {
       it('should update engagement', async () => {
-        const engagement = await TestHelper.getPrisma().engagement.create({
+        const engagement = await TestHelper.getPrisma().contractorEngagement.create({
           data: {
-            organizationId: organization.id,
-            ...DataFactory.engagement(contract.id),
+            contractId: contract.id,
+            contractorId: contractor.id,
+            role: 'Update Engineer',
+            startDate: new Date(),
+            rateAmount: 1000,
+            rateType: 'HOURLY',
+            currency: 'ZAR',
           },
         });
 
@@ -151,10 +170,15 @@ describe('Work Management (Phase 3) E2E Tests', () => {
     let engagement: any;
 
     beforeEach(async () => {
-      engagement = await TestHelper.getPrisma().engagement.create({
+      engagement = await TestHelper.getPrisma().contractorEngagement.create({
         data: {
-          organizationId: organization.id,
-          ...DataFactory.engagement(contract.id),
+          contractId: contract.id,
+          contractorId: contractor.id,
+          role: 'Timesheet Engineer',
+          startDate: new Date(),
+          rateAmount: 1000,
+          rateType: 'HOURLY',
+          currency: 'ZAR',
         },
       });
     });
@@ -220,21 +244,21 @@ describe('Work Management (Phase 3) E2E Tests', () => {
       it('should list timesheets', async () => {
         await TestHelper.getPrisma().timesheet.create({
           data: {
-            organizationId: organization.id,
-            engagementId: engagement.id,
+            contractorId: contractor.id,
             projectId: project.id,
             periodStart: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
             periodEnd: new Date(),
-            entries: [
-              {
-                date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-                hours: 8,
-                description: 'Work',
-              },
-            ],
+            entries: {
+              create: [
+                {
+                  date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+                  hours: 8,
+                  description: 'Work',
+                },
+              ],
+            },
             totalHours: 8,
             status: 'DRAFT',
-            createdBy: user.id,
           },
         });
 
@@ -249,15 +273,12 @@ describe('Work Management (Phase 3) E2E Tests', () => {
       it('should filter by status', async () => {
         await TestHelper.getPrisma().timesheet.create({
           data: {
-            organizationId: organization.id,
-            engagementId: engagement.id,
+            contractorId: contractor.id,
             projectId: project.id,
             periodStart: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
             periodEnd: new Date(),
-            entries: [],
             totalHours: 0,
             status: 'SUBMITTED',
-            createdBy: user.id,
           },
         });
 
@@ -276,21 +297,21 @@ describe('Work Management (Phase 3) E2E Tests', () => {
       beforeEach(async () => {
         timesheet = await TestHelper.getPrisma().timesheet.create({
           data: {
-            organizationId: organization.id,
-            engagementId: engagement.id,
+            contractorId: contractor.id,
             projectId: project.id,
             periodStart: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
             periodEnd: new Date(),
-            entries: [
-              {
-                date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-                hours: 8,
-                description: 'Work',
-              },
-            ],
+            entries: {
+              create: [
+                {
+                  date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+                  hours: 8,
+                  description: 'Work',
+                },
+              ],
+            },
             totalHours: 8,
             status: 'DRAFT',
-            createdBy: user.id,
           },
         });
       });
@@ -350,15 +371,12 @@ describe('Work Management (Phase 3) E2E Tests', () => {
       it('should update draft timesheet', async () => {
         const timesheet = await TestHelper.getPrisma().timesheet.create({
           data: {
-            organizationId: organization.id,
-            engagementId: engagement.id,
+            contractorId: contractor.id,
             projectId: project.id,
             periodStart: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
             periodEnd: new Date(),
-            entries: [],
             totalHours: 0,
             status: 'DRAFT',
-            createdBy: user.id,
           },
         });
 
@@ -384,15 +402,12 @@ describe('Work Management (Phase 3) E2E Tests', () => {
       it('should not update submitted timesheet', async () => {
         const timesheet = await TestHelper.getPrisma().timesheet.create({
           data: {
-            organizationId: organization.id,
-            engagementId: engagement.id,
+            contractorId: contractor.id,
             projectId: project.id,
             periodStart: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
             periodEnd: new Date(),
-            entries: [],
             totalHours: 0,
             status: 'SUBMITTED',
-            createdBy: user.id,
           },
         });
 

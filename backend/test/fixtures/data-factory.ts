@@ -1,7 +1,13 @@
+import { PrismaClient, SupplierType, WorkerClassification, EngagementModel } from '@prisma/client';
+
 export class DataFactory {
+  // ---------------------------------------------------------------------------
+  // Raw data shapes — used by callers that compose their own prisma.create()
+  // ---------------------------------------------------------------------------
+
   static supplier(override?: Partial<any>) {
     return {
-      type: 'INDIVIDUAL',
+      type: SupplierType.INDIVIDUAL,
       firstName: 'John',
       lastName: 'Supplier',
       email: `supplier-${Date.now()}@example.com`,
@@ -11,7 +17,7 @@ export class DataFactory {
       bankAccountNumber: '1234567890',
       bankBranchCode: '051001',
       country: 'ZA',
-      status: 'ACTIVE',
+      countryCode: 'ZA',
       ...override,
     };
   }
@@ -25,11 +31,66 @@ export class DataFactory {
       phone: '+27827654321',
       taxNumber: `CTX${Date.now()}`,
       idNumber: `${Date.now()}`.substring(0, 13),
-      dateOfBirth: '1990-01-15',
-      nationality: 'ZA',
-      status: 'ACTIVE',
+      dateOfBirth: new Date('1990-01-15T00:00:00.000Z'),
+      taxResidency: 'ZA',
+      workerClassification: WorkerClassification.INDEPENDENT_CONTRACTOR,
+      engagementModel: EngagementModel.DIRECT,
       ...override,
     };
+  }
+
+  // ---------------------------------------------------------------------------
+  // Prisma-aware create helpers — use checked relation syntax
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Create a supplier with proper checked Prisma relations.
+   * Callers pass scalar IDs; the factory translates to `connect` syntax.
+   */
+  static async createSupplier(
+    prisma: PrismaClient | any,
+    opts: { organizationId: string } & Partial<any>,
+  ) {
+    const { organizationId, ...overrides } = opts;
+    return prisma.supplier.create({
+      data: {
+        organization: { connect: { id: organizationId } },
+        ...DataFactory.supplier(overrides),
+      },
+    });
+  }
+
+  /**
+   * Create a contractor with proper checked Prisma relations.
+   * Accepts scalar IDs for organization and optional supplier.
+   */
+  static async createContractor(
+    prisma: PrismaClient | any,
+    opts: {
+      organizationId: string;
+      supplierId?: string;
+      workerClassification?: WorkerClassification;
+    } & Partial<any>,
+  ) {
+    const { organizationId, supplierId, workerClassification, ...overrides } = opts;
+    const supplierConnect = supplierId
+      ? { supplier: { connect: { id: supplierId } } }
+      : {};
+    return prisma.contractor.create({
+      data: {
+        organization: { connect: { id: organizationId } },
+        ...supplierConnect,
+        firstName: overrides.firstName ?? 'Jane',
+        lastName: overrides.lastName ?? 'Contractor',
+        email: overrides.email ?? `contractor-${Date.now()}@example.com`,
+        workerClassification: workerClassification ?? WorkerClassification.INDEPENDENT_CONTRACTOR,
+        engagementModel: overrides.engagementModel ?? EngagementModel.DIRECT,
+        taxResidency: overrides.taxResidency ?? 'ZA',
+        dateOfBirth: overrides.dateOfBirth ?? new Date('1990-01-15T00:00:00.000Z'),
+        skills: overrides.skills ?? [],
+        ...overrides,
+      },
+    });
   }
 
   static contract(

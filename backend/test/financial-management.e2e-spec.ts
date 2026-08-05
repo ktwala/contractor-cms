@@ -27,28 +27,36 @@ describe('Financial Management (Phase 4) E2E Tests', () => {
     token = setup.token;
 
     // Create base entities
-    supplier = await TestHelper.getPrisma().supplier.create({
+    supplier = await DataFactory.createSupplier(TestHelper.getPrisma(), {
+      organizationId: organization.id,
+    });
+
+    contractor = await DataFactory.createContractor(TestHelper.getPrisma(), {
+      organizationId: organization.id,
+      supplierId: supplier.id,
+    });
+
+    contract = await TestHelper.getPrisma().supplierContract.create({
       data: {
         organizationId: organization.id,
-        ...DataFactory.supplier(),
+        supplierId: supplier.id,
+        contractNumber: `CT-${Date.now()}`,
+        title: 'Dev Contract',
+        contractType: 'TIME_AND_MATERIALS',
+        startDate: new Date(),
+        status: 'ACTIVE',
       },
     });
 
-    contractor = await TestHelper.getPrisma().contractor.create({
-      data: DataFactory.contractor(supplier.id),
-    });
-
-    contract = await TestHelper.getPrisma().contract.create({
+    engagement = await TestHelper.getPrisma().contractorEngagement.create({
       data: {
-        organizationId: organization.id,
-        ...DataFactory.contract(contractor.id, supplier.id),
-      },
-    });
-
-    engagement = await TestHelper.getPrisma().engagement.create({
-      data: {
-        organizationId: organization.id,
-        ...DataFactory.engagement(contract.id),
+        contractId: contract.id,
+        contractorId: contractor.id,
+        role: 'Engineer',
+        startDate: new Date(),
+        rateAmount: 1000,
+        rateType: 'HOURLY',
+        currency: 'ZAR',
       },
     });
 
@@ -61,21 +69,21 @@ describe('Financial Management (Phase 4) E2E Tests', () => {
 
     timesheet = await TestHelper.getPrisma().timesheet.create({
       data: {
-        organizationId: organization.id,
-        engagementId: engagement.id,
+        contractorId: contractor.id,
         projectId: project.id,
         periodStart: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
         periodEnd: new Date(),
-        entries: [
-          {
-            date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-            hours: 40,
-            description: 'Work',
-          },
-        ],
+        entries: {
+          create: [
+            {
+              date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+              hours: 40,
+              description: 'Work',
+            },
+          ],
+        },
         totalHours: 40,
         status: 'APPROVED',
-        createdBy: user.id,
         approvedAt: new Date(),
         approvedBy: user.id,
       },
@@ -122,15 +130,12 @@ describe('Financial Management (Phase 4) E2E Tests', () => {
       it('should fail with non-approved timesheet', async () => {
         const draftTimesheet = await TestHelper.getPrisma().timesheet.create({
           data: {
-            organizationId: organization.id,
-            engagementId: engagement.id,
+            contractorId: contractor.id,
             projectId: project.id,
             periodStart: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
             periodEnd: new Date(),
-            entries: [],
             totalHours: 0,
             status: 'DRAFT',
-            createdBy: user.id,
           },
         });
 

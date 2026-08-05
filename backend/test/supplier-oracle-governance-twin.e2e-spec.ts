@@ -126,7 +126,7 @@ describe('Oracle staging → governance twin (PR-CMS-DATA-2)', () => {
 
   it('blocks client supplier create on ORACLE_ONLY while allowing staging promote', async () => {
     const { org, token } = await setupOracleTenant();
-    const { status: _s, ...dto } = DataFactory.supplier();
+    const dto = DataFactory.supplier();
 
     const blocked = await request(app.getHttpServer())
       .post('/suppliers')
