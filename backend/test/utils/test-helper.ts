@@ -5,6 +5,39 @@ import { PrismaService } from '../../src/core/database/prisma.service';
 import request from 'supertest';
 
 /**
+ * Fail-closed guard: refuses to run destructive cleanup unless the connection
+ * targets the disposable E2E database and NODE_ENV is 'test'.
+ *
+ * Extracted as a pure function so it can be unit-tested without touching a
+ * real database.
+ */
+export function assertSafeE2eDatabaseTarget(
+  databaseUrl: string | undefined,
+  nodeEnv: string | undefined,
+): void {
+  if (!databaseUrl) {
+    throw new Error(
+      'E2E_DATABASE_SAFETY: DATABASE_URL is required before database cleanup',
+    );
+  }
+
+  let databaseName: string;
+  try {
+    databaseName = new URL(databaseUrl).pathname.replace(/^\//, '');
+  } catch {
+    throw new Error(
+      'E2E_DATABASE_SAFETY: DATABASE_URL is not a valid URL',
+    );
+  }
+
+  if (nodeEnv !== 'test' || databaseName !== 'contractor_cms_e2e') {
+    throw new Error(
+      `E2E_DATABASE_SAFETY: refusing cleanup for database "${databaseName}"`,
+    );
+  }
+}
+
+/**
  * Test helper — role-centric user creation matching the actual Prisma schema.
  *
  * Users are created with `passwordHash` (not `password`), roles via `UserRole`
@@ -48,6 +81,12 @@ export class TestHelper {
     if (!this.prisma) {
       return;
     }
+
+    // Fail-closed: refuse to delete if not targeting the disposable E2E database
+    assertSafeE2eDatabaseTarget(
+      process.env.DATABASE_URL,
+      process.env.NODE_ENV,
+    );
 
     // Delete in correct order to respect foreign key constraints
     await this.prisma.withholdingInstruction.deleteMany();
