@@ -24,7 +24,17 @@ fi
 
 # 2. Frontend contract drift gate
 echo "Checking frontend interceptors for organizationId injection..."
-if grep -rn "organizationId\s*:" frontend/lib/api.ts | grep -v "//"; then
+DRIFT_INJECT=0
+# Check for object property assignment excluding type annotations
+if grep -rn "organizationId\s*:" frontend/lib/api.ts | grep -v "//" | grep -E -v 'organizationId\s*:\s*(string|any|number|boolean)\b'; then
+  DRIFT_INJECT=1
+fi
+# Check for URL query string construction
+if grep -rn -E "['\"][^'\"]*[?&]organizationId=" frontend/lib/api.ts | grep -v "//"; then
+  DRIFT_INJECT=1
+fi
+
+if [ $DRIFT_INJECT -eq 1 ]; then
   echo "❌ DRIFT DETECTED: Frontend api.ts is attempting to inject 'organizationId'. The backend session AccessContext must remain the ultimate source of truth."
   DRIFT_FOUND=1
 fi
@@ -61,41 +71,41 @@ done
 
 # 4. Permission Catalog Governance
 echo "Checking permission catalog governance..."
-if ! (cd backend && npx --yes ts-node ../scripts/permission-catalog-check.ts); then
+if ! (cd backend && npx --yes ts-node --skip-project ../scripts/permission-catalog-check.ts); then
   DRIFT_FOUND=1
 fi
 
 # 5. Audit Catalog Governance
 echo "Checking audit catalog governance..."
-if ! (cd backend && npx --yes ts-node ../scripts/audit-catalog-check.ts); then
+if ! (cd backend && npx --yes ts-node --skip-project ../scripts/audit-catalog-check.ts); then
   DRIFT_FOUND=1
 fi
 
 # 6. Governance Schema & PDP Regression
 echo "Checking governance schema & PDP regression..."
-if ! (cd backend && npx --yes ts-node ../scripts/governance-drift-check.ts); then
+if ! (cd backend && npx --yes ts-node --skip-project ../scripts/governance-drift-check.ts); then
   DRIFT_FOUND=1
 fi
 
 # 7. Supplier portal terminology (warn-only — no "Resources" in production UI)
 echo "Checking supplier portal terminology (warn-only)..."
-(cd backend && npx --yes ts-node ../scripts/supplier-portal-terminology-drift-check.ts) || true
+(cd backend && npx --yes ts-node --skip-project ../scripts/supplier-portal-terminology-drift-check.ts) || true
 
 # 7b. EWP forms — no supplier modal placeholder / RNaN drift (PR-CMS-FORMS-1A)
 echo "Checking EWP forms drift (supplier placeholder, RNaN)..."
-if ! (cd backend && npx --yes ts-node ../scripts/cms-forms-drift-check.ts); then
+if ! (cd backend && npx --yes ts-node --skip-project ../scripts/cms-forms-drift-check.ts); then
   DRIFT_FOUND=1
 fi
 
 # 7c. Supplier portal data truthfulness (PR-SUPPLIER-PORTAL-DATA-1)
 echo "Checking supplier portal data drift..."
-if ! (cd backend && npx --yes ts-node ../scripts/supplier-portal-drift-check.ts); then
+if ! (cd backend && npx --yes ts-node --skip-project ../scripts/supplier-portal-drift-check.ts); then
   DRIFT_FOUND=1
 fi
 
 # 8. EXTID substrate drift (PR-EXTID-SCHEMA-1D — G-EXTID-02, migration tracking, sponsor placement)
 echo "Checking EXTID substrate drift (G-EXTID / migration SQL)..."
-if ! (cd backend && npx --yes ts-node ../scripts/extid-drift-check.ts); then
+if ! (cd backend && npx --yes ts-node --skip-project ../scripts/extid-drift-check.ts); then
   DRIFT_FOUND=1
 fi
 

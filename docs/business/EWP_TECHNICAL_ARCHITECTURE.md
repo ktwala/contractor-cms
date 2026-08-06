@@ -51,7 +51,7 @@ flowchart LR
 |---------|-----------|------|
 | `frontend` | 3001 | Next.js dev server; proxies `/api/*` to backend in dev |
 | `backend` | 3000 | NestJS API; entrypoint runs migrate + seed |
-| `postgres` | 5433→5432 | Primary datastore (`contractor_cms`) |
+| `postgres` | 5433→5432 | Primary datastore (`external_workforce_platform`) |
 | `mock-oracle` | 8080 | Procurement + HCM fixture REST for connectors |
 
 **Startup** (`backend/docker-entrypoint.sh`): `prisma migrate deploy` → fallback `db push` → `prisma generate` → `db seed` → optional connector demo reset (`DEMO_MODE`) → `npm run start:dev`.
@@ -61,7 +61,7 @@ flowchart LR
 ## Repository layout
 
 ```text
-contractor-cms/
+external-workforce-platform/
 ├── backend/
 │   ├── src/core/           # Platform infrastructure (auth, audit, iga, extid, config)
 │   ├── src/domain/         # Business capabilities (bounded contexts)

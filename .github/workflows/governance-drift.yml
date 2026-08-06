@@ -25,9 +25,9 @@ jobs:
         working-directory: ./backend
 
       - name: Run Governance Drift Check
-        run: npx --yes ts-node ../scripts/governance-drift-check.ts
+        run: npx --yes ts-node --skip-project ../scripts/governance-drift-check.ts
         working-directory: ./backend
 
       - name: Run EXTID substrate drift check (PR-EXTID-SCHEMA-1D)
-        run: npx --yes ts-node ../scripts/extid-drift-check.ts
+        run: npx --yes ts-node --skip-project ../scripts/extid-drift-check.ts
         working-directory: ./backend

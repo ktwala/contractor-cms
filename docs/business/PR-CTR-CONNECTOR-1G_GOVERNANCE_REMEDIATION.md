@@ -39,7 +39,7 @@ HCM terminated + contractor.isActive = true
 | `PDP_RESTRICTION` | Runtime limitation |
 | `ACCESS_REVIEW_REQUIRED` | Governance review |
 | `CORRELATION_REVIEW` | Identity review |
-| `SUPPLIER_LINK_REPAIR` | Vendor remediation |
+| `SUPPLIER_LINK_REPAIR` | Supplier remediation |
 | `TERMINATION_VALIDATION` | HR verification |
 
 ## Governance event contract (audit only)

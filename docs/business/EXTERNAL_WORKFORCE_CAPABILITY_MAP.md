@@ -562,7 +562,7 @@ Supplier Portal   Operations Console   Identity Services
 | **Operations Console** | Workforce Administration, Governance, Engagement Administration, Reporting & Projections |
 | **Identity Services** | Identity Acquisition, Access Integration |
 
-**Future projections** (same capability map): Mobile Supplier Portal, Executive Dashboard, Vendor API, Analytics Portal.
+**Future projections** (same capability map): Mobile Supplier Portal, Executive Dashboard, Supplier API, Analytics Portal.
 
 ---
 

@@ -62,7 +62,7 @@ Workshop / CI uses **mocked `fetch`** (see PR-CTR-4B e2e) — no live Oracle cal
 
 ## Field mapping
 
-Oracle / BI rows are flattened to the same workshop JSON shape used by file extract (`person_id`, `sponsor_employee_id`, `vendor_name`, etc.). Raw Oracle object is preserved under `_oracleRest` in `sourcePayloadJson`.
+Oracle / BI rows are flattened to the same workshop JSON shape used by file extract (`person_id`, `sponsor_employee_id`, `supplier_name`, etc.). Raw Oracle object is preserved under `_oracleRest` in `sourcePayloadJson`.
 
 ## Failure modes
 

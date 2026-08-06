@@ -13,7 +13,7 @@
 | `prisma` | **^6.x** | v7 uses a JS/WASM client engine requiring driver adapters. Stay on v6 until the project migrates to adapter-based Prisma. |
 | `@prisma/client` | **^6.x** | Must match the `prisma` CLI version. |
 | Node.js | ≥18 | Required by NestJS and Prisma. |
-| PostgreSQL | 16 | Running via Docker (`contractor-cms-db`). |
+| PostgreSQL | 16 | Running via Docker (`external-workforce-platform-db`). |
 
 > [!CAUTION]
 > **Do not upgrade to Prisma 7** without first installing `@prisma/adapter-pg` and updating `PrismaService` to use an adapter constructor. Prisma 7 removed the `library` and `binary` engine types entirely.
@@ -39,7 +39,7 @@ API_KEY_SALT=test
 **Docker defaults** (from `docker-compose.yml`):
 
 ```env
-DATABASE_URL=postgresql://contractor_cms:password@localhost:5433/contractor_cms
+DATABASE_URL=postgresql://external_workforce_platform:password@localhost:5433/external_workforce_platform
 ```
 
 > [!WARNING]
@@ -49,7 +49,7 @@ Verify connectivity before running tests:
 
 ```bash
 npx prisma db execute \
-  --url "postgresql://contractor_cms:password@localhost:5433/contractor_cms" \
+  --url "postgresql://external_workforce_platform:password@localhost:5433/external_workforce_platform" \
   --stdin <<< "SELECT 1"
 ```
 

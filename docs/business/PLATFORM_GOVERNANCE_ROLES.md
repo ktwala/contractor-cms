@@ -217,7 +217,7 @@ Production assigns **narrow roles** from §3. Demo maps those roles to seeded ac
 | **SUPPLIER_ADMIN** | Portal org admin — profile, documents, users, contractor requests | `supplier-profile:*`, `supplier-documents:*`, `supplier-users:manage`, `supplier-contractors:*`, `supplier-onboarding:*` |
 | **SUPPLIER_MANAGER** | Lighter ops — timesheets + contractor requests | `supplier-profile:read`, `supplier-contractors:*`, `supplier-timesheets:*` |
 
-**Portal defaults:** Vendor-linked contractor requests default to `SUPPLIER_CONTRACTOR` classification; cannot self-approve client governance.
+**Portal defaults:** Supplier-linked contractor requests default to `SUPPLIER_CONTRACTOR` classification; cannot self-approve client governance.
 
 ---
 

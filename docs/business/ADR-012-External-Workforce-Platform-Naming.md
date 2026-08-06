@@ -81,7 +81,7 @@ EWP
  └── Identity Services
 ```
 
-Future: Mobile Supplier Portal, Executive Dashboard, Vendor API, Analytics Portal — without changing the capability map.
+Future: Mobile Supplier Portal, Executive Dashboard, Supplier API, Analytics Portal — without changing the capability map.
 
 ### 3. What does not change?
 
