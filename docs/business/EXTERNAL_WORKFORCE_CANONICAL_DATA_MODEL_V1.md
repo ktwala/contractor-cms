@@ -64,10 +64,10 @@ contractor_lifecycle_audit      ← state transitions + provenance
 
 | Field | Type | HCM source | CMS today |
 |-------|------|------------|-----------|
-| `supplier_id` | uuid | `vendor` / supplier correlation | `Contractor.supplierId` |
+| `supplier_id` | uuid | supplier correlation | `Contractor.supplierId` |
 | `supplier_resource_id` | string | supplier worker id | `Contractor.supplierResourceId` |
 
-**Rule:** Supplier must exist in CMS `Supplier` before promote; HCM vendor code → CMS supplier mapping table (PR-CTR-3).
+**Rule:** Supplier must exist in CMS `Supplier` before promote; HCM supplier code → CMS supplier mapping table (PR-CTR-3).
 
 ### 2.4 Lifecycle & access intent
 
@@ -136,7 +136,7 @@ Canonical sponsor data lives on **engagement**, not contractor root (aligned wit
 | `person_id` | `legacy_hcm_person_id` / `external_person_id` | Store both; do not use as PK |
 | `person_number` | `legacy_hcm_person_number` | Display / search only |
 | `contractor_type` | `employment_class` / `person_type` | Enum map table |
-| `vendor_id` | `supplier_id` | Via supplier crosswalk |
+| `external_supplier_id` | `supplier_id` | Via supplier crosswalk |
 | `first_name`, `last_name` | person names | Trim, normalize case |
 | `email` | `email` | Lowercase; duplicate check |
 | `national_id` / `passport` | id fields | Hash for dedup optional |
@@ -198,7 +198,7 @@ Canonical sponsor data lives on **engagement**, not contractor root (aligned wit
 
 ```text
 1. Resolve supplier crosswalk
-2. Run duplicate detection (email, passport, vendor+name)
+2. Run duplicate detection (email, passport, supplier+name)
 3. Validate sponsor + lifecycle
 4. Issue canonical_contractor_ref (CTR-*)
 5. Upsert Contractor + ContractorEngagement
@@ -224,7 +224,7 @@ Canonical sponsor data lives on **engagement**, not contractor root (aligned wit
 |-----|--------|
 | Same email (active) | Quarantine; link if same person proof |
 | Same passport / national id | Quarantine |
-| Same vendor + normalized name | Review queue |
+| Same supplier + normalized name | Review queue |
 | Same sponsor + overlapping dates | Review queue |
 
 ---

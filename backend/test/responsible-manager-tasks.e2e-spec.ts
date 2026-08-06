@@ -10,8 +10,8 @@ import request from 'supertest';
 import { SEED_TARGET_ROLE_PERMISSIONS } from '../src/core/auth/seed-system-role-bundles';
 import { TestHelper } from './utils/test-helper';
 
-const SPONSOR_REF = 'cms:emp:tasks-sponsor-a';
-const OTHER_REF = 'cms:emp:tasks-sponsor-b';
+const SPONSOR_REF = 'ewp:emp:tasks-responsible-manager-a';
+const OTHER_REF = 'ewp:emp:tasks-responsible-manager-b';
 
 describe('Sponsor accountability tasks (PR-SPONSOR-TASKS-1)', () => {
   let app: INestApplication;

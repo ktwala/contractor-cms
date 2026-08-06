@@ -310,7 +310,7 @@ export const MTN_DEMO_GOVERNANCE_TARGETS = {
   unlinked: 1,
 } as const;
 
-export const MTN_DEMO_RESPONSIBLE_MANAGER_EMPLOYEE_ID = 'cms:emp:responsible-manager-demo';
+export const MTN_DEMO_RESPONSIBLE_MANAGER_EMPLOYEE_ID = 'ewp:emp:responsible-manager-demo';
 
 /** @deprecated use MTN_DEMO_RESPONSIBLE_MANAGER_EMPLOYEE_ID */
 export const MTN_DEMO_SPONSOR_EMPLOYEE_ID = MTN_DEMO_RESPONSIBLE_MANAGER_EMPLOYEE_ID;

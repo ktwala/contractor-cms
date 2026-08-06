@@ -61,7 +61,7 @@ describe('ContractsPage', () => {
     const today = new Date();
     const expiredDate = new Date(today);
     expiredDate.setDate(expiredDate.getDate() - 10);
-    
+
     (api.getContracts as jest.Mock).mockResolvedValue({
       data: [
         {
@@ -100,10 +100,10 @@ describe('ContractsPage', () => {
     });
 
     const filterSelect = screen.getByRole('combobox');
-    
+
     // Change filter
     fireEvent.change(filterSelect, { target: { value: 'expiring_soon' } });
-    
+
     await waitFor(() => {
       expect(api.getContracts).toHaveBeenCalledWith(
         expect.objectContaining({ expiryState: 'expiring_soon' })

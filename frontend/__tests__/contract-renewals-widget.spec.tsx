@@ -34,17 +34,17 @@ describe('ContractRenewalsWidget', () => {
     });
 
     expect(screen.getByText('Contract Renewals')).toBeInTheDocument();
-    
+
     // Check metric numbers
     expect(screen.getByText('5')).toBeInTheDocument();
     expect(screen.getByText('12')).toBeInTheDocument();
     expect(screen.getByText('25')).toBeInTheDocument();
-    
+
     // Check labels
     expect(screen.getByText('Expired')).toBeInTheDocument();
     expect(screen.getByText('< 30 Days')).toBeInTheDocument();
     expect(screen.getByText('< 90 Days')).toBeInTheDocument();
-    
+
     // Check API calls
     expect(api.getContracts).toHaveBeenCalledTimes(3);
     expect(api.getContracts).toHaveBeenNthCalledWith(1, { expiryState: 'expired', limit: 1 });

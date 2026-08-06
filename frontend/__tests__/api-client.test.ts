@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { api } from '@/lib/api'; 
+import { api } from '@/lib/api';
 
 const localStorageMock = (function () {
   let store: Record<string, string> = {};
@@ -52,12 +52,12 @@ describe('ApiClient Org Context Injection', () => {
     };
 
     const finalConfig = await requestInterceptor(initialConfig);
-    
+
     // Existing params should remain completely untouched
     expect(finalConfig.params.page).toBe('1');
     expect(finalConfig.params.limit).toBe('100');
     expect(finalConfig.params.status).toBe('PENDING');
-    
+
     // The frontend must never inject organizationId, backend derives from session
     expect(finalConfig.params.organizationId).toBeUndefined();
     expect(finalConfig.headers['X-Organization-Id']).toBeUndefined();
@@ -80,7 +80,7 @@ describe('ApiClient Org Context Injection', () => {
     };
 
     const finalConfig = await requestInterceptor(initialConfig);
-    
+
     expect(finalConfig.params.startDate).toBe('2023-01-01');
     expect(finalConfig.params.organizationId).toBeUndefined();
   });

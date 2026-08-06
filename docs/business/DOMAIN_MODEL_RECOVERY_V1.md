@@ -24,7 +24,7 @@ The External Workforce Platform is a **governed External Workforce Administratio
 
 | Plane | Question it answers | Maturity |
 |-------|---------------------|----------|
-| **Supplier trust** | Is this vendor operationally trusted? | High |
+| **Supplier trust** | Is this supplier operationally trusted? | High |
 | **Identity acquisition** | How did this person enter the canonical registry? | High |
 | **Engagement / placement** | Where are they placed, for how long, under which sponsor? | Medium |
 | **Governance / drift** | Is upstream/downstream truth aligned? | High |
@@ -60,7 +60,7 @@ Per [`CONTRACTOR_OPERATING_MODEL_V1.md`](./CONTRACTOR_OPERATING_MODEL_V1.md) §1
 **Distinct entities and planes** (constitution principle):
 
 ```text
-Supplier     = commercial party (vendor org)
+Supplier     = commercial party (supplier org)
 Contractor   = worker / external person record
 Engagement   = placement under SupplierContract + dates + sponsor
 Sponsor      = HCM employee accountability (not supplier admin)

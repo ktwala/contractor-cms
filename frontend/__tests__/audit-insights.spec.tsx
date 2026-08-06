@@ -50,7 +50,7 @@ describe('Security Insights Acceptance Tests', () => {
 
     // Check that summary cards render with zero values
     expect(screen.getByText('Spoofing Attempts')).toBeInTheDocument();
-    
+
     // No anomalies table should render if empty
     expect(screen.queryByText('System Anomalies (Rate Limits & Spoofing)')).not.toBeInTheDocument();
   });

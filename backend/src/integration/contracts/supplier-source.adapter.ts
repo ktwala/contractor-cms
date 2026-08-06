@@ -11,7 +11,7 @@ import {
 
 /**
  * PR-CMS-INT-3 — supplier upstream integration boundary.
- * Adapters land in staging; governance promotion remains CMS-owned.
+ * Adapters land in staging; governance promotion remains platform-owned.
  */
 export interface SupplierSourceAdapter {
   readonly sourceSystemId: SourceSystemId;

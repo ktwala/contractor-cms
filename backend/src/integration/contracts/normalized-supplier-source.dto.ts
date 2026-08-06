@@ -5,7 +5,7 @@ import {
   SupplierStatus,
 } from '@prisma/client';
 
-/** CMS-normalized supplier extract row (upstream-agnostic). */
+/** platform-normalized supplier extract row (upstream-agnostic). */
 export type NormalizedSupplierRecord = {
   externalSupplierId: string;
   supplierNumber?: string | null;

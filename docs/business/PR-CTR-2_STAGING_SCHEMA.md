@@ -87,14 +87,14 @@ Exception queue for rows that cannot auto-promote.
 
 | `reasonCode` | Typical trigger |
 |--------------|-----------------|
-| `DUPLICATE_IDENTITY` | Email / passport / vendor+name collision |
+| `DUPLICATE_IDENTITY` | Email / passport / supplier+name collision |
 | `MISSING_SPONSOR` | No sponsor in normalized payload |
 | `INACTIVE_SPONSOR` | Sponsor not active in directory |
 | `INVALID_DATES` | End before start, impossible ranges |
 | `OVERLAPPING_ENGAGEMENT` | Conflicting placements |
 | `WORKER_TYPE_MISMATCH` | Employee vs contractor collision |
 | `EMPLOYEE_COLLISION` | Same person as internal employee |
-| `SUPPLIER_UNRESOLVED` | Vendor crosswalk missing |
+| `SUPPLIER_UNRESOLVED` | Supplier crosswalk missing |
 
 Resolution: `resolvedAt` + `overrideReason` (governance record) for controlled promote.
 

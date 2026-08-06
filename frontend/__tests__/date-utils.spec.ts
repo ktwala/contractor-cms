@@ -53,7 +53,7 @@ describe('Date Utilities', () => {
       expect(getContractValidityState('2026-07-01T12:00:00Z')).toBe('Active');
       expect(getContractValidityState('2027-01-01T12:00:00Z')).toBe('Active');
     });
-    
+
     it('respects custom thresholds', () => {
       expect(getContractValidityState('2026-06-15T12:00:00Z', 30)).toBe('Active'); // 45 days away > 30 threshold
       expect(getContractValidityState('2026-06-15T12:00:00Z', 90)).toBe('Expiring Soon'); // 45 days away <= 90 threshold

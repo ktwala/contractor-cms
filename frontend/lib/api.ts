@@ -22,7 +22,7 @@ class ApiClient {
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
         }
-        
+
         const userStr = localStorage.getItem('user');
         if (userStr) {
           try {

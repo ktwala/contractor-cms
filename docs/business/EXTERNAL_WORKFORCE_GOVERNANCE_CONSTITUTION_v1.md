@@ -21,7 +21,7 @@
 
 | Concern | Authoritative | CMS |
 |---------|---------------|-----|
-| Supplier legal/vendor master | Oracle Procurement | Operational trust, PDP, portal, contractor enablement |
+| Supplier legal/supplier master | Oracle Procurement | Operational trust, PDP, portal, contractor enablement |
 | Supplier onboarding evidence (`ORACLE_ONLY`) | Oracle Procurement (when synced) | Supplemental checks + operational approval — see [SUPPLIER_GOVERNANCE_OPERATIONS.md](../SUPPLIER_GOVERNANCE_OPERATIONS.md) |
 | Contractor bootstrap | Oracle HCM (once / migration waves) | Correlation, materialization, governance establishment |
 | Contractor steady state (`CMS_ONLY`) | **CMS** | Lifecycle, sponsor, restrictions, PDP — HCM is lineage only |

@@ -37,7 +37,7 @@ function passedStagingRow(overrides: Record<string, unknown> = {}) {
       email: 'pat.promote@example.com',
       worker_type: 'Contingent Worker',
       start_date: '2024-01-01',
-      sponsor_employee_id: 'cms:emp:sponsor-valid',
+      sponsor_employee_id: 'ewp:emp:responsible-manager-valid',
       assignment_status: 'Active',
       vendor_name: 'Acme Vendor',
     },
@@ -49,7 +49,7 @@ function passedStagingRow(overrides: Record<string, unknown> = {}) {
       workerType: 'Contingent Worker',
       displayName: 'Pat Promote',
       startDate: '2024-01-01',
-      responsibleManagerEmployeeId: 'cms:emp:sponsor-valid',
+      responsibleManagerEmployeeId: 'ewp:emp:responsible-manager-valid',
       assignmentStatus: 'Active',
       supplier: 'Acme Vendor',
     },
@@ -364,7 +364,7 @@ describe('PromoteHcmContractorToCmsService (PR-CTR-5)', () => {
         cmsContractorId: 'contractor-new',
         contractorBusinessId: 'CTR-LSO-00000001',
         legacyHcmPersonId: 'hcm-9001',
-        responsibleManagerEmployeeId: 'cms:emp:sponsor-valid',
+        responsibleManagerEmployeeId: 'ewp:emp:responsible-manager-valid',
         migrationBatchId: BATCH_ID,
         organizationId: ORG_ID,
       }),
@@ -390,14 +390,14 @@ describe('PromoteHcmContractorToCmsService (PR-CTR-5)', () => {
         workerType: 'Contingent Worker',
         displayName: 'Pat Promote',
         startDate: '2024-01-01',
-        responsibleManagerEmployeeId: 'cms:emp:sponsor-valid',
+        responsibleManagerEmployeeId: 'ewp:emp:responsible-manager-valid',
         assignmentStatus: 'Active',
       },
       sourcePayloadJson: {
         first_name: 'Pat',
         last_name: 'Promote',
         email: 'pat.promote@example.com',
-        sponsor_employee_id: 'cms:emp:sponsor-valid',
+        sponsor_employee_id: 'ewp:emp:responsible-manager-valid',
       },
     });
     prisma.hcmContractorStaging.findUnique.mockResolvedValue(independentRow);
@@ -418,7 +418,7 @@ describe('PromoteHcmContractorToCmsService (PR-CTR-5)', () => {
     expect(tx.contractorEngagement.create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
-          responsibleManagerEmployeeId: 'cms:emp:sponsor-valid',
+          responsibleManagerEmployeeId: 'ewp:emp:responsible-manager-valid',
         }),
       }),
     );

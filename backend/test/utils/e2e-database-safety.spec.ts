@@ -1,25 +1,25 @@
 import { assertSafeE2eDatabaseTarget } from './test-helper';
 
 describe('E2E Database Safety Guard', () => {
-  const E2E_URL = 'postgresql://contractor_cms:password@localhost:5433/contractor_cms_e2e';
-  const DEV_URL = 'postgresql://contractor_cms:password@localhost:5433/contractor_cms';
+  const E2E_URL = 'postgresql://external_workforce_platform:password@localhost:5433/external_workforce_platform_e2e';
+  const DEV_URL = 'postgresql://external_workforce_platform:password@localhost:5433/external_workforce_platform';
 
-  it('allows test + contractor_cms_e2e', () => {
+  it('allows test + external_workforce_platform_e2e', () => {
     expect(() =>
       assertSafeE2eDatabaseTarget(E2E_URL, 'test'),
     ).not.toThrow();
   });
 
-  it('rejects test + contractor_cms (development database)', () => {
+  it('rejects test + external_workforce_platform (development database)', () => {
     expect(() =>
       assertSafeE2eDatabaseTarget(DEV_URL, 'test'),
-    ).toThrow('E2E_DATABASE_SAFETY: refusing cleanup for database "contractor_cms"');
+    ).toThrow('E2E_DATABASE_SAFETY: refusing cleanup for database "external_workforce_platform"');
   });
 
-  it('rejects development + contractor_cms_e2e', () => {
+  it('rejects development + external_workforce_platform_e2e', () => {
     expect(() =>
       assertSafeE2eDatabaseTarget(E2E_URL, 'development'),
-    ).toThrow('E2E_DATABASE_SAFETY: refusing cleanup for database "contractor_cms_e2e"');
+    ).toThrow('E2E_DATABASE_SAFETY: refusing cleanup for database "external_workforce_platform_e2e"');
   });
 
   it('rejects missing DATABASE_URL', () => {

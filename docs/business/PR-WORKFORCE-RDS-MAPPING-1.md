@@ -102,7 +102,7 @@ The RDS remains valuable as an **external traceability matrix** for MTN conversa
 RDS "contractor lifecycle"          CMS decomposition
 ─────────────────────────          ───────────────────
 Portal self-service        →        Supplier plane (ring-fenced UX)
-Login / MFA / vendor RBAC  →        Identity + Governance
+Login / MFA / supplier RBAC  →        Identity + Governance
 SNOW access request        →        Access plane (adapter)
 Onboarding / rehire        →        Workforce + Identity acquisition
 Contract dates / transfer  →        Engagement plane
@@ -120,8 +120,8 @@ Workforce plane **emits domain events**. Other planes **react**. Workforce does 
 
 | RDS Feature | RDS Intent | CMS Plane | CMS Capability Today | Gap | Decision | Class | Build |
 |-------------|------------|-----------|----------------------|-----|----------|-------|-------|
-| **FE001** — 3rd party admin portal | Self-service portal for onboarding, rehire, extension, suspension, termination, profile update | **Supplier** + **Workforce** | Supplier portal: nominate contractor, read-only workforce timeline, scoped contractor list; timesheet/invoice surfaces (separate PRs) | No vendor self-service for suspend / terminate / extend / rehire / bulk; no full lifecycle menu RDS describes | **Extend portal incrementally per mapped feature** — do not build one RDS mega-workflow | **B** | Later |
-| **FE002** — User authentication & login | Secure login, MFA, RBAC, vendor ring-fencing, HR-approved vendor admin provisioning | **Identity** + **Governance** | JWT auth, permission catalog, supplier scope guard, seed roles (supplier admin, ops, sponsor personas) | No MFA; not MTN IdP standards; no HR approval gate before vendor admin access | **CMS RBAC is baseline**; MTN IdP/MFA is integration; **challenge** HR approval duplicated with Supplier membership | **B** | Later / **Challenge** |
+| **FE001** — 3rd party admin portal | Self-service portal for onboarding, rehire, extension, suspension, termination, profile update | **Supplier** + **Workforce** | Supplier portal: nominate contractor, read-only workforce timeline, scoped contractor list; timesheet/invoice surfaces (separate PRs) | No supplier self-service for suspend / terminate / extend / rehire / bulk; no full lifecycle menu RDS describes | **Extend portal incrementally per mapped feature** — do not build one RDS mega-workflow | **B** | Later |
+| **FE002** — User authentication & login | Secure login, MFA, RBAC, supplier ring-fencing, HR-approved supplier admin provisioning | **Identity** + **Governance** | JWT auth, permission catalog, supplier scope guard, seed roles (supplier admin, ops, sponsor personas) | No MFA; not MTN IdP standards; no HR approval gate before supplier admin access | **CMS RBAC is baseline**; MTN IdP/MFA is integration; **challenge** HR approval duplicated with Supplier membership | **B** | Later / **Challenge** |
 | **FE003** — Access control (request, approve, provision, revoke) | SNOW/E-SSO access request, HR DoA approval, role provisioning, revoke on lifecycle | **Access** (+ **Identity**) | IGA outbox substrate, access context in auth layer; no ServiceNow / Aveksa connector | Full SNOW workflow, provisioning execution, revoke on suspend/terminate/blacklist | **Belongs to Access plane** — adapter PRs, not workforce transitions | **C** | Later |
 | **FE004** — Contingent worker onboarding (single & bulk) | Guided onboarding form, mandatory HCM fields, duplicate/blacklist validation, LM + HRBP approval | **Workforce** + **Supplier** + **Identity** | Supplier nominate → `NOMINATED`; ops review → `PENDING_APPROVAL` → `ACTIVE`; HCM promote bootstrap; create contractor API | Bulk onboarding; full MTN field template; LM/HRBP approval chain; BR003–BR008 enforcement at intake; RSA vs non-RSA branching | **Nominate v1 proven**; harden validation/block rules separately from approval engine | **B** | Now (validation) / Later (bulk, workflow) |
 | **FE005** — Notifications & alerts | Email/in-app alerts at every lifecycle step; LM as first approver in notification chain | **Workflow** + **Reporting** | Audit log + workforce history (retrospective truth); no notification dispatcher | No email engine; no approver notification routing; no worker-facing provisioning notices | **Net-new notification service** or integration bus — not embedded in transition service | **D** | Later |
@@ -133,7 +133,7 @@ Workforce plane **emits domain events**. Other planes **react**. Workforce does 
 | **FE011** — Reverse-termination | Restore terminated worker to active; strict eligibility (time windows, misconduct); access restore | **Workforce** + **Access** | `TERMINATED → ACTIVE` transition (ops path; domain event `ContractorRehired` when from terminated) | RDS eligibility rules (1–3 day window, 30-day cutoff, misconduct blocks); approval; access restoration | **Map to controlled reopen** with governance rules layer — **challenge** hard-coded RDS windows until MTN confirms | **B** / **E** | Later / **Challenge** |
 | **FE012** — Rehire | Revive existing record; preserve employee number; new contract period; block do-not-rehire | **Workforce** + **Identity** + **Engagement** | Identity continuity via CTR/HCM promote; `TERMINATED → ACTIVE` partial overlap | Dedicated rehire UX; eligibility vs blacklist; new engagement period; access provisioning; “employee number for life” policy | **Rehire ≠ new nominate** — workforce + identity linking PR; not portal duplicate create | **B** | Later |
 | **FE013** — Reinstatement | Resume suspended worker; restore access; LM approval; effective date | **Workforce** + **Access** | `SUSPENDED → ACTIVE`; domain stub `ContractorReinstated` | Reinstatement form; effective date; approval workflow; automatic access restore | **Same split as FE009** — workforce reinstate first, access reaction second | **B** | Later |
-| **FE014** — Blacklisting | Do-not-hire; block onboarding, rehire, reverse-termination, reinstatement, movement; approval; access removal | **Workforce** + **Identity** + **Access** | `→ BLACKLISTED`; reason + `authorityNote`; timeline; supplier hidden; ops-only; terminal state | Approval rules (vendor request vs MTN apply); access removal; un-blacklist; **cross-lifecycle enforcement** (onboard, rehire, reinstate, reverse-term, movement) | **CMS workforce policy block shipped** — extend enforcement hooks; defer MTN approval + access | **B** | Now (enforce blocks) / Later (approval, access) |
+| **FE014** — Blacklisting | Do-not-hire; block onboarding, rehire, reverse-termination, reinstatement, movement; approval; access removal | **Workforce** + **Identity** + **Access** | `→ BLACKLISTED`; reason + `authorityNote`; timeline; supplier hidden; ops-only; terminal state | Approval rules (supplier request vs MTN apply); access removal; un-blacklist; **cross-lifecycle enforcement** (onboard, rehire, reinstate, reverse-term, movement) | **CMS workforce policy block shipped** — extend enforcement hooks; defer MTN approval + access | **B** | Now (enforce blocks) / Later (approval, access) |
 | **FE015** — Worker transfer | Move worker across org structure (reporting line, department, position); active only | **Engagement** (+ **Governance**) | Engagements with sponsor/placement; contractor org fields partial | Transfer request workflow; LM approval; org-structure mutation; access recalculation | **Engagement plane** — not a workforce state change | **C** | Later |
 | **FE016** — Worker movement | Update role, position, OU, cost centre, project while active | **Engagement** | Placement and contract context on engagement | Movement form; approval; cost centre / project codes; manager change rules vs transfer | **Engagement plane** — distinguish movement vs transfer (FE015) | **C** | Later |
 
@@ -154,7 +154,7 @@ supplier hidden
 ops-only
 ```
 
-**RDS also requires:** approval rules (vendor request, LM apply), access removal, un-blacklist, enforcement across onboarding, rehire, reinstatement, reverse-termination, and movement.
+**RDS also requires:** approval rules (supplier request, LM apply), access removal, un-blacklist, enforcement across onboarding, rehire, reinstatement, reverse-termination, and movement.
 
 **Decision:** Keep blacklist as workforce policy block; add cross-plane enforcement incrementally; do not merge into a single RDS approval workflow.
 
@@ -191,7 +191,7 @@ Ordered by **capability maturity** per [`EXTERNAL_WORKFORCE_CAPABILITY_MAP.md`](
 4. Access Integration         SNOW/Aveksa + lifecycle reactions (FE003)
 5. Workflow Orchestration     Notifications / approval engine when scoped (FE005, FE002)
 6. Supplier Administration    Portal wiring to proven paths (FE001, FE006, FE007)
-7. MTN challenge pack         Reverse-term windows, vendor HR approval (FE011, FE002)
+7. MTN challenge pack         Reverse-term windows, supplier HR approval (FE011, FE002)
 ```
 
 ---

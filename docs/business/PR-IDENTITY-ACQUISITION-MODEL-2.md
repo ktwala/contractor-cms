@@ -16,7 +16,7 @@
 - Nullable `supplierId` + DB check constraint vs `acquisitionModel`
 - Nullable `ContractorEngagement.contractId` for independent placements
 - `POST /contractors/acquire-independent` — enterprise direct intake at `NOMINATED`
-- HCM promote: absent vendor → `INDEPENDENT`; unresolved vendor → fail
+- HCM promote: absent supplier → `INDEPENDENT`; unresolved supplier → fail
 - Workforce guard: `INDEPENDENT` → `ACTIVE` requires sponsored engagement
 - Org context resolver + contractor queries use `organizationId`
 

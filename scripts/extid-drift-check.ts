@@ -132,9 +132,9 @@ if (fs.existsSync(SCHEMA_PATH)) {
 
   const engagementBody = getPrismaModelBody(schema, 'ContractorEngagement');
   const requiredEngagementSponsor = [
-    'sponsorEmployeeId',
-    'sponsorDelegateEmployeeId',
-    'sponsorStatus',
+    'responsibleManagerEmployeeId',
+    'responsibleManagerDelegateEmployeeId',
+    'responsibleManagerStatus',
   ] as const;
   for (const col of requiredEngagementSponsor) {
     if (!engagementBody.includes(col)) {

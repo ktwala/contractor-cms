@@ -137,7 +137,7 @@ describe('ContractorsService IGA event writes (PR-IGA-EVENT-WRITE-1)', () => {
       expect.objectContaining({
         fromState: null,
         toState: 'ACTIVE',
-        metadata: expect.objectContaining({ bootstrap: true, cmsDirectCreate: true }),
+        metadata: expect.objectContaining({ bootstrap: true, platformDirectCreate: true }),
       }),
     );
   });

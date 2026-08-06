@@ -19,7 +19,7 @@ export function loadBackendEnv(): void {
   if (!process.env.DATABASE_URL?.trim()) {
     throw new Error(
       'DATABASE_URL is not set. Copy backend/.env.example to backend/.env and adjust, ' +
-        'or export DATABASE_URL (Docker: postgresql://contractor_cms:password@localhost:5433/contractor_cms).',
+        'or export DATABASE_URL (Docker: postgresql://external_workforce_platform:password@localhost:5433/external_workforce_platform).',
     );
   }
 }

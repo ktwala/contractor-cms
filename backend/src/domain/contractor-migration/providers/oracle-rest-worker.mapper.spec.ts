@@ -8,7 +8,7 @@ describe('mapOracleWorkerToExtractRecord', () => {
         PersonNumber: 'PN-99',
         FirstName: 'A',
         LastName: 'B',
-        sponsor_employee_id: 'cms:emp:1',
+        sponsor_employee_id: 'ewp:emp:1',
       },
       1,
     );

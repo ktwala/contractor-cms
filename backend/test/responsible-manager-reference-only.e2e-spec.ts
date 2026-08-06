@@ -4,7 +4,7 @@ import request from 'supertest';
 import { SEED_TARGET_ROLE_PERMISSIONS } from '../src/core/auth/seed-system-role-bundles';
 import { TestHelper } from './utils/test-helper';
 
-const SPONSOR_REF = 'cms:emp:ref-only-sponsor';
+const SPONSOR_REF = 'ewp:emp:ref-only-responsible-manager';
 
 /**
  * PR-SPONSOR-REFERENCE-ONLY-1 — default: sponsor fields on engagement + IGA publish;

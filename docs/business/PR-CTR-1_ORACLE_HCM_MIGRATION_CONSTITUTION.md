@@ -59,7 +59,7 @@ IGA / AD / Managed systems / Reporting
 | Contractor identity (person) | HCM until Wave 2 freeze | CMS |
 | Placement / engagement dates, role, cost center | HCM until freeze | CMS |
 | Sponsor reference | HCM import; CMS validates | CMS (HCM lookup optional) |
-| Supplier / vendor link | CMS (supplier master) + HCM correlation | CMS |
+| Supplier link | CMS (supplier master) + HCM correlation | CMS |
 | Access provision / certification | IGA | IGA |
 | Immutable business contractor ref | **CMS-issued only** | CMS |
 
@@ -136,7 +136,7 @@ contractor.sponsor_changed
 
 | Control | Action on failure |
 |---------|-------------------|
-| Duplicate email / passport / vendor+name | Quarantine staging row |
+| Duplicate email / passport / supplier+name | Quarantine staging row |
 | Sponsor missing / inactive in HCM directory | Quarantine or default deny promote |
 | Expired placement, no end date, future-dated anomalies | Exception queue |
 | Identity collision (contractor ↔ employee) | Manual correlation review |
