@@ -11,6 +11,7 @@ import request from 'supertest';
 import { SUPPLIER_MASTER_CREATION_FORBIDDEN } from '../src/core/authority/authority.constants';
 import { SUPPLIER_SOURCE_IDENTITY_IMMUTABLE } from '../src/domain/supplier-sources/supplier-governance-twin.errors';
 import { TestHelper } from './utils/test-helper';
+import { GOVERNANCE_INTEGRATION_OPERATOR_PERMISSIONS } from '../src/core/auth/seed-system-role-bundles';
 import { DataFactory } from './fixtures/data-factory';
 
 describe('Oracle staging → governance twin (PR-CMS-DATA-2)', () => {
@@ -41,9 +42,13 @@ describe('Oracle staging → governance twin (PR-CMS-DATA-2)', () => {
       password: 'PromoteOra123!',
       roles: [
         {
-          role: 'CONTRACTOR_MANAGER',
+          role: 'GOVERNANCE_INTEGRATION_OPERATOR',
           orgId: org.id,
-          permissions: ['suppliers:read', 'suppliers:update', 'suppliers:create'],
+          permissions: [
+            ...GOVERNANCE_INTEGRATION_OPERATOR_PERMISSIONS,
+            'suppliers:create',
+            'suppliers:update',
+          ],
           isSystemRole: true,
         },
       ],

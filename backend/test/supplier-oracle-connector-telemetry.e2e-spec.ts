@@ -8,6 +8,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import request from 'supertest';
 import { TestHelper } from './utils/test-helper';
+import { GOVERNANCE_INTEGRATION_OPERATOR_PERMISSIONS } from '../src/core/auth/seed-system-role-bundles';
 
 describe('Oracle connector telemetry (PR-CMS-CONNECTOR-1F–1G)', () => {
   let app: INestApplication;
@@ -35,9 +36,9 @@ describe('Oracle connector telemetry (PR-CMS-CONNECTOR-1F–1G)', () => {
       password: 'ConnectorTel123!',
       roles: [
         {
-          role: 'CONTRACTOR_MANAGER',
+          role: 'GOVERNANCE_INTEGRATION_OPERATOR',
           orgId: org.id,
-          permissions: ['suppliers:read', 'suppliers:update'],
+          permissions: [...GOVERNANCE_INTEGRATION_OPERATOR_PERMISSIONS],
           isSystemRole: true,
         },
       ],

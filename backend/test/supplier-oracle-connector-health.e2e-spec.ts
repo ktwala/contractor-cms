@@ -5,6 +5,7 @@ import {
 } from '@prisma/client';
 import request from 'supertest';
 import { TestHelper } from './utils/test-helper';
+import { GOVERNANCE_INTEGRATION_OPERATOR_PERMISSIONS } from '../src/core/auth/seed-system-role-bundles';
 
 describe('Oracle connector health (PR-CMS-CONNECTOR-1D–1E)', () => {
   let app: INestApplication;
@@ -32,9 +33,9 @@ describe('Oracle connector health (PR-CMS-CONNECTOR-1D–1E)', () => {
       password: 'ConnectorHealth123!',
       roles: [
         {
-          role: 'CONTRACTOR_MANAGER',
+          role: 'GOVERNANCE_INTEGRATION_OPERATOR',
           orgId: org.id,
-          permissions: ['suppliers:read', 'suppliers:update'],
+          permissions: [...GOVERNANCE_INTEGRATION_OPERATOR_PERMISSIONS],
           isSystemRole: true,
         },
       ],

@@ -101,27 +101,34 @@ describe('Supplier membership row isolation (PR-SUPPLIER-SCOPING-1)', () => {
       'SupplierAdmin123!',
     );
 
-    const listRes = await request(app.getHttpServer())
-      .get('/suppliers')
+    const profileRes = await request(app.getHttpServer())
+      .get('/supplier-portal/profile')
       .set('Authorization', `Bearer ${token}`)
       .expect(200);
 
-    expect(listRes.body.total).toBe(1);
-    expect(listRes.body.data).toHaveLength(1);
-    expect(listRes.body.data[0].id).toBe(supplierA.id);
-    expect(listRes.body.data[0].companyName).toBe('Demo Supplier Ltd');
+    expect(profileRes.body.status).toBe('ok');
+    expect(profileRes.body.supplier_context.supplier_id).toBe(supplierA.id);
+    expect(profileRes.body.data.id).toBe(supplierA.id);
+    expect(profileRes.body.data.companyName).toBe('Demo Supplier Ltd');
+
+    const portalTimesheetsRes = await request(app.getHttpServer())
+      .get('/supplier-portal/timesheets')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200);
+
+    expect(portalTimesheetsRes.body.status).toBe('ok');
+    expect(portalTimesheetsRes.body.data).toHaveLength(0);
+    expect(portalTimesheetsRes.body.supplier_context.supplier_id).toBe(supplierA.id);
 
     await request(app.getHttpServer())
-      .get(`/suppliers/${supplierB.id}`)
-      .set('Authorization', `Bearer ${token}`)
-      .expect(404);
-
-    const timesheetsRes = await request(app.getHttpServer())
-      .get('/timesheets')
+      .get('/suppliers')
       .set('Authorization', `Bearer ${token}`)
       .expect(403);
 
-    expect(timesheetsRes.body).toBeDefined();
+    await request(app.getHttpServer())
+      .get('/timesheets')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(403);
   });
 
   it('fails closed when supplier-portal permissions exist without membership', async () => {

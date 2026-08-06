@@ -34,7 +34,7 @@ describe('Core Domain (Phase 2) E2E Tests', () => {
         const response = await request(app.getHttpServer())
           .post('/suppliers')
           .set('Authorization', `Bearer ${token}`)
-          .send(supplierDto)
+          .send({ ...supplierDto, organizationId: organization.id })
           .expect(201);
 
         expect(response.body).toMatchObject({
@@ -57,7 +57,7 @@ describe('Core Domain (Phase 2) E2E Tests', () => {
         const response = await request(app.getHttpServer())
           .post('/suppliers')
           .set('Authorization', `Bearer ${token}`)
-          .send(supplierDto)
+          .send({ ...supplierDto, organizationId: organization.id })
           .expect(201);
 
         expect(response.body.type).toBe('COMPANY');
@@ -74,7 +74,6 @@ describe('Core Domain (Phase 2) E2E Tests', () => {
             email: `supplier${i}@example.com`,
           });
         }
-
         const response = await request(app.getHttpServer())
           .get('/suppliers?page=1&limit=2')
           .set('Authorization', `Bearer ${token}`)
@@ -205,7 +204,7 @@ describe('Core Domain (Phase 2) E2E Tests', () => {
           .post('/contractors')
           .set('Authorization', `Bearer ${token}`)
           .send(contractorDto)
-          .expect(404);
+          .expect(400);
       });
     });
 
@@ -251,7 +250,7 @@ describe('Core Domain (Phase 2) E2E Tests', () => {
         });
 
         const updateDto = {
-          status: 'INACTIVE',
+          isActive: false,
         };
 
         const response = await request(app.getHttpServer())
@@ -260,7 +259,7 @@ describe('Core Domain (Phase 2) E2E Tests', () => {
           .send(updateDto)
           .expect(200);
 
-        expect(response.body.status).toBe('INACTIVE');
+        expect(response.body.isActive).toBe(false);
       });
     });
   });
@@ -281,7 +280,15 @@ describe('Core Domain (Phase 2) E2E Tests', () => {
 
     describe('POST /contracts', () => {
       it('should create a contract', async () => {
-        const contractDto = DataFactory.contract(contractor.id, supplier.id);
+        const contractDto = {
+          organizationId: organization.id,
+          supplierId: supplier.id,
+          contractNumber: `CT-${Date.now()}`,
+          contractType: 'TIME_AND_MATERIALS',
+          title: 'Software Development Contract',
+          startDate: new Date().toISOString(),
+          endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+        };
 
         const response = await request(app.getHttpServer())
           .post('/contracts')
@@ -290,20 +297,24 @@ describe('Core Domain (Phase 2) E2E Tests', () => {
           .expect(201);
 
         expect(response.body).toMatchObject({
-          contractorId: contractor.id,
           supplierId: supplier.id,
           title: contractDto.title,
-          type: contractDto.type,
-          status: contractDto.status,
+          contractType: contractDto.contractType,
+          contractNumber: contractDto.contractNumber,
         });
         expect(response.body.organizationId).toBe(organization.id);
       });
 
       it('should validate date range', async () => {
-        const contractDto = DataFactory.contract(contractor.id, supplier.id, {
+        const contractDto = {
+          organizationId: organization.id,
+          supplierId: supplier.id,
+          contractNumber: `CT-${Date.now()}`,
+          contractType: 'TIME_AND_MATERIALS',
+          title: 'Software Development Contract',
           startDate: new Date().toISOString(),
           endDate: new Date(Date.now() - 1000).toISOString(), // End before start
-        });
+        };
 
         await request(app.getHttpServer())
           .post('/contracts')

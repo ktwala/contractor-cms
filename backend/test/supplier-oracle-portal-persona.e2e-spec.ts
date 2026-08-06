@@ -9,7 +9,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import request from 'supertest';
 import { SUPPLIER_MASTER_CREATION_FORBIDDEN } from '../src/core/authority/authority.constants';
-import { SEED_TARGET_ROLE_PERMISSIONS } from '../src/core/auth/seed-system-role-bundles';
+import { SEED_TARGET_ROLE_PERMISSIONS, GOVERNANCE_INTEGRATION_OPERATOR_PERMISSIONS } from '../src/core/auth/seed-system-role-bundles';
 import { SUPPLIER_EVIDENCE_DOC_TYPES } from '../src/domain/suppliers/supplier-evidence-catalog';
 import { TestHelper } from './utils/test-helper';
 
@@ -87,9 +87,9 @@ describe('Oracle portal governance persona (PR-CMS-GOV-1E)', () => {
       password: 'OpsOraPersona123!',
       roles: [
         {
-          role: 'CONTRACTOR_MANAGER',
+          role: 'GOVERNANCE_INTEGRATION_OPERATOR',
           orgId: org.id,
-          permissions: ['suppliers:read', 'suppliers:update', 'suppliers:approve'],
+          permissions: [...GOVERNANCE_INTEGRATION_OPERATOR_PERMISSIONS, 'suppliers:approve'],
           isSystemRole: true,
         },
       ],

@@ -42,9 +42,14 @@ export function excludeComparisonAnchorSuppliersWhere() {
     AND: [
       { NOT: { email: COMPARISON_ANCHOR_SUPPLIER_EMAIL } },
       {
-        NOT: {
-          companyName: { startsWith: COMPARISON_ANCHOR_SUPPLIER_COMPANY_PREFIX },
-        },
+        OR: [
+          { companyName: null },
+          {
+            NOT: {
+              companyName: { startsWith: COMPARISON_ANCHOR_SUPPLIER_COMPANY_PREFIX },
+            },
+          },
+        ],
       },
     ],
   };

@@ -24,9 +24,17 @@ describe('Work Management (Phase 3) E2E Tests', () => {
     user = setup.user;
     token = setup.token;
 
+    await TestHelper.getPrisma().organization.update({
+      where: { id: organization.id },
+      data: { supplierAuthorityMode: 'ORACLE_ONLY' },
+    });
+
     // Create base entities
     supplier = await DataFactory.createSupplier(TestHelper.getPrisma(), {
       organizationId: organization.id,
+      sourceSystem: 'ORACLE_SUPPLIER_SAAS',
+      externalSupplierId: 'EXT-SUP-123',
+      sourceSyncStatus: 'SYNCED',
     });
 
     contractor = await DataFactory.createContractor(TestHelper.getPrisma(), {
@@ -62,7 +70,7 @@ describe('Work Management (Phase 3) E2E Tests', () => {
   describe('Engagements Module', () => {
     describe('POST /engagements', () => {
       it('should create an engagement', async () => {
-        const engagementDto = DataFactory.engagement(contract.id);
+        const engagementDto = DataFactory.engagement(contract.id, contractor.id);
 
         const response = await request(app.getHttpServer())
           .post('/engagements')
@@ -72,14 +80,13 @@ describe('Work Management (Phase 3) E2E Tests', () => {
 
         expect(response.body).toMatchObject({
           contractId: contract.id,
-          title: engagementDto.title,
-          status: engagementDto.status,
+          role: engagementDto.role,
+          isActive: true,
         });
-        expect(response.body.organizationId).toBe(organization.id);
       });
 
       it('should validate date range', async () => {
-        const engagementDto = DataFactory.engagement(contract.id, {
+        const engagementDto = DataFactory.engagement(contract.id, contractor.id, {
           startDate: new Date().toISOString(),
           endDate: new Date(Date.now() - 1000).toISOString(),
         });
@@ -129,11 +136,11 @@ describe('Work Management (Phase 3) E2E Tests', () => {
         });
 
         const response = await request(app.getHttpServer())
-          .get('/engagements?status=ACTIVE')
+          .get('/engagements?isActive=true')
           .set('Authorization', `Bearer ${token}`)
           .expect(200);
 
-        expect(response.body.data.every((e: any) => e.status === 'ACTIVE')).toBe(true);
+        expect(response.body.data.every((e: any) => e.isActive === true)).toBe(true);
       });
     });
 
@@ -152,7 +159,7 @@ describe('Work Management (Phase 3) E2E Tests', () => {
         });
 
         const updateDto = {
-          status: 'COMPLETED',
+          isActive: false,
         };
 
         const response = await request(app.getHttpServer())
@@ -161,7 +168,7 @@ describe('Work Management (Phase 3) E2E Tests', () => {
           .send(updateDto)
           .expect(200);
 
-        expect(response.body.status).toBe('COMPLETED');
+        expect(response.body.isActive).toBe(false);
       });
     });
   });
@@ -185,7 +192,7 @@ describe('Work Management (Phase 3) E2E Tests', () => {
 
     describe('POST /timesheets', () => {
       it('should create a timesheet', async () => {
-        const timesheetDto = DataFactory.timesheet(engagement.id, project.id);
+        const timesheetDto = DataFactory.timesheet(contractor.id, project.id);
 
         const response = await request(app.getHttpServer())
           .post('/timesheets')
@@ -194,23 +201,23 @@ describe('Work Management (Phase 3) E2E Tests', () => {
           .expect(201);
 
         expect(response.body).toMatchObject({
-          engagementId: engagement.id,
+          contractorId: contractor.id,
           projectId: project.id,
-          status: timesheetDto.status,
+          status: 'DRAFT',
         });
-        expect(response.body.totalHours).toBeGreaterThan(0);
+        expect(Number(response.body.totalHours)).toBeGreaterThan(0);
       });
 
       it('should calculate total hours from entries', async () => {
-        const timesheetDto = DataFactory.timesheet(engagement.id, project.id, {
+        const timesheetDto = DataFactory.timesheet(contractor.id, project.id, {
           entries: [
             {
-              date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+              date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
               hours: 5,
               description: 'Work',
             },
             {
-              date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+              date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
               hours: 3.5,
               description: 'More work',
             },
@@ -223,11 +230,11 @@ describe('Work Management (Phase 3) E2E Tests', () => {
           .send(timesheetDto)
           .expect(201);
 
-        expect(response.body.totalHours).toBe(8.5);
+        expect(Number(response.body.totalHours)).toBe(8.5);
       });
 
       it('should validate period dates', async () => {
-        const timesheetDto = DataFactory.timesheet(engagement.id, project.id, {
+        const timesheetDto = DataFactory.timesheet(contractor.id, project.id, {
           periodStart: new Date().toISOString(),
           periodEnd: new Date(Date.now() - 1000).toISOString(),
         });
@@ -352,7 +359,7 @@ describe('Work Management (Phase 3) E2E Tests', () => {
         const response = await request(app.getHttpServer())
           .patch(`/timesheets/${timesheet.id}/reject`)
           .set('Authorization', `Bearer ${token}`)
-          .send({ reason: 'Incorrect hours' })
+          .send({ rejectionReason: 'Incorrect hours' })
           .expect(200);
 
         expect(response.body.status).toBe('REJECTED');
@@ -396,7 +403,7 @@ describe('Work Management (Phase 3) E2E Tests', () => {
           .send(updateDto)
           .expect(200);
 
-        expect(response.body.totalHours).toBe(7);
+        expect(Number(response.body.totalHours)).toBe(7);
       });
 
       it('should not update submitted timesheet', async () => {

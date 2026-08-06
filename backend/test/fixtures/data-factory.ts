@@ -1,4 +1,4 @@
-import { PrismaClient, SupplierType, WorkerClassification, EngagementModel } from '@prisma/client';
+import { PrismaClient, SupplierType, WorkerClassification, EngagementModel, SupplierStatus } from '@prisma/client';
 
 export class DataFactory {
   // ---------------------------------------------------------------------------
@@ -55,6 +55,7 @@ export class DataFactory {
     return prisma.supplier.create({
       data: {
         organization: { connect: { id: organizationId } },
+        status: overrides.status ?? SupplierStatus.ACTIVE,
         ...DataFactory.supplier(overrides),
       },
     });
@@ -114,17 +115,16 @@ export class DataFactory {
     };
   }
 
-  static engagement(contractId: string, override?: Partial<any>) {
+  static engagement(contractId: string, contractorId: string, override?: Partial<any>) {
     return {
       contractId,
-      title: 'Development Engagement',
-      description: 'Software development services',
+      contractorId,
+      role: 'Developer',
       startDate: new Date().toISOString(),
       endDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
-      rate: 1000,
+      rateAmount: 1000,
       rateType: 'HOURLY',
       currency: 'ZAR',
-      status: 'ACTIVE',
       ...override,
     };
   }
@@ -138,30 +138,28 @@ export class DataFactory {
       startDate: new Date().toISOString(),
       budget: 100000,
       currency: 'ZAR',
-      status: 'ACTIVE',
       ...override,
     };
   }
 
-  static timesheet(engagementId: string, projectId: string, override?: Partial<any>) {
+  static timesheet(contractorId: string, projectId: string, override?: Partial<any>) {
     return {
-      engagementId,
+      contractorId,
       projectId,
       periodStart: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
       periodEnd: new Date().toISOString(),
       entries: [
         {
-          date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
           hours: 8,
           description: 'Development work',
         },
         {
-          date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
           hours: 7.5,
           description: 'Testing',
         },
       ],
-      status: 'DRAFT',
       ...override,
     };
   }
@@ -173,8 +171,6 @@ export class DataFactory {
       invoiceDate: new Date().toISOString(),
       dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
       currency: 'ZAR',
-      status: 'PENDING',
-      notes: 'Test invoice',
       ...override,
     };
   }
@@ -182,17 +178,16 @@ export class DataFactory {
   static taxClassification(contractorId: string, override?: Partial<any>) {
     return {
       contractorId,
-      taxYear: new Date().getFullYear(),
       classification: 'DEEMED_EMPLOYEE',
-      determinationDate: new Date().toISOString(),
-      factors: {
+      basis: 'STATUTORY_TEST',
+      assessmentPayload: {
         controlFactor: 'HIGH',
         integrationFactor: 'HIGH',
         economicRealityFactor: 'MEDIUM',
       },
       riskScore: 75,
       dominantImpression: 'Employment relationship exists',
-      status: 'ACTIVE',
+      validFrom: new Date().toISOString(),
       ...override,
     };
   }

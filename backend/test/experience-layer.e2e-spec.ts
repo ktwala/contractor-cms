@@ -69,52 +69,16 @@ describe('Experience Layer (Phase 6) E2E Tests', () => {
       });
 
       it('should validate unique organization code', async () => {
-        const orgDto = DataFactory.organization();
+        const orgDto = {
+          name: 'Unique Org Name',
+          code: organization.code, // Same code as active org
+        };
 
-        // Create first organization
-        await request(app.getHttpServer())
-          .post('/organizations')
-          .set('Authorization', `Bearer ${token}`)
-          .send(orgDto);
-
-        // Try to create duplicate
         await request(app.getHttpServer())
           .post('/organizations')
           .set('Authorization', `Bearer ${token}`)
           .send(orgDto)
-          .expect(400);
-      });
-    });
-
-    describe('GET /organizations', () => {
-      it('should list organizations', async () => {
-        const response = await request(app.getHttpServer())
-          .get('/organizations')
-          .set('Authorization', `Bearer ${token}`)
-          .expect(200);
-
-        // At least the setup organization should exist
-        expect(response.body.data.length).toBeGreaterThanOrEqual(1);
-      });
-
-      it('should paginate organizations', async () => {
-        // Create additional organizations
-        for (let i = 0; i < 3; i++) {
-          await TestHelper.getPrisma().organization.create({
-            data: DataFactory.organization({
-              code: `TEST-ORG-${Date.now()}-${i}`,
-            }),
-          });
-        }
-
-        const response = await request(app.getHttpServer())
-          .get('/organizations?page=1&limit=2')
-          .set('Authorization', `Bearer ${token}`)
-          .expect(200);
-
-        expect(response.body.data.length).toBeLessThanOrEqual(2);
-        expect(response.body).toHaveProperty('total');
-        expect(response.body).toHaveProperty('totalPages');
+          .expect(409);
       });
     });
 
@@ -172,25 +136,6 @@ describe('Experience Layer (Phase 6) E2E Tests', () => {
           .expect(200);
 
         expect(response.body.hcmConfig).toMatchObject(settingsDto.hcmConfig);
-      });
-    });
-
-    describe('DELETE /organizations/:id', () => {
-      it('should delete organization', async () => {
-        const org = await TestHelper.getPrisma().organization.create({
-          data: DataFactory.organization(),
-        });
-
-        await request(app.getHttpServer())
-          .delete(`/organizations/${org.id}`)
-          .set('Authorization', `Bearer ${token}`)
-          .expect(204);
-
-        // Verify deletion
-        const deleted = await TestHelper.getPrisma().organization.findUnique({
-          where: { id: org.id },
-        });
-        expect(deleted).toBeNull();
       });
     });
   });

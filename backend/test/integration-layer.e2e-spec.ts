@@ -58,7 +58,7 @@ describe('Integration Layer (Phase 5) E2E Tests', () => {
   describe('Projects Module', () => {
     describe('POST /projects', () => {
       it('should create a project', async () => {
-        const projectDto = DataFactory.project();
+        const projectDto = DataFactory.project({ organizationId: organization.id });
 
         const response = await request(app.getHttpServer())
           .post('/projects')
@@ -69,13 +69,13 @@ describe('Integration Layer (Phase 5) E2E Tests', () => {
         expect(response.body).toMatchObject({
           code: projectDto.code,
           name: projectDto.name,
-          status: projectDto.status,
+          status: 'ACTIVE',
         });
         expect(response.body.organizationId).toBe(organization.id);
       });
 
       it('should create project with budget', async () => {
-        const projectDto = DataFactory.project({ budget: 500000 });
+        const projectDto = DataFactory.project({ organizationId: organization.id, budget: 500000 });
 
         const response = await request(app.getHttpServer())
           .post('/projects')
@@ -83,11 +83,11 @@ describe('Integration Layer (Phase 5) E2E Tests', () => {
           .send(projectDto)
           .expect(201);
 
-        expect(response.body.budget).toBe(500000);
+        expect(Number(response.body.budget)).toBe(500000);
       });
 
       it('should validate unique project code', async () => {
-        const projectDto = DataFactory.project();
+        const projectDto = DataFactory.project({ organizationId: organization.id });
 
         // Create first project
         await request(app.getHttpServer())
@@ -100,7 +100,7 @@ describe('Integration Layer (Phase 5) E2E Tests', () => {
           .post('/projects')
           .set('Authorization', `Bearer ${token}`)
           .send(projectDto)
-          .expect(400);
+          .expect(409);
       });
     });
 
@@ -260,13 +260,13 @@ describe('Integration Layer (Phase 5) E2E Tests', () => {
           .expect(200);
 
         expect(response.body.status).toBe('COMPLETED');
-        expect(response.body.budget).toBe(150000);
+        expect(Number(response.body.budget)).toBe(150000);
       });
     });
   });
 
   describe('Withholding Instructions Module', () => {
-    describe('POST /withholding-instructions', () => {
+    describe('POST /withholding', () => {
       it('should create a withholding instruction', async () => {
         const withholdingDto = DataFactory.withholdingInstruction(
           contractor.id,
@@ -274,7 +274,7 @@ describe('Integration Layer (Phase 5) E2E Tests', () => {
         );
 
         const response = await request(app.getHttpServer())
-          .post('/withholding-instructions')
+          .post('/withholding')
           .set('Authorization', `Bearer ${token}`)
           .send(withholdingDto)
           .expect(201);
@@ -300,14 +300,14 @@ describe('Integration Layer (Phase 5) E2E Tests', () => {
         );
 
         const response = await request(app.getHttpServer())
-          .post('/withholding-instructions')
+          .post('/withholding')
           .set('Authorization', `Bearer ${token}`)
           .send(withholdingDto)
           .expect(201);
 
-        expect(response.body.grossAmount).toBe(25000);
-        expect(response.body.withholdingAmount).toBe(6500);
-        expect(response.body.netAmount).toBe(18500);
+        expect(Number(response.body.grossAmount)).toBe(25000);
+        expect(Number(response.body.withholdingAmount)).toBe(6500);
+        expect(Number(response.body.netAmount)).toBe(18500);
       });
 
       it('should calculate SDL withholding (1%)', async () => {
@@ -325,12 +325,12 @@ describe('Integration Layer (Phase 5) E2E Tests', () => {
         );
 
         const response = await request(app.getHttpServer())
-          .post('/withholding-instructions')
+          .post('/withholding')
           .set('Authorization', `Bearer ${token}`)
           .send(withholdingDto)
           .expect(201);
 
-        expect(response.body.withholdingAmount).toBe(250);
+        expect(Number(response.body.withholdingAmount)).toBe(250);
       });
 
       it('should calculate UIF withholding (1% capped)', async () => {
@@ -349,16 +349,16 @@ describe('Integration Layer (Phase 5) E2E Tests', () => {
         );
 
         const response = await request(app.getHttpServer())
-          .post('/withholding-instructions')
+          .post('/withholding')
           .set('Authorization', `Bearer ${token}`)
           .send(withholdingDto)
           .expect(201);
 
-        expect(response.body.withholdingAmount).toBe(177.12);
+        expect(Number(response.body.withholdingAmount)).toBe(177.12);
       });
     });
 
-    describe('GET /withholding-instructions', () => {
+    describe('GET /withholding', () => {
       it('should list withholding instructions', async () => {
         await TestHelper.getPrisma().withholdingInstruction.create({
           data: {
@@ -386,7 +386,7 @@ describe('Integration Layer (Phase 5) E2E Tests', () => {
         });
 
         const response = await request(app.getHttpServer())
-          .get('/withholding-instructions')
+          .get('/withholding')
           .set('Authorization', `Bearer ${token}`)
           .expect(200);
 
@@ -418,7 +418,7 @@ describe('Integration Layer (Phase 5) E2E Tests', () => {
         });
 
         const response = await request(app.getHttpServer())
-          .get('/withholding-instructions?withholdingType=SDL')
+          .get('/withholding?withholdingType=SDL')
           .set('Authorization', `Bearer ${token}`)
           .expect(200);
 
@@ -450,7 +450,7 @@ describe('Integration Layer (Phase 5) E2E Tests', () => {
         });
 
         const response = await request(app.getHttpServer())
-          .get('/withholding-instructions?syncStatus=SYNCED')
+          .get('/withholding?syncStatus=SYNCED')
           .set('Authorization', `Bearer ${token}`)
           .expect(200);
 
@@ -488,7 +488,7 @@ describe('Integration Layer (Phase 5) E2E Tests', () => {
 
       it('should mark instruction as synced', async () => {
         const response = await request(app.getHttpServer())
-          .patch(`/withholding-instructions/${instruction.id}/mark-synced`)
+          .patch(`/withholding/${instruction.id}/sync/success`)
           .set('Authorization', `Bearer ${token}`)
           .send({ externalReference: 'EXT-12345' })
           .expect(200);
@@ -500,7 +500,7 @@ describe('Integration Layer (Phase 5) E2E Tests', () => {
 
       it('should mark instruction as failed', async () => {
         const response = await request(app.getHttpServer())
-          .patch(`/withholding-instructions/${instruction.id}/mark-failed`)
+          .patch(`/withholding/${instruction.id}/sync/failed`)
           .set('Authorization', `Bearer ${token}`)
           .send({ error: 'HCM connection timeout' })
           .expect(200);
@@ -511,7 +511,7 @@ describe('Integration Layer (Phase 5) E2E Tests', () => {
       });
     });
 
-    describe('PATCH /withholding-instructions/:id', () => {
+    describe('PATCH /withholding/:id', () => {
       it('should update withholding instruction', async () => {
         const instruction = await TestHelper.getPrisma().withholdingInstruction.create({
           data: {
@@ -542,14 +542,14 @@ describe('Integration Layer (Phase 5) E2E Tests', () => {
         };
 
         const response = await request(app.getHttpServer())
-          .patch(`/withholding-instructions/${instruction.id}`)
+          .patch(`/withholding/${instruction.id}`)
           .set('Authorization', `Bearer ${token}`)
           .send(updateDto)
           .expect(200);
 
-        expect(response.body.grossAmount).toBe(30000);
-        expect(response.body.withholdingAmount).toBe(7800);
-        expect(response.body.netAmount).toBe(22200);
+        expect(Number(response.body.grossAmount)).toBe(30000);
+        expect(Number(response.body.withholdingAmount)).toBe(7800);
+        expect(Number(response.body.netAmount)).toBe(22200);
       });
     });
   });

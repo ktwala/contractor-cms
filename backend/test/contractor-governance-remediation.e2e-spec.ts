@@ -9,6 +9,7 @@ import {
 } from '@prisma/client';
 import request from 'supertest';
 import { TestHelper } from './utils/test-helper';
+import { GOVERNANCE_INTEGRATION_OPERATOR_PERMISSIONS } from '../src/core/auth/seed-system-role-bundles';
 
 describe('Contractor governance remediation (PR-CTR-CONNECTOR-1G)', () => {
   let app: INestApplication;
@@ -36,9 +37,9 @@ describe('Contractor governance remediation (PR-CTR-CONNECTOR-1G)', () => {
       password: 'GovRemediation123!',
       roles: [
         {
-          role: 'CONTRACTOR_MANAGER',
+          role: 'GOVERNANCE_INTEGRATION_OPERATOR',
           orgId: org.id,
-          permissions: ['contractor-migration:read', 'contractor-migration:manage'],
+          permissions: [...GOVERNANCE_INTEGRATION_OPERATOR_PERMISSIONS, 'contractor-remediation:manage'],
           isSystemRole: true,
         },
       ],

@@ -9,6 +9,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import request from 'supertest';
 import { TestHelper } from './utils/test-helper';
+import { GOVERNANCE_INTEGRATION_OPERATOR_PERMISSIONS } from '../src/core/auth/seed-system-role-bundles';
 
 describe('Oracle supplier staging import (PR-CMS-OPERATIONS-1D1)', () => {
   let app: INestApplication;
@@ -67,9 +68,9 @@ describe('Oracle supplier staging import (PR-CMS-OPERATIONS-1D1)', () => {
       password: 'ManagerOra123!',
       roles: [
         {
-          role: 'CONTRACTOR_MANAGER',
+          role: 'GOVERNANCE_INTEGRATION_OPERATOR',
           orgId: org.id,
-          permissions: ['suppliers:read', 'suppliers:update'],
+          permissions: [...GOVERNANCE_INTEGRATION_OPERATOR_PERMISSIONS],
           isSystemRole: true,
         },
       ],
@@ -146,9 +147,9 @@ describe('Oracle supplier staging import (PR-CMS-OPERATIONS-1D1)', () => {
       password: 'ManagerOra2123!',
       roles: [
         {
-          role: 'CONTRACTOR_MANAGER',
+          role: 'GOVERNANCE_INTEGRATION_OPERATOR',
           orgId: org.id,
-          permissions: ['suppliers:update'],
+          permissions: [...GOVERNANCE_INTEGRATION_OPERATOR_PERMISSIONS],
           isSystemRole: true,
         },
       ],

@@ -361,7 +361,7 @@ export class TestHelper {
       permissions?: string[];
       orgId?: string | null;
       isSystemRole?: boolean;
-    }> = [{ role: 'CMS_ADMIN', permissions: ['*:*'], isSystemRole: true }],
+    }> = [{ role: 'CMS_ADMIN', permissions: ['*:*'], orgId: null, isSystemRole: true }],
   ): Promise<{
     organization: any;
     user: any;

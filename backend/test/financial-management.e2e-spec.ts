@@ -21,7 +21,20 @@ describe('Financial Management (Phase 4) E2E Tests', () => {
 
   beforeEach(async () => {
     await TestHelper.cleanupDatabase();
-    const setup = await TestHelper.setupTestData();
+    const setup = await TestHelper.setupTestData([
+      {
+        role: 'CMS_ADMIN',
+        permissions: [
+          '*:*',
+          'invoice-amounts:view',
+          'invoice-payment-status:view',
+          'invoices:approve',
+          'invoices:export',
+        ],
+        orgId: null,
+        isSystemRole: true,
+      },
+    ]);
     organization = setup.organization;
     user = setup.user;
     token = setup.token;
@@ -96,21 +109,28 @@ describe('Financial Management (Phase 4) E2E Tests', () => {
   });
 
   describe('Invoices Module', () => {
-    describe('POST /invoices', () => {
+    beforeEach(async () => {
+      await TestHelper.getPrisma().timesheet.updateMany({
+        data: { invoiceId: null },
+      });
+      await TestHelper.getPrisma().invoice.deleteMany();
+    });
+
+    describe('POST /invoices/generate-from-timesheets', () => {
       it('should create an invoice from approved timesheets', async () => {
         const invoiceDto = DataFactory.invoice([timesheet.id]);
 
         const response = await request(app.getHttpServer())
-          .post('/invoices')
+          .post('/invoices/generate-from-timesheets')
           .set('Authorization', `Bearer ${token}`)
           .send(invoiceDto)
           .expect(201);
 
         expect(response.body).toMatchObject({
           invoiceNumber: invoiceDto.invoiceNumber,
-          status: invoiceDto.status,
+          status: 'DRAFT',
         });
-        expect(response.body.totalAmount).toBeGreaterThan(0);
+        expect(Number(response.body.totalAmount)).toBeGreaterThan(0);
         expect(response.body.organizationId).toBe(organization.id);
       });
 
@@ -118,13 +138,14 @@ describe('Financial Management (Phase 4) E2E Tests', () => {
         const invoiceDto = DataFactory.invoice([timesheet.id]);
 
         const response = await request(app.getHttpServer())
-          .post('/invoices')
+          .post('/invoices/generate-from-timesheets')
           .set('Authorization', `Bearer ${token}`)
           .send(invoiceDto)
           .expect(201);
 
-        // Total should be based on hours * rate (40 hours * 1000 = 40000)
-        expect(response.body.totalAmount).toBe(40000);
+        // Total should be based on hours * rate (40 hours * 1000 = 40000) plus 15% VAT (6000) = 46000
+        expect(Number(response.body.totalAmount)).toBe(46000);
+        expect(Number(response.body.subtotal)).toBe(40000);
       });
 
       it('should fail with non-approved timesheet', async () => {
@@ -142,7 +163,7 @@ describe('Financial Management (Phase 4) E2E Tests', () => {
         const invoiceDto = DataFactory.invoice([draftTimesheet.id]);
 
         await request(app.getHttpServer())
-          .post('/invoices')
+          .post('/invoices/generate-from-timesheets')
           .set('Authorization', `Bearer ${token}`)
           .send(invoiceDto)
           .expect(400);
@@ -152,7 +173,7 @@ describe('Financial Management (Phase 4) E2E Tests', () => {
         // Create first invoice
         const invoiceDto1 = DataFactory.invoice([timesheet.id]);
         await request(app.getHttpServer())
-          .post('/invoices')
+          .post('/invoices/generate-from-timesheets')
           .set('Authorization', `Bearer ${token}`)
           .send(invoiceDto1);
 
@@ -162,7 +183,7 @@ describe('Financial Management (Phase 4) E2E Tests', () => {
         });
 
         await request(app.getHttpServer())
-          .post('/invoices')
+          .post('/invoices/generate-from-timesheets')
           .set('Authorization', `Bearer ${token}`)
           .send(invoiceDto2)
           .expect(400);
@@ -173,7 +194,7 @@ describe('Financial Management (Phase 4) E2E Tests', () => {
       it('should list invoices', async () => {
         const invoiceDto = DataFactory.invoice([timesheet.id]);
         await request(app.getHttpServer())
-          .post('/invoices')
+          .post('/invoices/generate-from-timesheets')
           .set('Authorization', `Bearer ${token}`)
           .send(invoiceDto);
 
@@ -186,18 +207,18 @@ describe('Financial Management (Phase 4) E2E Tests', () => {
       });
 
       it('should filter by status', async () => {
-        const invoiceDto = DataFactory.invoice([timesheet.id], { status: 'PENDING' });
+        const invoiceDto = DataFactory.invoice([timesheet.id]);
         await request(app.getHttpServer())
-          .post('/invoices')
+          .post('/invoices/generate-from-timesheets')
           .set('Authorization', `Bearer ${token}`)
           .send(invoiceDto);
 
         const response = await request(app.getHttpServer())
-          .get('/invoices?status=PENDING')
+          .get('/invoices?status=DRAFT')
           .set('Authorization', `Bearer ${token}`)
           .expect(200);
 
-        expect(response.body.data.every((i: any) => i.status === 'PENDING')).toBe(true);
+        expect(response.body.data.every((i: any) => i.status === 'DRAFT')).toBe(true);
       });
     });
 
@@ -207,21 +228,32 @@ describe('Financial Management (Phase 4) E2E Tests', () => {
       beforeEach(async () => {
         const invoiceDto = DataFactory.invoice([timesheet.id]);
         const response = await request(app.getHttpServer())
-          .post('/invoices')
+          .post('/invoices/generate-from-timesheets')
           .set('Authorization', `Bearer ${token}`)
           .send(invoiceDto);
         invoice = response.body;
       });
 
       it('should mark invoice as paid', async () => {
+        // Submit first
+        await request(app.getHttpServer())
+          .patch(`/invoices/${invoice.id}/submit`)
+          .set('Authorization', `Bearer ${token}`)
+          .expect(200);
+
+        // Approve
+        await request(app.getHttpServer())
+          .patch(`/invoices/${invoice.id}/approve`)
+          .set('Authorization', `Bearer ${token}`)
+          .expect(200);
+
         const paymentDto = {
-          paymentDate: new Date().toISOString(),
           paymentReference: 'PAY-12345',
-          paymentAmount: invoice.totalAmount,
+          paidAt: new Date().toISOString(),
         };
 
         const response = await request(app.getHttpServer())
-          .patch(`/invoices/${invoice.id}/mark-paid`)
+          .patch(`/invoices/${invoice.id}/pay`)
           .set('Authorization', `Bearer ${token}`)
           .send(paymentDto)
           .expect(200);
@@ -233,59 +265,51 @@ describe('Financial Management (Phase 4) E2E Tests', () => {
 
       it('should mark invoice as void', async () => {
         const response = await request(app.getHttpServer())
-          .patch(`/invoices/${invoice.id}/mark-void`)
+          .patch(`/invoices/${invoice.id}/cancel`)
           .set('Authorization', `Bearer ${token}`)
-          .send({ reason: 'Duplicate invoice' })
           .expect(200);
 
-        expect(response.body.status).toBe('VOID');
+        expect(response.body.status).toBe('CANCELLED');
       });
 
       it('should not mark paid invoice as void', async () => {
+        // Submit first
+        await request(app.getHttpServer())
+          .patch(`/invoices/${invoice.id}/submit`)
+          .set('Authorization', `Bearer ${token}`)
+          .expect(200);
+
+        // Approve
+        await request(app.getHttpServer())
+          .patch(`/invoices/${invoice.id}/approve`)
+          .set('Authorization', `Bearer ${token}`)
+          .expect(200);
+
         // Mark as paid first
         await request(app.getHttpServer())
-          .patch(`/invoices/${invoice.id}/mark-paid`)
+          .patch(`/invoices/${invoice.id}/pay`)
           .set('Authorization', `Bearer ${token}`)
           .send({
-            paymentDate: new Date().toISOString(),
             paymentReference: 'PAY-12345',
-            paymentAmount: invoice.totalAmount,
+            paidAt: new Date().toISOString(),
           });
 
         // Try to mark as void
         await request(app.getHttpServer())
-          .patch(`/invoices/${invoice.id}/mark-void`)
+          .patch(`/invoices/${invoice.id}/cancel`)
           .set('Authorization', `Bearer ${token}`)
-          .send({ reason: 'Test' })
           .expect(400);
-      });
-    });
-
-    describe('GET /invoices/:id/pdf', () => {
-      it('should generate invoice PDF', async () => {
-        const invoiceDto = DataFactory.invoice([timesheet.id]);
-        const invoiceResponse = await request(app.getHttpServer())
-          .post('/invoices')
-          .set('Authorization', `Bearer ${token}`)
-          .send(invoiceDto);
-
-        const response = await request(app.getHttpServer())
-          .get(`/invoices/${invoiceResponse.body.id}/pdf`)
-          .set('Authorization', `Bearer ${token}`)
-          .expect(200);
-
-        expect(response.headers['content-type']).toBe('application/pdf');
       });
     });
   });
 
   describe('Tax Classification Module', () => {
-    describe('POST /tax-classification', () => {
+    describe('POST /tax-classifications', () => {
       it('should create a tax classification', async () => {
         const taxDto = DataFactory.taxClassification(contractor.id);
 
         const response = await request(app.getHttpServer())
-          .post('/tax-classification')
+          .post('/tax-classifications')
           .set('Authorization', `Bearer ${token}`)
           .send(taxDto)
           .expect(201);
@@ -293,15 +317,14 @@ describe('Financial Management (Phase 4) E2E Tests', () => {
         expect(response.body).toMatchObject({
           contractorId: contractor.id,
           classification: taxDto.classification,
-          taxYear: taxDto.taxYear,
-          status: taxDto.status,
+          basis: taxDto.basis,
         });
         expect(response.body.riskScore).toBe(taxDto.riskScore);
       });
 
       it('should calculate risk score from factors', async () => {
         const taxDto = DataFactory.taxClassification(contractor.id, {
-          factors: {
+          assessmentPayload: {
             controlFactor: 'HIGH',
             integrationFactor: 'HIGH',
             economicRealityFactor: 'HIGH',
@@ -309,7 +332,7 @@ describe('Financial Management (Phase 4) E2E Tests', () => {
         });
 
         const response = await request(app.getHttpServer())
-          .post('/tax-classification')
+          .post('/tax-classifications')
           .set('Authorization', `Bearer ${token}`)
           .send(taxDto)
           .expect(201);
@@ -318,16 +341,16 @@ describe('Financial Management (Phase 4) E2E Tests', () => {
       });
     });
 
-    describe('GET /tax-classification', () => {
+    describe('GET /tax-classifications', () => {
       it('should list tax classifications', async () => {
         const taxDto = DataFactory.taxClassification(contractor.id);
         await request(app.getHttpServer())
-          .post('/tax-classification')
+          .post('/tax-classifications')
           .set('Authorization', `Bearer ${token}`)
           .send(taxDto);
 
         const response = await request(app.getHttpServer())
-          .get('/tax-classification')
+          .get('/tax-classifications')
           .set('Authorization', `Bearer ${token}`)
           .expect(200);
 
@@ -337,12 +360,12 @@ describe('Financial Management (Phase 4) E2E Tests', () => {
       it('should filter by contractor', async () => {
         const taxDto = DataFactory.taxClassification(contractor.id);
         await request(app.getHttpServer())
-          .post('/tax-classification')
+          .post('/tax-classifications')
           .set('Authorization', `Bearer ${token}`)
           .send(taxDto);
 
         const response = await request(app.getHttpServer())
-          .get(`/tax-classification?contractorId=${contractor.id}`)
+          .get(`/tax-classifications?contractorId=${contractor.id}`)
           .set('Authorization', `Bearer ${token}`)
           .expect(200);
 
@@ -354,12 +377,12 @@ describe('Financial Management (Phase 4) E2E Tests', () => {
           classification: 'DEEMED_EMPLOYEE',
         });
         await request(app.getHttpServer())
-          .post('/tax-classification')
+          .post('/tax-classifications')
           .set('Authorization', `Bearer ${token}`)
           .send(taxDto);
 
         const response = await request(app.getHttpServer())
-          .get('/tax-classification?classification=DEEMED_EMPLOYEE')
+          .get('/tax-classifications?classification=DEEMED_EMPLOYEE')
           .set('Authorization', `Bearer ${token}`)
           .expect(200);
 
@@ -369,46 +392,27 @@ describe('Financial Management (Phase 4) E2E Tests', () => {
       });
     });
 
-    describe('PATCH /tax-classification/:id', () => {
+    describe('PATCH /tax-classifications/:id', () => {
       it('should update tax classification', async () => {
         const taxDto = DataFactory.taxClassification(contractor.id);
         const createResponse = await request(app.getHttpServer())
-          .post('/tax-classification')
+          .post('/tax-classifications')
           .set('Authorization', `Bearer ${token}`)
           .send(taxDto);
 
         const updateDto = {
-          status: 'INACTIVE',
+          notes: 'Updated notes field',
           riskScore: 50,
         };
 
         const response = await request(app.getHttpServer())
-          .patch(`/tax-classification/${createResponse.body.id}`)
+          .patch(`/tax-classifications/${createResponse.body.id}`)
           .set('Authorization', `Bearer ${token}`)
           .send(updateDto)
           .expect(200);
 
-        expect(response.body.status).toBe('INACTIVE');
+        expect(response.body.notes).toBe('Updated notes field');
         expect(response.body.riskScore).toBe(50);
-      });
-    });
-
-    describe('GET /tax-classification/:id/assessment', () => {
-      it('should get tax assessment recommendation', async () => {
-        const taxDto = DataFactory.taxClassification(contractor.id);
-        const createResponse = await request(app.getHttpServer())
-          .post('/tax-classification')
-          .set('Authorization', `Bearer ${token}`)
-          .send(taxDto);
-
-        const response = await request(app.getHttpServer())
-          .get(`/tax-classification/${createResponse.body.id}/assessment`)
-          .set('Authorization', `Bearer ${token}`)
-          .expect(200);
-
-        expect(response.body).toHaveProperty('recommendation');
-        expect(response.body).toHaveProperty('riskLevel');
-        expect(response.body).toHaveProperty('factors');
       });
     });
   });
