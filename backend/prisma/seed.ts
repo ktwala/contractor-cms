@@ -36,9 +36,9 @@ const prisma = new PrismaClient();
  * Demo HCM employee ref for sponsor@ — matches engagement.responsibleManagerEmployeeId.
  * NON-PRODUCTION: real sponsors use internal users provisioned from HCM (PR-HCM-SPONSOR-USERS-1).
  */
-const DEMO_SPONSOR_HCM_EMPLOYEE_ID = 'cms:emp:sponsor-demo';
+const DEMO_SPONSOR_HCM_EMPLOYEE_ID = 'ewp:emp:responsible-manager-demo';
 
-/** PR-SPONSOR-REFERENCE-ONLY-1 — demo sponsor login only when CMS inbox is explicitly enabled. */
+/** PR-SPONSOR-REFERENCE-ONLY-1 — demo sponsor login only when responsible-manager inbox is explicitly enabled. */
 const SPONSOR_INBOX_ENABLED =
   process.env.RESPONSIBLE_MANAGER_ACCOUNTABILITY_INBOX_ENABLED === 'true';
 
@@ -73,12 +73,12 @@ async function main() {
   // Create default roles
   console.log('Creating default roles...');
 
-  const cmsAdminRole = await prisma.role.upsert({
+  const platformAdminRole = await prisma.role.upsert({
     where: { name: 'CMS_ADMIN' },
     update: {},
     create: {
       name: 'CMS_ADMIN',
-      description: 'Full system administrator access',
+      description: 'Platform Administrator with full access',
       permissions: ['*:*'], // All permissions
       isSystemRole: true,
     },
@@ -103,13 +103,13 @@ async function main() {
     where: { name: 'CONTRACTOR_MANAGER' },
     update: {
       description:
-        'CMS contractor operational authority — registry, engagements, remediation (no supplier sync/approve, no HCM bootstrap)',
+        'External Workforce Platform contractor operational authority — registry, engagements, remediation (no supplier sync/approve, no HCM bootstrap)',
       permissions: contractorManagerPermissions,
     },
     create: {
       name: 'CONTRACTOR_MANAGER',
       description:
-        'CMS contractor operational authority — registry, engagements, remediation (no supplier sync/approve, no HCM bootstrap)',
+        'External Workforce Platform contractor operational authority — registry, engagements, remediation (no supplier sync/approve, no HCM bootstrap)',
       permissions: contractorManagerPermissions,
       isSystemRole: true,
     },
@@ -121,7 +121,7 @@ async function main() {
     create: {
       name: 'GOVERNANCE_INTEGRATION_OPERATOR',
       description:
-        'Oracle supplier sync + HCM contractor bootstrap — ingestion only (no trust approvals, no CMS contractor admin)',
+        'Oracle supplier sync + HCM contractor bootstrap — ingestion only (no trust approvals, no platform contractor administration)',
       permissions: [...GOVERNANCE_INTEGRATION_OPERATOR_PERMISSIONS],
       isSystemRole: true,
     },
@@ -280,7 +280,7 @@ async function main() {
 
   // Validate all seeded permissions against the canonical catalog
   const seededRoles = [
-    { name: 'CMS_ADMIN', permissions: cmsAdminRole.permissions },
+    { name: 'CMS_ADMIN', permissions: platformAdminRole.permissions },
     { name: 'FINANCE_USER', permissions: financeUserRole.permissions },
     { name: 'CONTRACTOR_MANAGER', permissions: contractorManagerRole.permissions },
     {
@@ -383,12 +383,12 @@ async function main() {
 
   // PR-SEED-ROLE-DUPE-1 — single global CMS_ADMIN assignment (null = platform-wide)
   await prisma.userRole.deleteMany({
-    where: { userId: adminUser.id, roleId: cmsAdminRole.id },
+    where: { userId: adminUser.id, roleId: platformAdminRole.id },
   });
   await prisma.userRole.create({
     data: {
       userId: adminUser.id,
-      roleId: cmsAdminRole.id,
+      roleId: platformAdminRole.id,
       organizationId: null,
       assignedBy: 'system',
     },
@@ -787,7 +787,7 @@ async function main() {
   console.log('Ensuring demo contractor (substrate defaults)...');
   const demoContractorEmail = 'seed-demo-contractor@demo.local';
   const demoContractorSubstrate = {
-    externalPersonId: 'cms:demo:person:seed-demo-contractor@demo.local',
+    externalPersonId: 'ewp:demo:person:seed-demo-contractor@demo.local',
     personType: ContractorPersonType.PERSON_INDEPENDENT,
     accessIntent: ContractorAccessIntent.ACCESS_NONE,
     riskTier: GovernanceRiskTier.RISK_UNKNOWN,
@@ -838,7 +838,7 @@ async function main() {
           engagementModel: 'DIRECT',
           taxResidency: 'ZA',
           skills: [],
-          externalPersonId: `cms:demo:person:${email}`,
+          externalPersonId: `ewp:demo:person:${email}`,
           personType: ContractorPersonType.PERSON_INDEPENDENT,
           accessIntent: ContractorAccessIntent.ACCESS_NONE,
           riskTier: GovernanceRiskTier.RISK_UNKNOWN,

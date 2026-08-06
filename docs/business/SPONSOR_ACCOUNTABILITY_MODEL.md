@@ -65,7 +65,7 @@ Profile exposes `sponsorAccountabilityInboxEnabled` for the frontend.
 1. `SPONSOR_ACCOUNTABILITY_INBOX_ENABLED=true` on backend at runtime, and
 2. Same flag when running `npm run db:seed`
 
-`User.externalId` = `cms:emp:sponsor-demo` matches demo engagement `sponsorEmployeeId`.
+`User.externalId` = `ewp:emp:responsible-manager-demo` matches demo engagement `sponsorEmployeeId`.
 
 ## Validation scripts
 

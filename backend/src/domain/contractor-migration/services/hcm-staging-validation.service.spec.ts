@@ -24,7 +24,7 @@ function validPayload() {
     worker_type: 'Contingent Worker',
     start_date: '2024-06-01',
     end_date: '2025-06-01',
-    sponsor_employee_id: 'cms:emp:sponsor-valid',
+    sponsor_employee_id: 'ewp:emp:responsible-manager-valid',
     assignment_status: 'Active',
   };
 }

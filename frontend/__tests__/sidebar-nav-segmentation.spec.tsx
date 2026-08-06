@@ -263,7 +263,7 @@ describe('PR-NAV-CAPABILITY-IA-1: buildSidebarNavSections (seed-aligned)', () =>
       new Set(['contractors:read', 'engagements:read', 'engagements:update']),
     );
     const sections = buildSidebarNavSections(can, '/dashboard', {
-      externalId: 'cms:emp:sponsor-demo',
+      externalId: 'ewp:emp:responsible-manager-demo',
       responsibleManagerAccountabilityInboxEnabled: false,
     });
     expect(
@@ -284,7 +284,7 @@ describe('PR-NAV-CAPABILITY-IA-1: buildSidebarNavSections (seed-aligned)', () =>
       ]),
     );
     const sections = buildSidebarNavSections(can, '/dashboard', {
-      externalId: 'cms:emp:sponsor-demo',
+      externalId: 'ewp:emp:responsible-manager-demo',
       responsibleManagerAccountabilityInboxEnabled: true,
     });
     const workforce = sections.find((s) => s.group === 'workforceAdministration')?.items ?? [];

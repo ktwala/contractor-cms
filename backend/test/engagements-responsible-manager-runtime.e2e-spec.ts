@@ -104,14 +104,14 @@ describe('Engagements sponsor substrate (e2e)', () => {
       .set('Authorization', `Bearer ${managerToken}`)
       .send({
         ...baseCreateBody(),
-        responsibleManagerEmployeeId: 'cms:sponsor:emp:alpha',
-        responsibleManagerDelegateEmployeeId: 'cms:sponsor:delegate:beta',
+        responsibleManagerEmployeeId: 'ewp:responsible-manager:emp:alpha',
+        responsibleManagerDelegateEmployeeId: 'ewp:responsible-manager:delegate:beta',
         responsibleManagerStatus: 'RESPONSIBLE_MANAGER_ACTIVE',
       })
       .expect(HttpStatus.CREATED);
 
-    expect(res.body.responsibleManagerEmployeeId).toBe('cms:sponsor:emp:alpha');
-    expect(res.body.responsibleManagerDelegateEmployeeId).toBe('cms:sponsor:delegate:beta');
+    expect(res.body.responsibleManagerEmployeeId).toBe('ewp:responsible-manager:emp:alpha');
+    expect(res.body.responsibleManagerDelegateEmployeeId).toBe('ewp:responsible-manager:delegate:beta');
     expect(res.body.responsibleManagerStatus).toBe('RESPONSIBLE_MANAGER_ACTIVE');
   });
 
@@ -186,14 +186,14 @@ describe('Engagements sponsor substrate (e2e)', () => {
       .patch(`/engagements/${created.body.id}`)
       .set('Authorization', `Bearer ${managerToken}`)
       .send({
-        responsibleManagerEmployeeId: 'cms:sponsor:emp:updated',
-        responsibleManagerDelegateEmployeeId: 'cms:sponsor:delegate:updated',
+        responsibleManagerEmployeeId: 'ewp:responsible-manager:emp:updated',
+        responsibleManagerDelegateEmployeeId: 'ewp:responsible-manager:delegate:updated',
         responsibleManagerStatus: 'RESPONSIBLE_MANAGER_TRANSFER_PENDING',
       })
       .expect(HttpStatus.OK);
 
-    expect(res.body.responsibleManagerEmployeeId).toBe('cms:sponsor:emp:updated');
-    expect(res.body.responsibleManagerDelegateEmployeeId).toBe('cms:sponsor:delegate:updated');
+    expect(res.body.responsibleManagerEmployeeId).toBe('ewp:responsible-manager:emp:updated');
+    expect(res.body.responsibleManagerDelegateEmployeeId).toBe('ewp:responsible-manager:delegate:updated');
     expect(res.body.responsibleManagerStatus).toBe('RESPONSIBLE_MANAGER_TRANSFER_PENDING');
   });
 
@@ -252,7 +252,7 @@ describe('Engagements sponsor substrate (e2e)', () => {
       .set('Authorization', `Bearer ${workerToken}`)
       .send({
         ...baseCreateBody(),
-        responsibleManagerEmployeeId: 'cms:sponsor:emp:evil',
+        responsibleManagerEmployeeId: 'ewp:responsible-manager:emp:evil',
         responsibleManagerStatus: 'RESPONSIBLE_MANAGER_ACTIVE',
       })
       .expect(HttpStatus.FORBIDDEN);

@@ -38,7 +38,7 @@ SPONSOR_TOKEN=$(login "sponsor@ewp.demo" "Sponsor123!")
 echo "  ✅ sponsor@ login"
 
 EXT_ID=$(curl -sS "$API_BASE/auth/profile" -H "Authorization: Bearer $SPONSOR_TOKEN" | jq -r '.externalId // empty')
-assert_eq "profile.externalId" "cms:emp:sponsor-demo" "$EXT_ID"
+assert_eq "profile.externalId" "ewp:emp:responsible-manager-demo" "$EXT_ID"
 
 CONTRACTORS=$(curl -sS "$API_BASE/contractors?page=1&limit=50" -H "Authorization: Bearer $SPONSOR_TOKEN")
 C_TOTAL=$(echo "$CONTRACTORS" | jq '.total')
@@ -59,7 +59,7 @@ E_SPONSOR=$(echo "$ENGAGEMENTS" | jq -r '.data[0].sponsorEmployeeId // empty')
 E_CONTRACT=$(echo "$ENGAGEMENTS" | jq -r '.data[0].contract.contractNumber // empty')
 
 assert_eq "GET /engagements total" "1" "$E_TOTAL"
-assert_eq "engagement.sponsorEmployeeId" "cms:emp:sponsor-demo" "$E_SPONSOR"
+assert_eq "engagement.sponsorEmployeeId" "ewp:emp:responsible-manager-demo" "$E_SPONSOR"
 assert_eq "engagement.contractNumber" "DEMO-SEED-001" "$E_CONTRACT"
 
 ADMIN_TOKEN=$(login "ops.admin@ewp.demo" "Admin123!")

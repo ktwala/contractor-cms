@@ -62,7 +62,7 @@ describe('HcmContractorExtractAdapter (PR-CTR-3)', () => {
           person_number: 'PN-WS-1',
           email: 'ws@example.com',
           worker_type: 'Contingent Worker',
-          sponsor_employee_id: 'cms:emp:sponsor-1',
+          sponsor_employee_id: 'ewp:emp:responsible-manager-1',
           start_date: '2024-01-01',
         },
       ]),

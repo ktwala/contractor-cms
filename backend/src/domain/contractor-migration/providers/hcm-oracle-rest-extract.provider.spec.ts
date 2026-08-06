@@ -59,7 +59,7 @@ describe('HcmOracleRestExtractProvider (PR-CTR-4)', () => {
               LastName: 'Worker',
               email: 'rest@example.com',
               worker_type: 'Contingent Worker',
-              sponsor_employee_id: 'cms:emp:sponsor-demo',
+              sponsor_employee_id: 'ewp:emp:responsible-manager-demo',
             },
           ],
           hasMore: false,
@@ -75,7 +75,7 @@ describe('HcmOracleRestExtractProvider (PR-CTR-4)', () => {
     expect(records[0].sourcePersonId).toBe('hcm-rest-001');
     expect(records[0].sourcePayload).toMatchObject({
       person_id: 'hcm-rest-001',
-      sponsor_employee_id: 'cms:emp:sponsor-demo',
+      sponsor_employee_id: 'ewp:emp:responsible-manager-demo',
     });
     expect(global.fetch).toHaveBeenCalledWith(
       expect.stringContaining('https://hcm.example.com/workers'),

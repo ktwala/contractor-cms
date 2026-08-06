@@ -12,7 +12,7 @@ describe('HcmContractorNormalizationService', () => {
         worker_type: 'Contingent Worker',
         start_date: '2024-01-15',
         end_date: '2025-12-31',
-        sponsor_employee_id: 'cms:emp:sponsor-1',
+        sponsor_employee_id: 'ewp:emp:responsible-manager-1',
         assignment_status: 'Active',
         vendor_name: 'Acme Vendor',
       },
@@ -24,7 +24,7 @@ describe('HcmContractorNormalizationService', () => {
     expect(normalized.email).toBe('ada.lovelace@example.com');
     expect(normalized.workerType).toBe('Contingent Worker');
     expect(normalized.startDate).toBe('2024-01-15');
-    expect(normalized.responsibleManagerEmployeeId).toBe('cms:emp:sponsor-1');
+    expect(normalized.responsibleManagerEmployeeId).toBe('ewp:emp:responsible-manager-1');
     expect(normalized.displayName).toBe('Ada Lovelace');
   });
 });

@@ -13,7 +13,7 @@ describe('responsible-manager-scope.helper', () => {
     targetOrganizationId: 'org-1',
     isGlobalAccess: false,
     supplierScopeId: null,
-    responsibleManagerEmployeeId: 'cms:emp:sponsor-demo',
+    responsibleManagerEmployeeId: 'ewp:emp:responsible-manager-demo',
   };
 
   const unscoped: AccessContext = {
@@ -24,8 +24,8 @@ describe('responsible-manager-scope.helper', () => {
   it('buildResponsibleManagerEngagementFilter returns OR on primary and delegate', () => {
     expect(buildResponsibleManagerEngagementFilter(scoped)).toEqual({
       OR: [
-        { responsibleManagerEmployeeId: 'cms:emp:sponsor-demo' },
-        { responsibleManagerDelegateEmployeeId: 'cms:emp:sponsor-demo' },
+        { responsibleManagerEmployeeId: 'ewp:emp:responsible-manager-demo' },
+        { responsibleManagerDelegateEmployeeId: 'ewp:emp:responsible-manager-demo' },
       ],
     });
     expect(buildResponsibleManagerEngagementFilter(unscoped)).toBeNull();
@@ -37,8 +37,8 @@ describe('responsible-manager-scope.helper', () => {
     expect(where.AND).toEqual([
       {
         OR: [
-          { responsibleManagerEmployeeId: 'cms:emp:sponsor-demo' },
-          { responsibleManagerDelegateEmployeeId: 'cms:emp:sponsor-demo' },
+          { responsibleManagerEmployeeId: 'ewp:emp:responsible-manager-demo' },
+          { responsibleManagerDelegateEmployeeId: 'ewp:emp:responsible-manager-demo' },
         ],
       },
     ]);
@@ -50,8 +50,8 @@ describe('responsible-manager-scope.helper', () => {
     expect(where.engagements).toEqual({
       some: {
         OR: [
-          { responsibleManagerEmployeeId: 'cms:emp:sponsor-demo' },
-          { responsibleManagerDelegateEmployeeId: 'cms:emp:sponsor-demo' },
+          { responsibleManagerEmployeeId: 'ewp:emp:responsible-manager-demo' },
+          { responsibleManagerDelegateEmployeeId: 'ewp:emp:responsible-manager-demo' },
         ],
       },
     });

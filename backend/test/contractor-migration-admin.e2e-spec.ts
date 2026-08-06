@@ -18,7 +18,7 @@ const MIGRATION_BOOTSTRAP = [
   'contractor-migration:read',
   'contractors:bootstrap',
 ];
-const WORKSHOP_SPONSOR_REF = 'cms:emp:sponsor-demo';
+const WORKSHOP_SPONSOR_REF = 'ewp:emp:responsible-manager-demo';
 
 function workshopFixtureContent(): string {
   return readFileSync(

@@ -8,8 +8,8 @@ import request from 'supertest';
 import { SEED_TARGET_ROLE_PERMISSIONS } from '../src/core/auth/seed-system-role-bundles';
 import { TestHelper } from './utils/test-helper';
 
-const SPONSOR_A_REF = 'cms:emp:sponsor-a';
-const SPONSOR_B_REF = 'cms:emp:sponsor-b';
+const SPONSOR_A_REF = 'ewp:emp:responsible-manager-a';
+const SPONSOR_B_REF = 'ewp:emp:responsible-manager-b';
 
 /**
  * PR-SPONSOR-SCOPE-VALIDATION-1 — row-scope isolation for business sponsors.

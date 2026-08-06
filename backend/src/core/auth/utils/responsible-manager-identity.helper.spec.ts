@@ -13,12 +13,12 @@ describe('responsible-manager-identity.helper (PR-HCM-SPONSOR-USERS-1)', () => {
   it('User.externalId + sponsor reads grants sponsor scope', () => {
     expect(
       resolveSponsorEmployeeId({
-        externalId: 'cms:emp:abc',
+        externalId: 'ewp:emp:abc',
         userType: 'INTERNAL',
         isGlobalAccess: false,
         userPermissions: sponsorReads,
       }),
-    ).toBe('cms:emp:abc');
+    ).toBe('ewp:emp:abc');
   });
 
   it('SPONSOR-capable permissions alone without externalId does not grant scope', () => {
@@ -35,7 +35,7 @@ describe('responsible-manager-identity.helper (PR-HCM-SPONSOR-USERS-1)', () => {
   it('externalId without sponsor read permissions does not over-broaden', () => {
     expect(
       resolveSponsorEmployeeId({
-        externalId: 'cms:emp:abc',
+        externalId: 'ewp:emp:abc',
         userType: 'INTERNAL',
         isGlobalAccess: false,
         userPermissions: new Set(['profile:read', 'profile:update']),
@@ -46,7 +46,7 @@ describe('responsible-manager-identity.helper (PR-HCM-SPONSOR-USERS-1)', () => {
   it('global access suppresses sponsor row scope even with externalId', () => {
     expect(
       resolveSponsorEmployeeId({
-        externalId: 'cms:emp:abc',
+        externalId: 'ewp:emp:abc',
         userType: 'INTERNAL',
         isGlobalAccess: true,
         userPermissions: sponsorReads,
@@ -57,7 +57,7 @@ describe('responsible-manager-identity.helper (PR-HCM-SPONSOR-USERS-1)', () => {
   it('non-internal users never receive sponsor scope', () => {
     expect(
       resolveSponsorEmployeeId({
-        externalId: 'cms:emp:abc',
+        externalId: 'ewp:emp:abc',
         userType: 'EXTERNAL',
         isGlobalAccess: false,
         userPermissions: sponsorReads,

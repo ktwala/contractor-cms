@@ -55,7 +55,7 @@ function mockAuth(overrides: any) {
     organizationId: 'org-id',
     ...overrides.user,
   };
-  
+
   (useAuth as jest.Mock).mockReturnValue({
     ...defaultAuth,
     ...overrides,
@@ -167,7 +167,7 @@ describe('Dashboard role parity (permission-filtered cards)', () => {
     mockAuth({
       can: mockCan(TARGET_ROLE_PERMISSIONS.SPONSOR),
       user: {
-        externalId: 'cms:emp:sponsor-demo',
+        externalId: 'ewp:emp:responsible-manager-demo',
         responsibleManagerAccountabilityInboxEnabled: true,
       },
     });

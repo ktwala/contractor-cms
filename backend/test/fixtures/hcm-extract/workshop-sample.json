@@ -7,7 +7,7 @@
     "email": "workshop.active@example.com",
     "worker_type": "Contingent Worker",
     "start_date": "2024-01-01",
-    "sponsor_employee_id": "cms:emp:sponsor-demo",
+    "sponsor_employee_id": "ewp:emp:responsible-manager-demo",
     "assignment_status": "Active",
     "vendor_name": "Demo Supplier Ltd"
   },

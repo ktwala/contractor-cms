@@ -23,7 +23,7 @@ describe('HcmResponsibleManagerLookupService', () => {
     const svc = new HcmResponsibleManagerLookupService(
       makeConfig({
         HCM_SPONSOR_VALIDATION_ENABLED: 'true',
-        HCM_SPONSOR_REFERENCE_PATTERN: '^cms:',
+        HCM_SPONSOR_REFERENCE_PATTERN: '^ewp:',
       }),
     );
     await expect(
@@ -38,13 +38,13 @@ describe('HcmResponsibleManagerLookupService', () => {
     const svc = new HcmResponsibleManagerLookupService(
       makeConfig({
         HCM_SPONSOR_VALIDATION_ENABLED: 'true',
-        HCM_SPONSOR_REFERENCE_PATTERN: '^cms:',
+        HCM_SPONSOR_REFERENCE_PATTERN: '^ewp:',
       }),
     );
     await expect(
       svc.assertResponsibleManagerReferencesAllowed('org-1', {
-        responsibleManagerEmployeeId: 'cms:emp:1',
-        responsibleManagerDelegateEmployeeId: 'cms:emp:2',
+        responsibleManagerEmployeeId: 'ewp:emp:1',
+        responsibleManagerDelegateEmployeeId: 'ewp:emp:2',
       }),
     ).resolves.toBeUndefined();
   });

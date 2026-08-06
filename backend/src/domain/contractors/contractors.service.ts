@@ -134,7 +134,7 @@ export class ContractorsService {
         metadata: {
           supplierId: createContractorDto.supplierId,
           bootstrap: true,
-          cmsDirectCreate: true,
+          platformDirectCreate: true,
         },
       });
 
