@@ -134,6 +134,46 @@ describe('Financial Management (Phase 4) E2E Tests', () => {
         expect(response.body.organizationId).toBe(organization.id);
       });
 
+      it('should handle simultaneous generateFromTimesheets requests concurrency safely', async () => {
+        const invoiceDto1 = DataFactory.invoice([timesheet.id], { invoiceNumber: 'INV-CONC-1' });
+        const invoiceDto2 = DataFactory.invoice([timesheet.id], { invoiceNumber: 'INV-CONC-2' });
+
+        // Send two simultaneous requests
+        const results = await Promise.allSettled([
+          request(app.getHttpServer())
+            .post('/invoices/generate-from-timesheets')
+            .set('Authorization', `Bearer ${token}`)
+            .send(invoiceDto1),
+          request(app.getHttpServer())
+            .post('/invoices/generate-from-timesheets')
+            .set('Authorization', `Bearer ${token}`)
+            .send(invoiceDto2),
+        ]);
+
+        const succeeded = results.filter(
+          (r) => r.status === 'fulfilled' && r.value.status === 201
+        );
+        const failed = results.filter(
+          (r) => r.status === 'rejected' || (r.status === 'fulfilled' && r.value.status !== 201)
+        );
+
+        expect(succeeded).toHaveLength(1);
+        expect(failed).toHaveLength(1);
+
+        const failedResponse = (failed[0] as PromiseFulfilledResult<any>).value;
+        expect(failedResponse.status).toBe(409); // ConflictException
+
+        // Exactly one invoice should exist in database
+        const invoices = await TestHelper.getPrisma().invoice.findMany();
+        expect(invoices).toHaveLength(1);
+
+        // Every timesheet points to that single invoice
+        const updatedTimesheet = await TestHelper.getPrisma().timesheet.findUnique({
+          where: { id: timesheet.id },
+        });
+        expect(updatedTimesheet!.invoiceId).toBe(invoices[0].id);
+      });
+
       it('should calculate invoice total from timesheets', async () => {
         const invoiceDto = DataFactory.invoice([timesheet.id]);
 
@@ -186,7 +226,7 @@ describe('Financial Management (Phase 4) E2E Tests', () => {
           .post('/invoices/generate-from-timesheets')
           .set('Authorization', `Bearer ${token}`)
           .send(invoiceDto2)
-          .expect(400);
+          .expect(409);
       });
     });
 

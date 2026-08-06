@@ -45,6 +45,8 @@ export class InvoiceLineItemDto {
 }
 
 export class CreateInvoiceDto {
+  id?: string;
+
   @ApiProperty()
   @IsUUID()
   supplierId: string;

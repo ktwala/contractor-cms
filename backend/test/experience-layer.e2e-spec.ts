@@ -82,6 +82,11 @@ describe('Experience Layer (Phase 6) E2E Tests', () => {
       });
     });
 
+    describe('GET /organizations', () => {
+      it.skip('should list organizations [BACKLOG-ORG-DIRECTORY-1]', async () => {});
+      it.skip('should paginate organizations [BACKLOG-ORG-DIRECTORY-PAGING-1]', async () => {});
+    });
+
     describe('GET /organizations/:id', () => {
       it('should get organization by id', async () => {
         const response = await request(app.getHttpServer())
@@ -137,6 +142,10 @@ describe('Experience Layer (Phase 6) E2E Tests', () => {
 
         expect(response.body.hcmConfig).toMatchObject(settingsDto.hcmConfig);
       });
+    });
+
+    describe('DELETE /organizations/:id', () => {
+      it.skip('should delete organization [BACKLOG-ORG-LIFECYCLE-1]', async () => {});
     });
   });
 

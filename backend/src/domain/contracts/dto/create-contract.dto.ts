@@ -14,10 +14,9 @@ import { ContractType } from '@prisma/client';
 import { Type } from 'class-transformer';
 
 export class CreateContractDto {
-  @ApiPropertyOptional({ description: 'Target organization' })
-  @IsOptional()
+  @ApiProperty({ description: 'Target organization' })
   @IsUUID()
-  organizationId?: string;
+  organizationId: string;
 
   @ApiProperty()
   @IsUUID()

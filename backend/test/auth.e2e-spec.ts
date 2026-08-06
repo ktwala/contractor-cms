@@ -228,4 +228,13 @@ describe('Authentication & Authorization (Phase 1) E2E Tests', () => {
         .expect(403);
     });
   });
+
+  describe('PATCH /auth/profile', () => {
+    it.skip('should update user profile [BACKLOG-IDENTITY-PROFILE-1]', async () => {});
+  });
+
+  describe('PATCH /auth/change-password', () => {
+    it.skip('should change password [BACKLOG-IDENTITY-CREDENTIAL-1]', async () => {});
+    it.skip('should fail password change with wrong current password [BACKLOG-IDENTITY-CREDENTIAL-1]', async () => {});
+  });
 });
