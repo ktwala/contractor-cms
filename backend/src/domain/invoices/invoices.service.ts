@@ -43,11 +43,13 @@ export class InvoicesService {
   async create(
     accessContext: AccessContext,
     createInvoiceDto: CreateInvoiceDto,
+    txClient?: Prisma.TransactionClient,
   ): Promise<InvoiceResponseDto> {
     const targetOrgId = accessContext.targetOrganizationId;
     if (!targetOrgId) throw new BadRequestException('Organization context is required');
+    const prisma = txClient || this.prisma;
     // Verify supplier exists and belongs to organization
-    const supplier = await this.prisma.supplier.findFirst({
+    const supplier = await prisma.supplier.findFirst({
       where: {
         id: createInvoiceDto.supplierId,
         organizationId: targetOrgId as string,
@@ -59,7 +61,7 @@ export class InvoicesService {
     }
 
     // Check for duplicate invoice number within organization
-    const existingInvoice = await this.prisma.invoice.findFirst({
+    const existingInvoice = await prisma.invoice.findFirst({
       where: {
         organizationId: targetOrgId as string,
         invoiceNumber: createInvoiceDto.invoiceNumber,
@@ -108,7 +110,7 @@ export class InvoicesService {
     const totalAmount = subtotal.add(vatAmount);
 
     // Create invoice with line items
-    const invoice = await this.prisma.invoice.create({
+    const invoice = await prisma.invoice.create({
       data: {
         organizationId: targetOrgId as string,
         supplierId: createInvoiceDto.supplierId,
@@ -163,122 +165,133 @@ export class InvoicesService {
   ): Promise<InvoiceResponseDto> {
     const targetOrgId = accessContext.targetOrganizationId;
     if (!targetOrgId) throw new BadRequestException('Organization context is required');
-    // Fetch all timesheets
-    const timesheets = await this.prisma.timesheet.findMany({
-      where: {
-        id: { in: dto.timesheetIds },
-        contractor: {
-          supplier: {
-            organizationId: targetOrgId as string,
-          },
-        },
-      },
-      include: {
-        contractor: {
-          include: {
-            supplier: true,
-            engagements: {
-              where: {
-                isActive: true,
-              },
-              orderBy: {
-                startDate: 'desc',
-              },
-              take: 1,
+
+    return this.prisma.$transaction(async (tx) => {
+      // Fetch all timesheets
+      const timesheets = await tx.timesheet.findMany({
+        where: {
+          id: { in: dto.timesheetIds },
+          contractor: {
+            supplier: {
+              organizationId: targetOrgId as string,
             },
           },
         },
-        entries: true,
-      },
-    });
+        include: {
+          contractor: {
+            include: {
+              supplier: true,
+              engagements: {
+                where: {
+                  isActive: true,
+                },
+                orderBy: {
+                  startDate: 'desc',
+                },
+                take: 1,
+              },
+            },
+          },
+          entries: true,
+        },
+      });
 
-    if (timesheets.length === 0) {
-      throw new NotFoundException('No timesheets found');
-    }
+      if (timesheets.length === 0) {
+        throw new NotFoundException('No timesheets found');
+      }
 
-    if (timesheets.length !== dto.timesheetIds.length) {
-      throw new NotFoundException('Some timesheets were not found');
-    }
+      if (timesheets.length !== dto.timesheetIds.length) {
+        throw new NotFoundException('Some timesheets were not found');
+      }
 
-    // Validate all timesheets are approved
-    const unapprovedTimesheets = timesheets.filter(
-      (ts) => ts.status !== 'APPROVED',
-    );
-    if (unapprovedTimesheets.length > 0) {
-      throw new BadRequestException(
-        'All timesheets must be approved before generating an invoice',
+      // Validate all timesheets are approved
+      const unapprovedTimesheets = timesheets.filter(
+        (ts) => ts.status !== 'APPROVED',
       );
-    }
-
-    // Validate all timesheets belong to the same contractor/supplier
-    const supplierIds = [...new Set(timesheets.map((ts) => ts.contractor.supplierId))];
-    if (supplierIds.length > 1) {
-      throw new BadRequestException(
-        'All timesheets must belong to the same supplier',
-      );
-    }
-
-    const supplierId = supplierIds[0];
-    if (!supplierId) {
-      throw new BadRequestException(
-        'All timesheets must belong to a supplier-linked contractor',
-      );
-    }
-
-    // Calculate period range
-    const allDates = timesheets.flatMap((ts) => [ts.periodStart, ts.periodEnd]);
-    const periodStart = new Date(Math.min(...allDates.map((d) => d.getTime())));
-    const periodEnd = new Date(Math.max(...allDates.map((d) => d.getTime())));
-
-    // Create line items from timesheets
-    const lineItems: any[] = [];
-
-    for (const timesheet of timesheets) {
-      const engagement = timesheet.contractor.engagements[0];
-      if (!engagement) {
+      if (unapprovedTimesheets.length > 0) {
         throw new BadRequestException(
-          `No active engagement found for contractor ${timesheet.contractor.firstName} ${timesheet.contractor.lastName}`,
+          'All timesheets must be approved before generating an invoice',
         );
       }
 
-      const totalHours = Number(timesheet.totalHours);
-      let unitPrice = Number(engagement.rateAmount);
-      let quantity = totalHours;
-      let description = `${timesheet.contractor.firstName} ${timesheet.contractor.lastName} - ${engagement.role}`;
-
-      // Adjust for rate type
-      if (engagement.rateType === 'DAILY') {
-        // Assume 8 hours per day
-        quantity = totalHours / 8;
-        description += ` (${totalHours} hours @ ${quantity.toFixed(2)} days)`;
-      } else if (engagement.rateType === 'FIXED') {
-        quantity = 1;
-        description += ` (Fixed rate)`;
-      } else {
-        // HOURLY
-        description += ` (${totalHours} hours)`;
+      // Validate no timesheets are already invoiced
+      const alreadyInvoiced = timesheets.filter((ts) => ts.invoiceId !== null);
+      if (alreadyInvoiced.length > 0) {
+        throw new BadRequestException(
+          'One or more timesheets are already invoiced',
+        );
       }
 
-      lineItems.push({
-        description,
-        quantity,
-        unitPrice,
-        projectId: timesheet.projectId,
-      });
-    }
+      // Validate all timesheets belong to the same contractor/supplier
+      const supplierIds = [...new Set(timesheets.map((ts) => ts.contractor.supplierId))];
+      if (supplierIds.length > 1) {
+        throw new BadRequestException(
+          'All timesheets must belong to the same supplier',
+        );
+      }
 
-    // Create invoice using the create method
-    return this.create(accessContext, {
-      supplierId,
-      invoiceNumber: dto.invoiceNumber,
-      invoiceDate: dto.invoiceDate,
-      dueDate: dto.dueDate,
-      periodStart: periodStart.toISOString(),
-      periodEnd: periodEnd.toISOString(),
-      currency: dto.currency || 'ZAR',
-      lineItems,
-      timesheetIds: dto.timesheetIds,
-      taxClassificationId: dto.taxClassificationId,
+      const supplierId = supplierIds[0];
+      if (!supplierId) {
+        throw new BadRequestException(
+          'All timesheets must belong to a supplier-linked contractor',
+        );
+      }
+
+      // Calculate period range
+      const allDates = timesheets.flatMap((ts) => [ts.periodStart, ts.periodEnd]);
+      const periodStart = new Date(Math.min(...allDates.map((d) => d.getTime())));
+      const periodEnd = new Date(Math.max(...allDates.map((d) => d.getTime())));
+
+      // Create line items from timesheets
+      const lineItems: any[] = [];
+
+      for (const timesheet of timesheets) {
+        const engagement = timesheet.contractor.engagements[0];
+        if (!engagement) {
+          throw new BadRequestException(
+            `No active engagement found for contractor ${timesheet.contractor.firstName} ${timesheet.contractor.lastName}`,
+          );
+        }
+
+        const totalHours = Number(timesheet.totalHours);
+        let unitPrice = Number(engagement.rateAmount);
+        let quantity = totalHours;
+        let description = `${timesheet.contractor.firstName} ${timesheet.contractor.lastName} - ${engagement.role}`;
+
+        // Adjust for rate type
+        if (engagement.rateType === 'DAILY') {
+          // Assume 8 hours per day
+          quantity = totalHours / 8;
+          description += ` (${totalHours} hours @ ${quantity.toFixed(2)} days)`;
+        } else if (engagement.rateType === 'FIXED') {
+          quantity = 1;
+          description += ` (Fixed rate)`;
+        } else {
+          // HOURLY
+          description += ` (${totalHours} hours)`;
+        }
+
+        lineItems.push({
+          description,
+          quantity,
+          unitPrice,
+          projectId: timesheet.projectId,
+        });
+      }
+
+      // Create invoice using the transaction client
+      return this.create(accessContext, {
+        supplierId,
+        invoiceNumber: dto.invoiceNumber,
+        invoiceDate: dto.invoiceDate,
+        dueDate: dto.dueDate,
+        periodStart: periodStart.toISOString(),
+        periodEnd: periodEnd.toISOString(),
+        currency: dto.currency || 'ZAR',
+        lineItems,
+        timesheetIds: dto.timesheetIds,
+        taxClassificationId: dto.taxClassificationId,
+      }, tx);
     });
   }
 
