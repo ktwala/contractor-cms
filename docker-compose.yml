@@ -1,25 +1,25 @@
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: contractor-cms-db
+    container_name: external-workforce-platform-db
     restart: unless-stopped
     environment:
-      POSTGRES_USER: contractor_cms
+      POSTGRES_USER: external_workforce_platform
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: contractor_cms
+      POSTGRES_DB: external_workforce_platform
     ports:
       - '5433:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U contractor_cms']
+      test: ['CMD-SHELL', 'pg_isready -U external_workforce_platform']
       interval: 10s
       timeout: 5s
       retries: 5
 
   mock-oracle:
     image: node:20-alpine
-    container_name: contractor-cms-mock-oracle
+    container_name: external-workforce-platform-mock-oracle
     restart: unless-stopped
     working_dir: /app/mock-oracle
     command: node server.js
@@ -41,12 +41,12 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: contractor-cms-backend
+    container_name: external-workforce-platform-backend
     restart: unless-stopped
     ports:
       - '3000:3000'
     environment:
-      DATABASE_URL: postgresql://contractor_cms:password@postgres:5432/contractor_cms
+      DATABASE_URL: postgresql://external_workforce_platform:password@postgres:5432/external_workforce_platform
       JWT_SECRET: ${JWT_SECRET:-dev-jwt-secret-change-in-production}
       API_KEY_SALT: ${API_KEY_SALT:-dev-api-key-salt}
       CORS_ORIGIN: http://localhost:3001
@@ -86,7 +86,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: contractor-cms-frontend
+    container_name: external-workforce-platform-frontend
     restart: unless-stopped
     ports:
       - '3001:3001'

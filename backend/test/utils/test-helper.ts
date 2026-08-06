@@ -30,7 +30,7 @@ export function assertSafeE2eDatabaseTarget(
     );
   }
 
-  if (nodeEnv !== 'test' || databaseName !== 'contractor_cms_e2e') {
+  if (nodeEnv !== 'test' || databaseName !== 'external_workforce_platform_e2e') {
     throw new Error(
       `E2E_DATABASE_SAFETY: refusing cleanup for database "${databaseName}"`,
     );

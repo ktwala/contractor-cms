@@ -30,7 +30,7 @@ echo "  PROMOTE=$PROMOTE"
 echo "  PUBLISH_IGA=$PUBLISH_IGA"
 echo
 
-if docker compose -f "$ROOT/docker-compose.yml" ps --status running 2>/dev/null | grep -q contractor-cms-backend; then
+if docker compose -f "$ROOT/docker-compose.yml" ps --status running 2>/dev/null | grep -q external-workforce-platform-backend; then
   USE_DOCKER=true
   ARGS=(--file "$DOCKER_FILE")
   if [[ "$DRY_RUN" == "true" ]]; then ARGS+=(--dry-run); fi

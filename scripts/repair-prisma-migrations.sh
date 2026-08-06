@@ -16,7 +16,7 @@ run_prisma() {
 
 echo "=== PR-DB-MIGRATION-REPAIR ==="
 
-if docker compose -f "$ROOT/docker-compose.yml" ps --status running 2>/dev/null | grep -q contractor-cms-backend; then
+if docker compose -f "$ROOT/docker-compose.yml" ps --status running 2>/dev/null | grep -q external-workforce-platform-backend; then
   USE_DOCKER=true
   echo "Using Docker backend service"
 else
@@ -26,7 +26,7 @@ fi
 echo
 echo "1) Inspecting failed migration row (if any)..."
 if [[ "${USE_DOCKER}" == "true" ]]; then
-  docker compose -f "$ROOT/docker-compose.yml" exec -T postgres psql -U contractor_cms -d contractor_cms -c \
+  docker compose -f "$ROOT/docker-compose.yml" exec -T postgres psql -U external_workforce_platform -d external_workforce_platform -c \
     "SELECT migration_name, finished_at IS NOT NULL AS applied, rolled_back_at IS NOT NULL AS rolled_back FROM _prisma_migrations WHERE migration_name = '${FAILED_MIGRATION}';" || true
 else
   echo "   (skipped — start postgres/docker for live inspection)"

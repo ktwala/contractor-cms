@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-echo "=== contractor-cms backend startup ==="
+echo "=== external-workforce-platform backend startup ==="
 
 echo "Applying database migrations..."
 if ! npx prisma migrate deploy; then
