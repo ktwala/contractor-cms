@@ -241,6 +241,22 @@ describe('RBAC Matrix (e2e)', () => {
           .expect(HttpStatus.BAD_REQUEST);
       });
 
+      it('should return 400 when organizationId is missing for global admin', async () => {
+        const projectDto = {
+          code: 'PROJ-MISSING-ADMIN',
+          name: 'Missing Admin Project',
+          budget: 10000,
+          startDate: new Date().toISOString(),
+          // organizationId is missing!
+        };
+
+        await request(app.getHttpServer())
+          .post('/projects')
+          .set('Authorization', `Bearer ${tokenGlobalAdmin}`)
+          .send(projectDto)
+          .expect(HttpStatus.BAD_REQUEST);
+      });
+
       it('should allow global authorized role (CMS_ADMIN) to nominate any organization', async () => {
         const projectDto = {
           code: 'PROJ-ADMIN-B',

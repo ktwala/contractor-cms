@@ -10,10 +10,9 @@ import {
 import { Type } from 'class-transformer';
 
 export class CreateProjectDto {
-  @ApiPropertyOptional({ description: 'Target organization' })
-  @IsOptional()
+  @ApiProperty({ description: 'Target organization' })
   @IsUUID()
-  organizationId?: string;
+  organizationId: string;
 
   @ApiProperty({ description: 'Unique project code within organization' })
   @IsString()
