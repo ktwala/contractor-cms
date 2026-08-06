@@ -1,10 +1,18 @@
 # CMS Identity Compatibility Register
 
-This register documents the comprehensive repository-wide audit of all remaining `cms` / `CMS` references in the codebase. It details why these **564** occurrences are intentionally protected under canonical engineering contracts, legacy wire formats, or architectural history records, preventing developers from removing compatibility contracts blindly or reintroducing CMS as the active product identity.
+This register documents the comprehensive repository-wide audit of all remaining `cms` / `CMS` references in the codebase. It details why these **564** occurrences (excluding this register itself) are intentionally protected under canonical engineering contracts, legacy wire formats, or architectural history records, preventing developers from removing compatibility contracts blindly or reintroducing CMS as the active product identity.
 
 ---
 
-## 1. Classification Summary
+## 1. Audit Metric Summary
+
+* **Governed Implementation & History Occurrences**: 564
+* **Compatibility Register Self-References**: 11
+* **Total Repository Occurrences**: 575
+
+---
+
+## 2. Classification Summary
 
 | Category | Key Items | Exact Count | Status | Rationale |
 | :--- | :--- | :---: | :---: | :--- |
@@ -13,11 +21,11 @@ This register documents the comprehensive repository-wide audit of all remaining
 | **Historical PR / ADR Identifiers** | `PR-CMS-*` (including `PR-CTR-CMS-*`) | 285 | **RETAINED** | Retrospective project traceability, audit history, and ADR-012 renaming context. |
 | **Integration Wire Compatibility** | `source: 'contractor-cms'` | 20 | **RETAINED** | Serialization format required for backward compatibility with external event-bus subscribers. |
 | **Legacy Configuration / ADR Notes** | `LEGACY_DEMO_EMAIL_DOMAIN`, historical product names | 4 | **RETAINED** | Used to clean up/deactivate old demo accounts and explain the rename in ADR-012. |
-| **TOTAL** | | **564** | | |
+| **TOTAL (Implementation & History)** | | **564** | | |
 
 ---
 
-## 2. Category Detail & Verification
+## 3. Category Detail & Verification
 
 ### A. Protected Role & Privilege Codes (`CMS_ADMIN`)
 - **Occurrences**: 141
