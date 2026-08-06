@@ -1,7 +1,7 @@
 # PR-WORKFORCE-RDS-MAPPING-1 — MTN RDS traceability (documentation only)
 
-**Status:** DOCUMENTATION — **no implementation authorized from this mapping**  
-**Source:** *HR Contingency worker RDS V001 000* (signed PDF, repo root)  
+**Status:** DOCUMENTATION — **no implementation authorized from this mapping**
+**Source:** *HR Contingency worker RDS V001 000* (signed PDF, repo root)
 **Builds on:** [`DOMAIN_MODEL_RECOVERY_V1.md`](./DOMAIN_MODEL_RECOVERY_V1.md), [`ADR-011`](./ADR-011-Contractor-Workforce-Administration-Plane.md), workforce baseline through [`PR-WORKFORCE-BLACKLIST-1.md`](./PR-WORKFORCE-BLACKLIST-1.md)
 
 ---
@@ -30,8 +30,8 @@ Ops review advances state. That is **not** the MTN LM / HRBP approval engine, Se
 
 | Old framing | New framing |
 |-------------|-------------|
-| How far are we from the RDS? | Which RDS lines are **already explained** by CMS planes, and which need **genuine new capability**? |
-| Build a contractor management system to match RDS | **Selectively extend** planes already established |
+| How far are we from the RDS? | Which RDS lines are **already explained** by EWP planes, and which need **genuine new capability**? |
+| Build an external workforce platform to match RDS | **Selectively extend** planes already established |
 
 The traceability table is the evidence: **the architecture is no longer the problem.** Remaining work is plane extension — workforce policy, engagement operations, access adapters, workflow orchestration — not a monolithic RDS replica.
 

@@ -2,7 +2,7 @@
 
 > **Product:** External Workforce Platform (EWP). Renamed from *CMS Multi-Source Governance Constitution* per [`ADR-012`](./ADR-012-External-Workforce-Platform-Naming.md).
 
-**Status:** RATIFIED (PR-CMS-AUTHORITY-1)  
+**Status:** RATIFIED (PR-CMS-AUTHORITY-1)
 **Applies to:** All supplier/contractor governance PRs after OPERATIONS-1D2
 
 ## Core doctrine

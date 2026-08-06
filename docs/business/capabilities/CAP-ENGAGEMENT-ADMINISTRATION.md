@@ -1,9 +1,9 @@
 # CAP-ENGAGEMENT-ADMINISTRATION
 
-**Capability:** Engagement Administration  
-**Platform:** External Workforce Platform (EWP)  
-**Version:** 1.0  
-**Status:** RATIFIED — authoritative contract (May 2026)  
+**Capability:** Engagement Administration
+**Platform:** External Workforce Platform (EWP)
+**Version:** 1.0
+**Status:** RATIFIED — authoritative contract (May 2026)
 **Normative:** This document uses **SHALL** / **SHALL NOT** as defined in RFC 2119.
 
 > **Third operational CAP.** Codifies placement, commercial framework, labour recording, billing, and sponsor accountability at engagement scope.

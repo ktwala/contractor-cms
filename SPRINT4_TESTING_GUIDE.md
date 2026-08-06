@@ -177,7 +177,7 @@ The Zod schemas are created in `lib/validations.ts` but not yet integrated with 
 - React Hook Form integration pending
 
 **Manual Code Verification:**
-- [ ] Check `/home/user/contractor-cms/frontend/lib/validations.ts`
+- [ ] Check `external-workforce-platform/frontend/lib/validations.ts`
 - [ ] Verify schemas export proper TypeScript types
 - [ ] Verify cross-field validation (e.g., end date > start date)
 
@@ -318,8 +318,8 @@ All Sprint 4 features pass when:
 - Verify Next.js dev server is running
 - Check Network tab for failed API calls
 - Review implementation in:
-  - `/home/user/contractor-cms/frontend/lib/hooks.ts`
-  - `/home/user/contractor-cms/frontend/lib/validations.ts`
-  - `/home/user/contractor-cms/frontend/components/ui/skeleton.tsx`
-  - `/home/user/contractor-cms/frontend/components/error-boundary.tsx`
-  - `/home/user/contractor-cms/frontend/components/ui/date-range-filter.tsx`
+  - `external-workforce-platform/frontend/lib/hooks.ts`
+  - `external-workforce-platform/frontend/lib/validations.ts`
+  - `external-workforce-platform/frontend/components/ui/skeleton.tsx`
+  - `external-workforce-platform/frontend/components/error-boundary.tsx`
+  - `external-workforce-platform/frontend/components/ui/date-range-filter.tsx`

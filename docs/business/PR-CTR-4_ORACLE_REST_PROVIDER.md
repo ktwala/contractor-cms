@@ -81,7 +81,7 @@ Oracle / BI rows are flattened to the same workshop JSON shape used by file extr
 # 1) Login (scoped migration manager on DEMO org)
 TOKEN=$(curl -s -X POST http://localhost:3000/api/v1/auth/login \
   -H 'Content-Type: application/json' \
-  -d '{"email":"finance@contractor-cms.com","password":"Finance123!"}' \
+  -d '{"email":"finance@ewp.demo","password":"Finance123!"}' \
   | jq -r .accessToken)
 
 # 2) Ingest from Oracle REST (staging only)
@@ -108,7 +108,7 @@ curl -s -X POST "http://localhost:3000/api/v1/admin/contractor-migration/batches
   -d '{"publishToIga":true}'
 ```
 
-Global CMS admin (`admin@contractor-cms.com`) must pass `"organizationId": "<demo-org-uuid>"` on each call.
+Global EWP admin (`ops.admin@ewp.demo`) must pass `"organizationId": "<demo-org-uuid>"` on each call.
 
 ## Verification
 

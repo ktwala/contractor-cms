@@ -62,7 +62,7 @@ Profile exposes `sponsorAccountabilityInboxEnabled` for the frontend.
 
 `sponsor@ewp.demo` exists **only** when both:
 
-1. `SPONSOR_ACCOUNTABILITY_INBOX_ENABLED=true` on backend at runtime, and  
+1. `SPONSOR_ACCOUNTABILITY_INBOX_ENABLED=true` on backend at runtime, and
 2. Same flag when running `npm run db:seed`
 
 `User.externalId` = `cms:emp:sponsor-demo` matches demo engagement `sponsorEmployeeId`.
@@ -83,8 +83,8 @@ E2E:
 
 ## Related PRs
 
-- PR-SPONSOR-REFERENCE-ONLY-1 — feature flag, default reference-only  
-- PR-SPONSOR-DOCTRINE-REALIGN-1 — doctrine and UI labels  
-- PR-SPONSOR-SCOPE-VALIDATION-1 — row isolation (inbox on)  
-- PR-SPONSOR-TASKS-1 — accountability task inbox (inbox on)  
-- PR-HCM-SPONSOR-BRIDGE-1 — optional HCM reference validation  
+- PR-SPONSOR-REFERENCE-ONLY-1 — feature flag, default reference-only
+- PR-SPONSOR-DOCTRINE-REALIGN-1 — doctrine and UI labels
+- PR-SPONSOR-SCOPE-VALIDATION-1 — row isolation (inbox on)
+- PR-SPONSOR-TASKS-1 — accountability task inbox (inbox on)
+- PR-HCM-SPONSOR-BRIDGE-1 — optional HCM reference validation

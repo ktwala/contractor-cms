@@ -4,9 +4,9 @@
 **Proposed / Under Discovery**
 
 ## Context & Problem Statement
-We have defined the governance policies for our external entities (`ADR-002: Supplier Lifecycle Governance`) and our internal workforce (`ADR-003: Contractor Lifecycle Governance`). However, governance is fundamentally incomplete without financial enforcement. 
+We have defined the governance policies for our external entities (`ADR-002: Supplier Lifecycle Governance`) and our internal workforce (`ADR-003: Contractor Lifecycle Governance`). However, governance is fundamentally incomplete without financial enforcement.
 
-If an entity or human is operating in a "Frozen" or "Expired" state, what happens to their ability to move money? Can an expired supplier still generate an invoice for past work? Can a non-compliant contractor submit a timesheet? 
+If an entity or human is operating in a "Frozen" or "Expired" state, what happens to their ability to move money? Can an expired supplier still generate an invoice for past work? Can a non-compliant contractor submit a timesheet?
 
 Without strict **Financial Control Governance**, lifecycle blocks exist only on paper, leaving the organization exposed to unauthorized spend, non-compliant billing leakage, and audit failures.
 

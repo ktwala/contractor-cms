@@ -1,7 +1,7 @@
 # MTN demo story — five suppliers, forty workers
 
-**Audience:** EWP connector demos for MTN  
-**Single source of truth:** `backend/src/domain/demo/demo-mtn-story.constants.ts`  
+**Audience:** EWP connector demos for MTN
+**Single source of truth:** `backend/src/domain/demo/demo-mtn-story.constants.ts`
 **Fixtures:** `backend/test/fixtures/oracle-procurement/demo-mtn-suppliers.json`, `oracle-hcm/demo-mtn-workers.json`
 
 This replaces generic “Supplier A / Demo Supplier” data with a believable supplier ecosystem: industry, region, contact person, framework agreements, engagements, and scoped supplier portal admins.
@@ -224,8 +224,8 @@ Workforce Discovery does **not** recompute supplier trust impact. Readiness reas
 | Mover | Organisational change | Governance |
 | **Supplier Governance** | **Operational Trust** | Workforce Discovery, External Workers, Contracts, Promotion, PDP, Assurance |
 
-**Authoritative service:** `SupplierOperationalTrustService`  
-**Workforce impact projection:** `GET /suppliers/operational-trust/workforce-impact`  
+**Authoritative service:** `SupplierOperationalTrustService`
+**Workforce impact projection:** `GET /suppliers/operational-trust/workforce-impact`
 **Enforcement helper:** `assertSupplierOperationalTrustGranted()` — downstream capabilities **consume** supplier `status` (Operational Trust), they do not redefine it.
 
 **Inspection 8 — Negative authority:** Atlas Granted. Suspend Atlas. Every downstream capability must **refuse** Atlas immediately — without rerunning Discovery or Assessment. Verify:
@@ -474,7 +474,7 @@ Each supplier receives one active **Supplier Framework Agreement**:
 
 ## Related docs
 
-- [`DEMO-OPERATIONS.md`](./DEMO-OPERATIONS.md) — six-act presenter flow  
-- [`DEMO_LOGIN_CREDENTIALS.md`](./DEMO_LOGIN_CREDENTIALS.md) — all demo logins  
-- [`WORKFORCE_GOVERNANCE_LANGUAGE_GUIDE.md`](./WORKFORCE_GOVERNANCE_LANGUAGE_GUIDE.md)  
+- [`DEMO-OPERATIONS.md`](./DEMO-OPERATIONS.md) — six-act presenter flow
+- [`DEMO_LOGIN_CREDENTIALS.md`](./DEMO_LOGIN_CREDENTIALS.md) — all demo logins
+- [`WORKFORCE_GOVERNANCE_LANGUAGE_GUIDE.md`](./WORKFORCE_GOVERNANCE_LANGUAGE_GUIDE.md)
 - [`SUPPLIER_GOVERNANCE_LANGUAGE_GUIDE.md`](./SUPPLIER_GOVERNANCE_LANGUAGE_GUIDE.md)

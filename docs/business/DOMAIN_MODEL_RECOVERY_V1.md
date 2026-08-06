@@ -2,8 +2,8 @@
 
 **Product:** External Workforce Platform (EWP) — see [`ADR-012`](./ADR-012-External-Workforce-Platform-Naming.md). *Contractor Management System (CMS)* is the historical v1 name.
 
-**Status:** `RECOVERED` — frozen baseline from repo archaeology (May 2026).  
-**Purpose:** Reconstruct the **original Contractor CMS domain model** before external requirement mapping (e.g. MTN RDS).  
+**Status:** `RECOVERED` — frozen baseline from repo archaeology (May 2026).
+**Purpose:** Reconstruct the **original EWP domain model** before external requirement mapping (e.g. MTN RDS).
 **Next:** [`ADR-011-Contractor-Workforce-Administration-Plane.md`](./ADR-011-Contractor-Workforce-Administration-Plane.md)
 
 ---
@@ -12,7 +12,7 @@
 
 ```text
 We are not building a second HCM.
-We are completing the Contractor Workforce Administration plane inside CMS,
+We are completing the Contractor Workforce Administration plane inside EWP,
 while preserving separation between supplier, identity, engagement, governance, and access.
 ```
 
@@ -20,7 +20,7 @@ while preserving separation between supplier, identity, engagement, governance, 
 
 ## 1. What we were building
 
-Contractor CMS is a **governed External Workforce Administration platform** (EWP), not an HR self-service portal.
+The External Workforce Platform is a **governed External Workforce Administration platform** (EWP), not an HR self-service portal.
 
 | Plane | Question it answers | Maturity |
 |-------|---------------------|----------|

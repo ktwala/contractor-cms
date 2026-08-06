@@ -1,11 +1,11 @@
 # CERT-IDENTITY-ACQUISITION
 
-**Capability:** Identity Acquisition  
-**Certifies conformance to:** [`CAP-IDENTITY-ACQUISITION.md`](./CAP-IDENTITY-ACQUISITION.md) **v1.0**  
-**Status:** **EXECUTED** — v1.0 certification gate (May 2026)  
+**Capability:** Identity Acquisition
+**Certifies conformance to:** [`CAP-IDENTITY-ACQUISITION.md`](./CAP-IDENTITY-ACQUISITION.md) **v1.0**
+**Status:** **EXECUTED** — v1.0 certification gate (May 2026)
 **Purpose:** Prove implementation **upholds the CAP** — not that a specific stack was used.
 
-> CERT answers: *Does the implementation satisfy the capability contract?*  
+> CERT answers: *Does the implementation satisfy the capability contract?*
 > PR answers: *What changed in this increment?*
 
 Known **Planned** gaps are **PARTIAL**, not FAIL.

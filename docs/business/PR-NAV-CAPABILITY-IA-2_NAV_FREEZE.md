@@ -1,7 +1,7 @@
 # PR-NAV-CAPABILITY-IA-2 — Navigation freeze
 
-**Status:** **FROZEN** (May 2026) — part of [`EWP-V1-ARCHITECTURE-FREEZE.md`](./EWP-V1-ARCHITECTURE-FREEZE.md)  
-**Authority:** [`EXTERNAL_WORKFORCE_CAPABILITY_MAP.md`](./EXTERNAL_WORKFORCE_CAPABILITY_MAP.md) · [`EXTERNAL_WORKFORCE_VOCABULARY.md`](./EXTERNAL_WORKFORCE_VOCABULARY.md)  
+**Status:** **FROZEN** (May 2026) — part of [`EWP-V1-ARCHITECTURE-FREEZE.md`](./EWP-V1-ARCHITECTURE-FREEZE.md)
+**Authority:** [`EXTERNAL_WORKFORCE_CAPABILITY_MAP.md`](./EXTERNAL_WORKFORCE_CAPABILITY_MAP.md) · [`EXTERNAL_WORKFORCE_VOCABULARY.md`](./EXTERNAL_WORKFORCE_VOCABULARY.md)
 **Implementation:** [`frontend/lib/protected-routes.ts`](../../frontend/lib/protected-routes.ts) · [`frontend/lib/external-workforce-labels.ts`](../../frontend/lib/external-workforce-labels.ts)
 
 ---
@@ -24,7 +24,7 @@ The sidebar is **business capability navigation**, not system module navigation.
 | **Administration** | Users · Roles |
 | **Supplier portal** *(external shell only)* | Supplier profile · External workers · Supplier timesheets · Supplier invoices |
 
-\* Connector-gated (`requiresOracleConnector` / `requiresHcmConnector`).  
+\* Connector-gated (`requiresOracleConnector` / `requiresHcmConnector`).
 † Sponsor Accountability requires sponsor accountability inbox flag.
 
 ---

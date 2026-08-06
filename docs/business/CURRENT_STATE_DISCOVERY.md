@@ -1,4 +1,4 @@
-# Contractor CMS — Current-State Discovery
+# External Workforce Platform — Current-State Discovery
 
 **Purpose:** Support **Contractor Operating Model v1** with a repo-backed audit of domain, schema, RBAC, integrations, and extensibility **before** architectural amendments.
 

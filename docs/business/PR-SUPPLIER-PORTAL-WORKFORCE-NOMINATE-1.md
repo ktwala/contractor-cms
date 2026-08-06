@@ -1,6 +1,6 @@
 # PR-SUPPLIER-PORTAL-WORKFORCE-NOMINATE-1 — Supplier portal nomination wiring
 
-**Status:** COMPLETE  
+**Status:** COMPLETE
 **Builds on:** [`PR-WORKFORCE-NOMINATE-1.md`](./PR-WORKFORCE-NOMINATE-1.md)
 
 ## Guardrail

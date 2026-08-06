@@ -4,8 +4,8 @@
 
 **APPROVED** — May 2026
 
-**Depends on:** [`ADR-011`](./ADR-011-Contractor-Workforce-Administration-Plane.md) (supplier-backed Phase 1 complete; Phase 2 deferred here) · [`ADR-012`](./ADR-012-External-Workforce-Platform-Naming.md) · [`CAP-IDENTITY-ACQUISITION.md`](./capabilities/CAP-IDENTITY-ACQUISITION.md) **v1.0** (normative acquisition policies)  
-**Supersedes deferral in:** [`DOMAIN_MODEL_RECOVERY_V1.md`](./DOMAIN_MODEL_RECOVERY_V1.md) §5  
+**Depends on:** [`ADR-011`](./ADR-011-Contractor-Workforce-Administration-Plane.md) (supplier-backed Phase 1 complete; Phase 2 deferred here) · [`ADR-012`](./ADR-012-External-Workforce-Platform-Naming.md) · [`CAP-IDENTITY-ACQUISITION.md`](./capabilities/CAP-IDENTITY-ACQUISITION.md) **v1.0** (normative acquisition policies)
+**Supersedes deferral in:** [`DOMAIN_MODEL_RECOVERY_V1.md`](./DOMAIN_MODEL_RECOVERY_V1.md) §5
 **Capability map:** [`EXTERNAL_WORKFORCE_CAPABILITY_MAP.md`](./EXTERNAL_WORKFORCE_CAPABILITY_MAP.md) — Foundational backbone; next increment after four CAPs
 
 > **This ADR decides *who is authoritative for bringing an External Worker into EWP* — not *what kind of worker they are*, and not *which intake channel was used*.**
@@ -102,11 +102,11 @@ It **SHALL NOT** answer:
 | **Worker Classification** | Taxonomy / reporting / policy inputs | `SUPPLIER_CONTRACTOR`, `INDEPENDENT_CONTRACTOR`, `CONSULTANT`, … |
 | **Engagement Model** | Commercial engagement shape | `DIRECT`, `AGENCY` |
 
-An External Worker **MAY** have acquisition authority `SUPPLIER` and `workerClassification = CONSULTANT`.  
+An External Worker **MAY** have acquisition authority `SUPPLIER` and `workerClassification = CONSULTANT`.
 An External Worker **MAY** have acquisition authority `INDEPENDENT` and `workerClassification = INDEPENDENT_CONTRACTOR`.
 
-Implementation **SHALL NOT** infer acquisition authority from `WorkerClassification` alone.  
-Implementation **SHALL NOT** overload `EngagementModel` as acquisition authority.  
+Implementation **SHALL NOT** infer acquisition authority from `WorkerClassification` alone.
+Implementation **SHALL NOT** overload `EngagementModel` as acquisition authority.
 Implementation **SHALL NOT** encode intake channels as `AcquisitionModel` values.
 
 ### 3. Capability Version 1 — acquisition authorities
@@ -177,8 +177,8 @@ Contractor.supplierId         String?            // nullable only when INDEPENDE
 
 1. Backfill existing rows → `acquisitionModel = SUPPLIER` (all current workers are supplier-backed).
 2. Keep `supplierId` required until migration PR ships; do not nullable in the same commit as enum add without constraint migration.
-3. Add check constraint (application + DB):  
-   `(acquisitionModel = SUPPLIER AND supplierId IS NOT NULL) OR (acquisitionModel = INDEPENDENT AND supplierId IS NULL)`  
+3. Add check constraint (application + DB):
+   `(acquisitionModel = SUPPLIER AND supplierId IS NOT NULL) OR (acquisitionModel = INDEPENDENT AND supplierId IS NULL)`
    *(exact enforcement in schema PR)*.
 
 **CAP traceability:** Implements CAP-IDENTITY-ACQUISITION §7 **P-01**, **P-02**, §12 invariants 2 and 4.

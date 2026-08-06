@@ -46,9 +46,9 @@ IGA / AD / Managed systems / Reporting
 
 **Integration preference (ordered):**
 
-1. Oracle HCM REST APIs → scheduled ETL → CMS staging  
-2. Oracle BI / controlled flat-file extract  
-3. Manual CSV — **pilot only**, not steady state  
+1. Oracle HCM REST APIs → scheduled ETL → CMS staging
+2. Oracle BI / controlled flat-file extract
+3. Manual CSV — **pilot only**, not steady state
 
 ---
 
@@ -107,17 +107,17 @@ Optional demo inbox (`SPONSOR_ACCOUNTABILITY_INBOX_ENABLED`) does **not** change
 
 ### Wave 1 — Historical import (dry-run capable)
 
-- Active contractors from HCM  
-- Recently inactive (12–24 months)  
-- Load → `contractor_staging_hcm` → validate → promote to registry  
-- **No** downstream IGA publish until validation sign-off  
+- Active contractors from HCM
+- Recently inactive (12–24 months)
+- Load → `contractor_staging_hcm` → validate → promote to registry
+- **No** downstream IGA publish until validation sign-off
 
 ### Wave 2 — Controlled cutover
 
-- Freeze contractor create/update in HCM  
-- Final delta sync  
-- CMS becomes create/update master  
-- Enable IGA publish for net-new / material changes  
+- Freeze contractor create/update in HCM
+- Final delta sync
+- CMS becomes create/update master
+- Enable IGA publish for net-new / material changes
 
 ### Wave 3 — Downstream activation
 
@@ -188,11 +188,11 @@ contractor.sponsor_changed
 
 ## 12. Cutover runbook (summary)
 
-1. Complete Wave 1 dry-run with reconciliation report (counts, quarantine, sponsor gaps).  
-2. Sign cutover window; communicate HCM freeze.  
-3. Run final delta import.  
-4. Flip CMS write authority; disable HCM contractor maintenance.  
-5. Enable IGA publish for promoted / updated rows.  
-6. Monitor: orphan sponsors, duplicate CTR refs, access without valid engagement.  
+1. Complete Wave 1 dry-run with reconciliation report (counts, quarantine, sponsor gaps).
+2. Sign cutover window; communicate HCM freeze.
+3. Run final delta import.
+4. Flip CMS write authority; disable HCM contractor maintenance.
+5. Enable IGA publish for promoted / updated rows.
+6. Monitor: orphan sponsors, duplicate CTR refs, access without valid engagement.
 
 Detail: [`CMS_CONTRACTOR_CANONICAL_DATA_MODEL_V1.md`](./CMS_CONTRACTOR_CANONICAL_DATA_MODEL_V1.md) §6.

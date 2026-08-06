@@ -1,7 +1,7 @@
 # CERT-ENGAGEMENT-ADMINISTRATION
 
-**Capability:** Engagement Administration  
-**Certifies conformance to:** [`CAP-ENGAGEMENT-ADMINISTRATION.md`](./CAP-ENGAGEMENT-ADMINISTRATION.md) **v1.0**  
+**Capability:** Engagement Administration
+**Certifies conformance to:** [`CAP-ENGAGEMENT-ADMINISTRATION.md`](./CAP-ENGAGEMENT-ADMINISTRATION.md) **v1.0**
 **Status:** TEMPLATE — formal certification gate not yet executed (May 2026)
 
 ---

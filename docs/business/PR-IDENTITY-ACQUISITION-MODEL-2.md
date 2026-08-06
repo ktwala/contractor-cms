@@ -1,13 +1,13 @@
 # PR-IDENTITY-ACQUISITION-MODEL-2 — Independent acquisition path
 
-**Status:** COMPLETE  
-**ADR:** [`ADR-013-External-Worker-Acquisition-Model.md`](./ADR-013-External-Worker-Acquisition-Model.md) Steps 3–6  
+**Status:** COMPLETE
+**ADR:** [`ADR-013-External-Worker-Acquisition-Model.md`](./ADR-013-External-Worker-Acquisition-Model.md) Steps 3–6
 **CAP:** [`capabilities/CAP-IDENTITY-ACQUISITION.md`](./capabilities/CAP-IDENTITY-ACQUISITION.md) **v1.0**
 
 ## CAP traceability
 
-**Capability:** Identity Acquisition  
-**CAP version:** v1.0  
+**Capability:** Identity Acquisition
+**CAP version:** v1.0
 **Implements:** CAP §7 P-01–P-02 · ADR-013 §7 Step 3, §5 channel mapping, Step 6
 
 ## Scope

@@ -1,7 +1,7 @@
 # Internal Accountability — canonical domain model
 
-**Status:** Adopted product doctrine (July 2026) — **schema vocabulary rename complete**  
-**Audience:** Engineers, architects, demo authors, integration partners  
+**Status:** Adopted product doctrine (July 2026) — **schema vocabulary rename complete**
+**Audience:** Engineers, architects, demo authors, integration partners
 **Related:** [`WORKFORCE_GOVERNANCE_LANGUAGE_GUIDE.md`](./WORKFORCE_GOVERNANCE_LANGUAGE_GUIDE.md) · [`business/SPONSOR_ACCOUNTABILITY_MODEL.md`](./business/SPONSOR_ACCOUNTABILITY_MODEL.md) (historical inbox / IGA bridge doc)
 
 ---

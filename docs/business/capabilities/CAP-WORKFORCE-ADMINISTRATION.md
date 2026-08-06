@@ -1,9 +1,9 @@
 # CAP-WORKFORCE-ADMINISTRATION
 
-**Capability:** Workforce Administration  
-**Platform:** External Workforce Platform (EWP)  
-**Version:** 1.0  
-**Status:** RATIFIED — authoritative contract (May 2026)  
+**Capability:** Workforce Administration
+**Platform:** External Workforce Platform (EWP)
+**Version:** 1.0
+**Status:** RATIFIED — authoritative contract (May 2026)
 **Normative:** This document uses **SHALL** / **SHALL NOT** as defined in RFC 2119.
 
 > **Reference CAP.** First closed HEM loop — template for all future `CAP-*` documents. See [`EXTERNAL_WORKFORCE_CAPABILITY_ENGINEERING_MODEL.md`](../EXTERNAL_WORKFORCE_CAPABILITY_ENGINEERING_MODEL.md).
@@ -252,8 +252,8 @@ Responsibilities only — no adapter implementation.
 
 Workforce Administration **SHALL** persist three truths on every successful command:
 
-1. **Workforce History** — business truth  
-2. **Audit record** — operational truth (who changed persistence)  
+1. **Workforce History** — business truth
+2. **Audit record** — operational truth (who changed persistence)
 3. **Domain event** — integration truth (stub or live publisher)
 
 History **SHALL** be written in the same atomic unit of work as Workforce State change, before audit and event emission.

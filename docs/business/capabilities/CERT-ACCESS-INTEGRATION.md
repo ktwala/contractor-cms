@@ -1,11 +1,11 @@
 # CERT-ACCESS-INTEGRATION
 
-**Capability:** Access Integration  
-**Certifies conformance to:** [`CAP-ACCESS-INTEGRATION.md`](./CAP-ACCESS-INTEGRATION.md) **v1.0**  
-**Status:** **EXECUTED** — v1.0 certification gate (May 2026)  
+**Capability:** Access Integration
+**Certifies conformance to:** [`CAP-ACCESS-INTEGRATION.md`](./CAP-ACCESS-INTEGRATION.md) **v1.0**
+**Status:** **EXECUTED** — v1.0 certification gate (May 2026)
 **Purpose:** Prove implementation **upholds the CAP** — gateway publish boundary, no authoritative truth ownership.
 
-> CERT answers: *Does the implementation satisfy the capability contract?*  
+> CERT answers: *Does the implementation satisfy the capability contract?*
 > PR answers: *What changed in this increment?*
 
 ---

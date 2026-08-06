@@ -1,7 +1,7 @@
 # PR-ACCESS-INTEGRATION-WORKFORCE-REACTIONS-1 — Workforce event reactions
 
-**Status:** COMPLETE  
-**Capability:** Access Integration  
+**Status:** COMPLETE
+**Capability:** Access Integration
 **CAP version:** v1.0
 
 ## CAP traceability

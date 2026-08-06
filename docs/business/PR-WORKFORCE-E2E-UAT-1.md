@@ -1,6 +1,6 @@
 # PR-WORKFORCE-E2E-UAT-1 — Workforce Administration end-to-end proof
 
-**Status:** COMPLETE  
+**Status:** COMPLETE
 **Builds on:** [`PR-SUPPLIER-PORTAL-WORKFORCE-TIMELINE-1.md`](./PR-SUPPLIER-PORTAL-WORKFORCE-TIMELINE-1.md), [`ADR-011`](./ADR-011-Contractor-Workforce-Administration-Plane.md)
 
 ## Guardrail
@@ -37,8 +37,8 @@ The workforce plane now has a **demonstrable baseline** across both audiences:
 
 | Role | Email | Password |
 |------|-------|----------|
-| Supplier admin | `supplier.admin@contractor-cms.com` | `SupplierAdmin123!` |
-| Ops (CMS admin) | `admin@contractor-cms.com` | `Admin123!` |
+| Supplier admin | `supplier.admin@ewp.demo` | `SupplierAdmin123!` |
+| Ops (EWP admin) | `ops.admin@ewp.demo` | `Admin123!` |
 
 Contract for nomination: `GET /supplier-portal/contracts` → `DEMO-SEED-001`.
 

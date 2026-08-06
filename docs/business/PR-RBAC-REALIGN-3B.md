@@ -1,7 +1,7 @@
 # PR-RBAC-REALIGN-3B — Production role bundles and legacy cleanup
 
-**Status:** **COMPLETE** (locked with **PR-RBAC-REALIGN-3D**)  
-**Depends on:** [`PR-RBAC-REALIGN-3A.md`](./PR-RBAC-REALIGN-3A.md)  
+**Status:** **COMPLETE** (locked with **PR-RBAC-REALIGN-3D**)
+**Depends on:** [`PR-RBAC-REALIGN-3A.md`](./PR-RBAC-REALIGN-3A.md)
 **Baseline:** [`PLATFORM_GOVERNANCE_ROLES.md`](./PLATFORM_GOVERNANCE_ROLES.md)
 
 > Production RBAC baseline is locked. `governance.ops@` remains a **demo composite only**.

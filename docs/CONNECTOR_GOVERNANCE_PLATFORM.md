@@ -1,6 +1,6 @@
 # Connector & governance platform — reference guide
 
-> **Status:** Demo-ready (supplier + workforce connectors, drift, remediation, PDP cascade).  
+> **Status:** Demo-ready (supplier + workforce connectors, drift, remediation, PDP cascade).
 > **Audience:** Engineering, UAT, demos, solution architecture.
 
 ## Key line (demos)
@@ -384,7 +384,7 @@ docker compose up -d
 docker compose exec backend npm run reset:connector-demo   # optional re-reset
 ```
 
-Use **demo sync buttons** on operations pages (see [`CONNECTOR_DEMO_UAT.md`](CONNECTOR_DEMO_UAT.md)).  
+Use **demo sync buttons** on operations pages (see [`CONNECTOR_DEMO_UAT.md`](CONNECTOR_DEMO_UAT.md)).
 PR: [`business/PR-DEMO-CONNECTOR-1_MOCK_ORACLE_DEMO_CONTROLS.md`](business/PR-DEMO-CONNECTOR-1_MOCK_ORACLE_DEMO_CONTROLS.md)
 
 ### Login (canonical operations persona)

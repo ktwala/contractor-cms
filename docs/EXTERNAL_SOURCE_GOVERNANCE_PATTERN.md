@@ -1,7 +1,7 @@
 # External Source Governance Pattern
 
-**Also referred to as:** Connector Governance Pattern  
-**Status:** Draft — evidence from two production connectors; not a universal architecture mandate  
+**Also referred to as:** Connector Governance Pattern
+**Status:** Draft — evidence from two production connectors; not a universal architecture mandate
 **Audience:** Product, solution architecture, demo authors, engineering
 
 **Related:**
@@ -35,7 +35,7 @@ This document describes that discipline — not every possible future integratio
 
 If a third source needs an extra stage (for example **Normalize** between snapshot and assess), that is a learning — not a broken architecture.
 
-**Internally:** treat this as a proven governance pattern (and, where useful, a platform design reference).  
+**Internally:** treat this as a proven governance pattern (and, where useful, a platform design reference).
 **Externally:** do **not** call it a “platform capability.” Say:
 
 > **This is the governance pattern EWP uses when integrating authoritative business systems.**

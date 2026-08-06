@@ -6,17 +6,17 @@
 
 **ADR scope boundary:** This ADR defines **constitutional architecture** and integration contracts at the **pattern** level — **not** implementation sequencing, migration runbooks, or integration-specific IGA configuration.
 
-**Date:** May 2026  
+**Date:** May 2026
 
 ---
 
 ## 1. Context
 
-Contractor CMS has evolved beyond a simple contractor registry into a **governed external workforce** platform with:
+The External Workforce Platform has evolved beyond a simple contractor registry into a **governed external workforce** platform with:
 
 - Clear **separation of Supplier (commercial party)** and **worker (contractor record)** — never conflated as identities.
 - **Sponsor governance** (accountability plane) — business justification between workforce legitimacy and access requests.
-- **CMS ≠ IGA** — Contractor CMS is an **upstream authoritative feed** and governance trigger; it does **not** replace enterprise IGA for provisioning, SoD, certification, or badge/PACS execution.
+- **EWP ≠ IGA** — The External Workforce Platform is an **upstream authoritative feed** and governance trigger; it does **not** replace enterprise IGA for provisioning, SoD, certification, or badge/PACS execution.
 - **HCM dependency** for **sponsor employee identity** (and broader org hierarchy where integrated).
 - A **three-plane model** documented in the operating constitution: **workforce** (CMS), **accountability** (sponsor), **access** (IGA) — see [`CONTRACTOR_OPERATING_MODEL_V1.md`](../business/CONTRACTOR_OPERATING_MODEL_V1.md) **§7**, **§24**, **§25**.
 
@@ -118,7 +118,7 @@ Additional lifecycle or commercial events (e.g. contract extension) remain docum
 ### 6.1 Publisher vs consumer (CMS is not IGA)
 
 ```text
-Contractor CMS  = source of external workforce truth (publisher)
+External Workforce Platform  = source of external workforce truth (publisher)
 IGA (e.g. Soffid) = identity governance and access execution (consumer / executor)
 Outbound adapter = transport bridge only (not an “IGA engine” in CMS)
 ```

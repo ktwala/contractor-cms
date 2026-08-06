@@ -1,8 +1,8 @@
 # Working as a Supplier
 
-**Experience:** Supplier Portal  
-**Audience:** Supplier companies (your customer's supplier users).  
-**Login:** `supplier.admin@ewp.demo` / `SupplierAdmin123!`  
+**Experience:** Supplier Portal
+**Audience:** Supplier companies (your customer's supplier users).
+**Login:** `supplier.admin@ewp.demo` / `SupplierAdmin123!`
 **Live aid:** [`DEMO-CHEATSHEET.md`](./DEMO-CHEATSHEET.md) · **MTN operations:** [`DEMO-OPERATIONS.md`](./DEMO-OPERATIONS.md)
 
 **Question this demo answers:** *How do I work with my customer?*

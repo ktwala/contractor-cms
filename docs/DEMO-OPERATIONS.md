@@ -1,8 +1,8 @@
 # Managing an External Workforce
 
-**Experience:** Operations Console  
-**Audience:** MTN — procurement, operations, HR operations, security, governance.  
-**Login:** `ops.admin@ewp.demo` / `Admin123!` (or `workforce.import@ewp.demo` for connector-heavy demos)  
+**Experience:** Operations Console
+**Audience:** MTN — procurement, operations, HR operations, security, governance.
+**Login:** `ops.admin@ewp.demo` / `Admin123!` (or `workforce.import@ewp.demo` for connector-heavy demos)
 **Live aid:** [`DEMO-CHEATSHEET.md`](./DEMO-CHEATSHEET.md) · **Supplier experience:** [`DEMO-SUPPLIER-PORTAL.md`](./DEMO-SUPPLIER-PORTAL.md) · **Executive opener:** [`DEMO-PLATFORM-ARCHITECTURE.md`](./DEMO-PLATFORM-ARCHITECTURE.md)
 
 **Question this demo answers:** *How do we govern an external workforce?*

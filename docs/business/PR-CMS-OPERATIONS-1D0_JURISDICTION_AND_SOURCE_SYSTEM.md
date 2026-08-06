@@ -1,6 +1,6 @@
 # PR-CMS-OPERATIONS-1D0 — Jurisdiction and supplier-source foundation
 
-**Status:** COMPLETE  
+**Status:** COMPLETE
 **Blocks:** `PR-CMS-OPERATIONS-1D2` (portal + PDP) — Oracle staging import delivered in [1D1](./PR-CMS-OPERATIONS-1D1_ORACLE_SUPPLIER_STAGING.md)
 
 ## Doctrine

@@ -1,8 +1,8 @@
 # External Workforce Platform — Architecture
 
-**Product:** External Workforce Platform (EWP)  
-**Status:** Operational architecture (May 2026)  
-**Audience:** Engineers, architects, product owners  
+**Product:** External Workforce Platform (EWP)
+**Status:** Operational architecture (May 2026)
+**Audience:** Engineers, architects, product owners
 
 > **Start here** for how EWP is structured. **Implement from** the Capability Map and CAPs. **Do not extend** this document with new abstractions — update CAPs and CERTs instead.
 

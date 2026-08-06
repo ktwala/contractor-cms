@@ -34,7 +34,7 @@
 ## 1. Executive objective
 
 ```text
-Align current Contractor CMS with ADR-EXTID-001 and CONTRACTOR_OPERATING_MODEL_V1 without destabilizing existing product surfaces.
+Align current External Workforce Platform with ADR-EXTID-001 and CONTRACTOR_OPERATING_MODEL_V1 without destabilizing existing product surfaces.
 ```
 
 ---

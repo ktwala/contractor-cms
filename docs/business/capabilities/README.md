@@ -1,7 +1,7 @@
 # Capability Specifications (`CAP-*`)
 
-**Source of truth:** [`EXTERNAL_WORKFORCE_CAPABILITY_MAP.md`](../EXTERNAL_WORKFORCE_CAPABILITY_MAP.md) — update the map when CAPs or CERTs change  
-**Reference CAP:** [`CAP-WORKFORCE-ADMINISTRATION.md`](./CAP-WORKFORCE-ADMINISTRATION.md) v1.0  
+**Source of truth:** [`EXTERNAL_WORKFORCE_CAPABILITY_MAP.md`](../EXTERNAL_WORKFORCE_CAPABILITY_MAP.md) — update the map when CAPs or CERTs change
+**Reference CAP:** [`CAP-WORKFORCE-ADMINISTRATION.md`](./CAP-WORKFORCE-ADMINISTRATION.md) v1.0
 **Method (frozen):** [`EXTERNAL_WORKFORCE_CAPABILITY_ENGINEERING_MODEL.md`](../EXTERNAL_WORKFORCE_CAPABILITY_ENGINEERING_MODEL.md)
 
 > **Operational mode:** New capabilities need **CAP + PRs + CERT** — not new governance document trees.
@@ -49,8 +49,8 @@ Example PR block:
 ```markdown
 ## CAP traceability
 
-**Capability:** Supplier Administration  
-**CAP version:** v1.0  
+**Capability:** Supplier Administration
+**CAP version:** v1.0
 **Implements:** CAP §…
 ```
 

@@ -1,14 +1,14 @@
-# Contractor CMS
+# External Workforce Platform
 
-**Full-Stack Contractor Management Platform with South African Tax Compliance**
+**External Workforce Governance and Management Platform**
 
-A comprehensive contractor management system built with NestJS, Prisma, PostgreSQL (backend) and Next.js 15, TypeScript, Tailwind CSS (frontend), featuring multi-tenant architecture, **RBAC with a generated permission catalog**, **immutable audit logging and risk insights**, a **Policy Decision Platform (PDP)** for governance (activation rules, shadow telemetry, exception workflows), SARS tax classification, timesheet and invoice workflows, and role-aware dashboards.
+A comprehensive external workforce governance and management platform built with NestJS, Prisma, PostgreSQL (backend) and Next.js 15, TypeScript, Tailwind CSS (frontend), featuring multi-tenant architecture, **RBAC with a generated permission catalog**, **immutable audit logging and risk insights**, a **Policy Decision Platform (PDP)** for governance (activation rules, shadow telemetry, exception workflows), SARS tax classification, timesheet and invoice workflows, and role-aware dashboards.
 
 ---
 
 ## 🎯 Overview
 
-Contractor CMS is a production-ready SaaS platform designed to manage:
+The External Workforce Platform is a production-ready SaaS platform designed to govern and manage:
 - **Suppliers** (Companies and Individuals)
 - **Contractors** (Worker profiles and engagements)
 - **Contracts** (MSA, SOW, rate cards)
@@ -62,7 +62,7 @@ Contractor CMS is a production-ready SaaS platform designed to manage:
 ```bash
 # 1. Clone the repository
 git clone <repository-url>
-cd contractor-cms
+cd external-workforce-platform
 
 # 2. Install backend dependencies
 cd backend && npm install && cd ..
@@ -110,7 +110,7 @@ npm run frontend:dev
 npm run docker:up
 ```
 
-Compose maps host port **5433** to Postgres inside the network (`localhost:5433` from your machine). The `backend` service uses `postgres:5432` internally. For a local Prisma connection from the host against the compose database, use a URL like `postgresql://contractor_cms:password@localhost:5433/contractor_cms`.
+Compose maps host port **5433** to Postgres inside the network (`localhost:5433` from your machine). The `backend` service uses `postgres:5432` internally. For a local Prisma connection from the host against the compose database, use a URL like `postgresql://external_workforce_platform:password@localhost:5433/external_workforce_platform`.
 
 The application will be available at:
 - **Frontend UI:** http://localhost:3001
@@ -193,7 +193,7 @@ npm run lint
 ### Core Entities
 
 **Authentication & Authorization**
-- `User` - CMS users (internal, federated, contractors)
+- `User` - Platform users (internal, federated and external workforce users)
 - `Role`, `UserRole` - RBAC system
 - `ApiKey` - System integration keys
 - `UserSession` - JWT session tracking
@@ -251,8 +251,8 @@ npm run lint
 
 ### Hybrid Authentication Model
 ```
-CMS-Native Users        Federated Users (HCM)     API Keys (M2M)
-├── CMS Admins          ├── External Managers      ├── Withholding Bridge
+Platform-Native Users   Federated Users (HCM)     API Keys (M2M)
+├── Platform Admins     ├── External Managers      ├── Withholding Bridge
 ├── Finance/AP          ├── HCM Staff              ├── Custom Integrations
 └── Contractors         └── OIDC/OAuth 2.0         └── Scoped Permissions
 ```
@@ -265,7 +265,7 @@ CMS-Native Users        Federated Users (HCM)     API Keys (M2M)
 ### Event-Driven Integration (target architecture)
 
 ```
-CMS → WithholdingInstruction (Canonical) → NATS → Adapters → HCM Systems
+EWP → WithholdingInstruction (Canonical) → NATS → Adapters → HCM Systems
 ```
 
 The **data model** (`WithholdingInstruction.canonicalPayload`, `adapterType`, `syncStatus`, organization `hcmType` / `hcmConfig`) and documentation describe this path. **Runtime publishing** to a NATS cluster is the integration milestone—verify your deployment’s adapter services separately.
@@ -286,7 +286,7 @@ PORT=3000
 API_PREFIX=api/v1
 
 # Database
-DATABASE_URL="postgresql://contractor_cms:password@localhost:5432/contractor_cms?schema=public"
+DATABASE_URL="postgresql://external_workforce_platform:password@localhost:5432/external_workforce_platform?schema=public"
 
 # JWT
 JWT_SECRET=your-super-secret-jwt-key-change-in-production
@@ -378,7 +378,7 @@ Canonical JSON payloads are stored on `WithholdingInstruction` (and related DTOs
 
 ### Adapter pattern (integration boundary)
 
-CMS stores **canonical** withholding payloads and organization-level adapter hints. **Outbound** adapters (Oracle HCM Cloud, SAP SuccessFactors, Workday, or custom subscribers) are expected to consume **NATS** (or equivalent bus) topics and translate payloads into vendor APIs.
+The platform stores **canonical** withholding payloads and organization-level adapter hints. **Outbound** adapters (Oracle HCM Cloud, SAP SuccessFactors, Workday, or custom subscribers) are expected to consume **NATS** (or equivalent bus) topics and translate payloads into vendor APIs.
 
 The repository includes the **`nats` npm dependency** for future broker clients; wire-up lives outside the core REST modules unless your fork adds a publisher service.
 
@@ -404,7 +404,7 @@ Event names are part of the integration contract documented in [`docs/security/`
 | [`docs/CONNECTOR_GOVERNANCE_PLATFORM.md`](docs/CONNECTOR_GOVERNANCE_PLATFORM.md) | Platform doctrine, APIs, personas |
 | [`docs/CONNECTOR_DEMO_UAT.md`](docs/CONNECTOR_DEMO_UAT.md) | Repeatable Docker demo playbook |
 | [`docs/SUPPLIER_GOVERNANCE_OPERATIONS.md`](docs/SUPPLIER_GOVERNANCE_OPERATIONS.md) | Governance tiles, evidence authority, approvals queue |
-| [`docs/CONTRACTOR_BOOTSTRAP_AUTHORITY.md`](docs/CONTRACTOR_BOOTSTRAP_AUTHORITY.md) | HCM bootstrap vs CMS contractor authority |
+| [`docs/CONTRACTOR_BOOTSTRAP_AUTHORITY.md`](docs/CONTRACTOR_BOOTSTRAP_AUTHORITY.md) | HCM bootstrap vs platform contractor authority |
 | [`docs/GOVERNANCE_SIGNAL_LIFECYCLE.md`](docs/GOVERNANCE_SIGNAL_LIFECYCLE.md) | Bootstrap vs operational signal decay |
 | [`docs/DEMO_LOGIN_CREDENTIALS.md`](docs/DEMO_LOGIN_CREDENTIALS.md) | Demo passwords |
 | [`docs/GOVERNANCE_TEST_PERSONAS.md`](docs/GOVERNANCE_TEST_PERSONAS.md) | RBAC personas for UI validation |
@@ -457,7 +457,7 @@ Run focused Jest targets with `npm run test` / `npm run test:unit` from `backend
 ### Project Structure
 
 ```
-contractor-cms/
+external-workforce-platform/
 ├── backend/
 │   ├── prisma/                 # schema, migrations, seed
 │   ├── src/
@@ -562,11 +562,11 @@ GET /api/v1/health/readiness
 ### Implementation record (demo data & contractor UI)
 
 ```text
-CLOSED — Contractor CMS demo data, supplier display, seed coverage, engagements access, and org-context drift protection are aligned.
+CLOSED — External Workforce Platform demo data, supplier display, seed coverage, engagements access, and org-context drift protection are aligned.
 ```
 
 ```text
-PR-PDP-UI-ALIGN-1 — PDP Activation and Governance Exceptions now conform to the standard Contractor CMS page shell. The change is UI-only: PDP services, API-backed data behavior, simulation, rule management, and exception approval/rejection flows are unchanged. Regression tests enforce correct page titles, PDP-specific settings layout behavior, light card/table styling, and removal of the dark PDP panel treatment.
+PR-PDP-UI-ALIGN-1 — PDP Activation and Governance Exceptions now conform to the standard External Workforce Platform page shell. The change is UI-only: PDP services, API-backed data behavior, simulation, rule management, and exception approval/rejection flows are unchanged. Regression tests enforce correct page titles, PDP-specific settings layout behavior, light card/table styling, and removal of the dark PDP panel treatment.
 ```
 
 Architectural closure is documented here and enforced below; a browser pass is optional final confirmation, not a blocker to the conclusion.
@@ -593,8 +593,8 @@ Services: **postgres** (host port `5433`), **backend** (`3000`), **frontend** (`
 **Single-service images** (Kubernetes / ECS style) build from each package directory, for example:
 
 ```bash
-docker build -t contractor-cms-api:latest ./backend
-docker build -t contractor-cms-web:latest ./frontend
+docker build -t external-workforce-platform-api:latest ./backend
+docker build -t external-workforce-platform-web:latest ./frontend
 ```
 
 Pass the same environment variables you would use in `.env` files (`DATABASE_URL`, `JWT_SECRET`, `API_KEY_SALT`, `CORS_ORIGIN`, `NEXT_PUBLIC_API_URL`, etc.).

@@ -1,9 +1,9 @@
 # CAP-IDENTITY-ACQUISITION
 
-**Capability:** Identity Acquisition  
-**Platform:** External Workforce Platform (EWP)  
-**Version:** 1.0  
-**Status:** RATIFIED — authoritative contract (May 2026)  
+**Capability:** Identity Acquisition
+**Platform:** External Workforce Platform (EWP)
+**Version:** 1.0
+**Status:** RATIFIED — authoritative contract (May 2026)
 **Normative:** This document uses **SHALL** / **SHALL NOT** as defined in RFC 2119.
 
 > **Fourth operational CAP — entry gate, not owner.** Unlike Supplier, Workforce, and Engagement Administration, Identity Acquisition **SHALL NOT** own an enduring business relationship. It owns **acquisition** only. See [`CAP-WORKFORCE-ADMINISTRATION.md`](./CAP-WORKFORCE-ADMINISTRATION.md) for template discipline; §5 uses a **pipeline**, not a lifecycle state machine.

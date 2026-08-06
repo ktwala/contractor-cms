@@ -1,9 +1,9 @@
 # External Workforce Platform — v1 Architecture Freeze
 
-**Status:** **CLOSED FOR V1** (May 2026) · **Architecture programme closed** — governing engineering, not discovering structure  
+**Status:** **CLOSED FOR V1** (May 2026) · **Architecture programme closed** — governing engineering, not discovering structure
 **Source of truth:** [`EXTERNAL_WORKFORCE_CAPABILITY_MAP.md`](./EXTERNAL_WORKFORCE_CAPABILITY_MAP.md) — **start every question here**
 
-> Architecture **governs** engineering now. Every feature review starts with business truth — not workshops or restructuring.  
+> Architecture **governs** engineering now. Every feature review starts with business truth — not workshops or restructuring.
 > **Stop the architecture programme.** Apply CAPs, PRs, and CERTs. See [`ARCHITECTURAL_RESPONSIBILITIES_V1.md`](./ARCHITECTURAL_RESPONSIBILITIES_V1.md) § Architecture programme — closed.
 
 ---

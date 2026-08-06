@@ -1,10 +1,10 @@
 # PR-UI-TOKENS-2 — Shell parity (Hubsec Workforce)
 
-**Goal:** Align Contractor CMS shell with Hubsec Workforce shell while preserving CMS information architecture and dashboard behaviour.
+**Goal:** Align External Workforce Platform shell with Hubsec Workforce shell while preserving platform information architecture and dashboard behaviour.
 
 ## Scope
 
-- Sidebar brand: purple icon block + **Hubsec CMS** title
+- Sidebar brand: purple icon block + **Hubsec EWP** title
 - Top bar: menu control, **Refresh permissions**, avatar + user details
 - Main content: increased top padding and wider max width
 - Active nav: stronger cyan glow; active purple aligned to brand token

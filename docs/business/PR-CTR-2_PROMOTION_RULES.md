@@ -173,8 +173,8 @@ contractor.sponsor_changed
 
 ## 10. Acceptance criteria (PR-CTR-2)
 
-- [ ] Migrations apply cleanly on empty and existing DBs  
-- [ ] Prisma client generates new models  
-- [ ] No production code writes `Contractor` from HCM except via promote contract (grep gate in PR-CTR-4)  
-- [ ] Docs + constitution cross-linked  
-- [ ] Workshop sample extract checklist completed before PR-CTR-3  
+- [ ] Migrations apply cleanly on empty and existing DBs
+- [ ] Prisma client generates new models
+- [ ] No production code writes `Contractor` from HCM except via promote contract (grep gate in PR-CTR-4)
+- [ ] Docs + constitution cross-linked
+- [ ] Workshop sample extract checklist completed before PR-CTR-3

@@ -1,13 +1,13 @@
 # PR-IDENTITY-ACQUISITION-MODEL-1 — Acquisition model schema and intake wiring
 
-**Status:** COMPLETE  
-**ADR:** [`ADR-013-External-Worker-Acquisition-Model.md`](./ADR-013-External-Worker-Acquisition-Model.md)  
+**Status:** COMPLETE
+**ADR:** [`ADR-013-External-Worker-Acquisition-Model.md`](./ADR-013-External-Worker-Acquisition-Model.md)
 **CAP:** [`capabilities/CAP-IDENTITY-ACQUISITION.md`](./capabilities/CAP-IDENTITY-ACQUISITION.md) **v1.0** — §7 P-01, P-02; §12 invariants 2, 4
 
 ## CAP traceability
 
-**Capability:** Identity Acquisition  
-**CAP version:** v1.0  
+**Capability:** Identity Acquisition
+**CAP version:** v1.0
 **Implements:** CAP §7 P-01, P-02 · ADR-013 §7 Step 2
 
 ## Scope

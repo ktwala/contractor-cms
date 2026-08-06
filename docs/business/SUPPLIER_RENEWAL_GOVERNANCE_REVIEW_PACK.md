@@ -26,7 +26,7 @@ Engineering has already deployed the **Visibility Layer** to production. The sys
 
 ## 3. Policy Decisions Required
 
-Before engineering can automate the enforcement of these expirations, stakeholders must approve the overarching governance rules. 
+Before engineering can automate the enforcement of these expirations, stakeholders must approve the overarching governance rules.
 
 **Unresolved Stakeholder Choices (from `SUPPLIER_RENEWAL_POLICY_DECISION_MATRIX.md`):**
 

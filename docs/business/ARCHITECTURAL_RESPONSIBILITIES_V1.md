@@ -1,6 +1,6 @@
 # Architectural Responsibilities v1.0
 
-**Status:** **FROZEN** (May 2026) — changes require ADR  
+**Status:** **FROZEN** (May 2026) — changes require ADR
 **Role:** Records the **stable primitives** beneath EWP capabilities: **business truth**, **architectural responsibility**, and the **order in which architecture is discovered**.
 
 > This document **SHALL** remain small. Capability Map, CAPs, and implementation may evolve. These primitives and the discovery sequence should not. **Do not extract to HEM until a second product repeats the same discovery sequence.**

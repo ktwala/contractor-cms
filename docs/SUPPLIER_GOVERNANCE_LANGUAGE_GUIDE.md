@@ -1,7 +1,7 @@
 # Supplier Governance Language Guide
 
-**Status:** Draft — process-first vocabulary for Oracle Procurement / Supplier Portal connector UI and ops narrative  
-**Audience:** Product, demo authors, engineers changing labels  
+**Status:** Draft — process-first vocabulary for Oracle Procurement / Supplier Portal connector UI and ops narrative
+**Audience:** Product, demo authors, engineers changing labels
 **Rule:** Language emerges from the **business process**, not from UI polish. **Do not rename labels in code until this guide’s page-purpose and metric-ownership rules pass.**
 
 **Parent pattern (read first):**

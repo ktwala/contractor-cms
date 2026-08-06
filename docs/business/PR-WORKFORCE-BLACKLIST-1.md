@@ -1,6 +1,6 @@
 # PR-WORKFORCE-BLACKLIST-1 — CMS workforce policy block
 
-**Status:** COMPLETE  
+**Status:** COMPLETE
 **Builds on:** [`PR-WORKFORCE-REVIEW-OUTCOMES-1.md`](./PR-WORKFORCE-REVIEW-OUTCOMES-1.md)
 
 ## Guardrail
@@ -26,7 +26,7 @@ Uses existing `BLACKLISTED` `workforceState`. Ops-only transition with:
 - `reason` — workforce history + audit
 - `authorityNote` — internal ops metadata (not portal-visible)
 
-**Timeline:** derived label **Blacklisted**  
+**Timeline:** derived label **Blacklisted**
 **Domain stub:** `ContractorBlacklisted` (existing)
 
 ## Portal visibility

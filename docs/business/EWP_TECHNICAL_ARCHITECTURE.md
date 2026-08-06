@@ -1,8 +1,8 @@
 # External Workforce Platform — Technical Architecture
 
-**Product:** External Workforce Platform (EWP)  
-**Status:** v1 reference implementation (May 2026)  
-**Companion:** [`EWP_ARCHITECTURE.md`](./EWP_ARCHITECTURE.md) (business architecture)  
+**Product:** External Workforce Platform (EWP)
+**Status:** v1 reference implementation (May 2026)
+**Companion:** [`EWP_ARCHITECTURE.md`](./EWP_ARCHITECTURE.md) (business architecture)
 
 > **Business truth first.** Map every technical change to a capability and CAP before adding modules. See [`ARCHITECTURAL_RESPONSIBILITIES_V1.md`](./ARCHITECTURAL_RESPONSIBILITIES_V1.md).
 

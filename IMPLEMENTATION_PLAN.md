@@ -1,4 +1,4 @@
-# Contractor CMS - Implementation Plan
+# External Workforce Platform - Implementation Plan
 
 **Version:** 1.0
 **Last Updated:** 2025-12-27
@@ -21,7 +21,7 @@
 
 ## Overview
 
-This document tracks the phased implementation of the Contractor CMS platform. Each phase builds on the previous, establishing a complete, production-ready system.
+This document tracks the phased implementation of the External Workforce Platform. Each phase builds on the previous, establishing a complete, production-ready system.
 
 ### Implementation Philosophy
 
@@ -35,7 +35,7 @@ This document tracks the phased implementation of the Contractor CMS platform. E
 
 ## Phase 1: Foundation (Week 1-2)
 
-**Goal:** Establish independent CMS foundation with authentication and infrastructure.
+**Goal:** Establish independent platform foundation with authentication and infrastructure.
 
 ### Phase 1A: Infrastructure ✅ COMPLETE
 
@@ -102,7 +102,7 @@ This document tracks the phased implementation of the Contractor CMS platform. E
 - [ ] **Database Seed**
   - [ ] Seed script (prisma/seed.ts)
   - [ ] Default roles (CMS_ADMIN, FINANCE_USER, CONTRACTOR)
-  - [ ] Admin user (admin@contractor-cms.com)
+  - [ ] Admin user (admin@ewp.demo)
   - [ ] Sample organization
   - [ ] npm run db:seed script
 
@@ -503,7 +503,7 @@ This document tracks the phased implementation of the Contractor CMS platform. E
 - [ ] **Bridge Service**
   - [ ] Subscribe to withholding.instruction.created
   - [ ] Call organization's adapter
-  - [ ] Update sync status in CMS
+  - [ ] Update sync status in platform
   - [ ] Error notification
 
 **Tests:**
