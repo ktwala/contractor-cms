@@ -5,10 +5,16 @@ import {
   IsDateString,
   IsNumber,
   Min,
+  IsUUID,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateProjectDto {
+  @ApiPropertyOptional({ description: 'Target organization' })
+  @IsOptional()
+  @IsUUID()
+  organizationId?: string;
+
   @ApiProperty({ description: 'Unique project code within organization' })
   @IsString()
   code: string;

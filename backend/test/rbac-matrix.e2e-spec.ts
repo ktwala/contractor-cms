@@ -29,14 +29,14 @@ describe('RBAC Matrix (e2e)', () => {
     // Org A User (ORG_FINANCE)
     await TestHelper.createUserWithRoles(orgA.id, {
       email: 'userA@test.com',
-      roles: [{ role: 'ORG_FINANCE', permissions: ['suppliers:read', 'suppliers:create', 'suppliers:update'], orgId: orgA.id }],
+      roles: [{ role: 'ORG_FINANCE', permissions: ['suppliers:read', 'suppliers:create', 'suppliers:update', 'projects:create', 'contracts:create'], orgId: orgA.id }],
     });
     tokenOrgAUser = (await TestHelper.login('userA@test.com')).token;
 
-    // Org B User (ORG_FINANCE)
+    // Scoped User B (ORG_FINANCE)
     await TestHelper.createUserWithRoles(orgB.id, {
       email: 'userB@test.com',
-      roles: [{ role: 'ORG_FINANCE', permissions: ['suppliers:read', 'suppliers:create', 'suppliers:update'], orgId: orgB.id }],
+      roles: [{ role: 'ORG_FINANCE', permissions: ['suppliers:read', 'suppliers:create', 'suppliers:update', 'projects:create', 'contracts:create'], orgId: orgB.id }],
     });
     tokenOrgBUser = (await TestHelper.login('userB@test.com')).token;
 
@@ -165,6 +165,133 @@ describe('RBAC Matrix (e2e)', () => {
         .get(`/suppliers?organizationId=${orgB.id}`)
         .set('Authorization', `Bearer ${tokenOrgAUser}`)
         .expect(HttpStatus.BAD_REQUEST);
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // Tenant DTO Security Enforcements (PR-DTO-SECURITY-1)
+  // ---------------------------------------------------------------------------
+  describe('Tenant DTO Security', () => {
+    describe('Project Creation Scoping', () => {
+      it('should allow creation when org-scoped role matches body organization', async () => {
+        const projectDto = {
+          code: 'PROJ-OK-A',
+          name: 'Org A Project',
+          budget: 10000,
+          startDate: new Date().toISOString(),
+          endDate: new Date(Date.now() + 10000000).toISOString(),
+          organizationId: orgA.id,
+        };
+
+        await request(app.getHttpServer())
+          .post('/projects')
+          .set('Authorization', `Bearer ${tokenOrgAUser}`)
+          .send(projectDto)
+          .expect(HttpStatus.CREATED);
+      });
+
+      it('should forbid creation when Org A user attempts to nominate Org B in body', async () => {
+        const projectDto = {
+          code: 'PROJ-HACK',
+          name: 'Hack Project',
+          budget: 10000,
+          startDate: new Date().toISOString(),
+          endDate: new Date(Date.now() + 10000000).toISOString(),
+          organizationId: orgB.id, // Nominate Org B
+        };
+
+        await request(app.getHttpServer())
+          .post('/projects')
+          .set('Authorization', `Bearer ${tokenOrgAUser}`)
+          .send(projectDto)
+          .expect(HttpStatus.FORBIDDEN);
+      });
+
+      it('should fail closed with 403 when organizationId is missing or has invalid format for scoped user', async () => {
+        const projectDto = {
+          code: 'PROJ-INVALID',
+          name: 'Invalid Project',
+          budget: 10000,
+          startDate: new Date().toISOString(),
+          organizationId: 'not-a-uuid',
+        };
+
+        // Scoped user gets 403 because guard intercepts the mismatched context before pipe validation runs
+        await request(app.getHttpServer())
+          .post('/projects')
+          .set('Authorization', `Bearer ${tokenOrgAUser}`)
+          .send(projectDto)
+          .expect(HttpStatus.FORBIDDEN);
+      });
+
+      it('should return 400 when organizationId has invalid format for global admin', async () => {
+        const projectDto = {
+          code: 'PROJ-INVALID-ADMIN',
+          name: 'Invalid Admin Project',
+          budget: 10000,
+          startDate: new Date().toISOString(),
+          organizationId: 'not-a-uuid',
+        };
+
+        // Admin gets 400 because guard allows global role through, and validation pipe executes next
+        await request(app.getHttpServer())
+          .post('/projects')
+          .set('Authorization', `Bearer ${tokenGlobalAdmin}`)
+          .send(projectDto)
+          .expect(HttpStatus.BAD_REQUEST);
+      });
+
+      it('should allow global authorized role (CMS_ADMIN) to nominate any organization', async () => {
+        const projectDto = {
+          code: 'PROJ-ADMIN-B',
+          name: 'Admin Project B',
+          budget: 20000,
+          startDate: new Date().toISOString(),
+          organizationId: orgB.id,
+        };
+
+        await request(app.getHttpServer())
+          .post('/projects')
+          .set('Authorization', `Bearer ${tokenGlobalAdmin}`)
+          .send(projectDto)
+          .expect(HttpStatus.CREATED);
+      });
+    });
+
+    describe('Contract Creation Scoping', () => {
+      it('should allow contract creation when scoped role matches body organization', async () => {
+        const contractDto = {
+          supplierId: orgASupplierId,
+          contractNumber: 'CON-OK-A',
+          title: 'Org A Contract',
+          contractType: 'TIME_AND_MATERIALS',
+          startDate: new Date().toISOString(),
+          organizationId: orgA.id,
+        };
+
+        await request(app.getHttpServer())
+          .post('/contracts')
+          .set('Authorization', `Bearer ${tokenOrgAUser}`)
+          .send(contractDto)
+          .expect(HttpStatus.CREATED);
+      });
+
+      it('should forbid contract creation when Org A user nominates Org B in body', async () => {
+        const contractDto = {
+          supplierId: orgBSupplierId,
+          contractNumber: 'CON-HACK',
+          title: 'Hack Contract',
+          contractType: 'TIME_AND_MATERIALS',
+          startDate: new Date().toISOString(),
+          organizationId: orgB.id,
+        };
+
+        await request(app.getHttpServer())
+          .post('/contracts')
+          .set('Authorization', `Bearer ${tokenOrgAUser}`)
+          .send(contractDto)
+          .expect(HttpStatus.FORBIDDEN);
+      });
     });
   });
 });
