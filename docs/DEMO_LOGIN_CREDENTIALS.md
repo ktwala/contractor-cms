@@ -5,7 +5,7 @@
 
 **Status:** Seeded by `backend/prisma/seed.ts`. Docker runs seed on backend startup; for local API use `cd backend && npm run db:seed` if login returns *Invalid credentials*.
 
-**Email domain:** `@ewp.demo` — reflects **External Workforce Platform** demo personas (replaces legacy `@contractor-cms.com`).
+**Email domain:** `@ewp.demo` — reflects **External Workforce Platform** demo personas (replaces legacy `@legacy-cms.local`).
 
 **Organization:** Demo Organization (`DEMO`) — `ORACLE_ONLY` suppliers, `CMS_ONLY` contractors (HCM import; EWP authoritative after import)
 
@@ -65,14 +65,14 @@ The login page (non-production) shows quick-fill buttons for these and other per
 
 ## Legacy emails (retired on reseed)
 
-After `db:seed`, accounts ending in `@contractor-cms.com` are **deactivated**. Use the `@ewp.demo` addresses above.
+After `db:seed`, accounts ending in `@legacy-cms.local` are **deactivated**. Use the `@ewp.demo` addresses above.
 
 | Legacy | New |
 |--------|-----|
-| `admin@contractor-cms.com` | `ops.admin@ewp.demo` |
-| `governance.ops@contractor-cms.com` | `workforce.import@ewp.demo` |
-| `contractor@contractor-cms.com` | `external.worker@ewp.demo` |
-| `manager@contractor-cms.com` | `ops.manager@ewp.demo` |
+| `admin@legacy-cms.local` | `ops.admin@ewp.demo` |
+| `governance.ops@legacy-cms.local` | `workforce.import@ewp.demo` |
+| `contractor@legacy-cms.local` | `external.worker@ewp.demo` |
+| `manager@legacy-cms.local` | `ops.manager@ewp.demo` |
 
 ---
 
@@ -121,7 +121,7 @@ Login as `workforce.import@ewp.demo` / `GovOps123!` → [`CONNECTOR_DEMO_UAT.md`
 
 1. **Reseed** — `docker compose exec backend npm run db:seed`
 2. **Backend health** — `curl http://localhost:3000/api/v1/health/liveness`
-3. **Use @ewp.demo emails** — legacy `@contractor-cms.com` accounts are deactivated after reseed
+3. **Use @ewp.demo emails** — legacy `@legacy-cms.local` accounts are deactivated after reseed
 
 ---
 

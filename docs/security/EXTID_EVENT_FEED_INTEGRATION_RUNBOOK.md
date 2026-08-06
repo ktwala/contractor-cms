@@ -1,35 +1,35 @@
 # EXTID Event Feed — Integration Runbook
 
-**PR:** `PR-EXTID-FEED-RUNBOOK-1`  
-**Status:** `ACTIVE`  
-**Implements:** [`PR-EXTID-EVENT-FEED-1`](../../backend/src/core/extid/) (CLOSED)  
+**PR:** `PR-EXTID-FEED-RUNBOOK-1`
+**Status:** `ACTIVE`
+**Implements:** [`PR-EXTID-EVENT-FEED-1`](../../backend/src/core/extid/) (CLOSED)
 **Doctrine:** [`ADR-EXTID-001`](./ADR-EXTID-001-external-workforce-identity-sponsorship-iga-boundary.md) §6–6.1
 
 ---
 
 ## 1. Purpose and boundary
 
-Contractor CMS is the **publisher** of external workforce truth. Your IGA platform (e.g. Soffid) or an **integration middleware** owned by the IGA team is the **consumer and executor**.
+The External Workforce Platform is the **publisher** of external workforce truth. Your IGA platform (e.g. Soffid) or an **integration middleware** owned by the IGA team is the **consumer and executor**.
 
 ```text
-CMS          →  publishes immutable workforce events (outbox)
+EWP          →  publishes immutable workforce events (outbox)
 IGA / middleware  →  pulls, interprets, provisions, certifies, revokes
 ```
 
-**CMS does not:**
+**EWP does not:**
 
-- Create or update identities in target systems  
-- Assign application roles or entitlements  
-- Run SoD, certification campaigns, or approval workflows  
-- Report provisioning success as “access enabled” in the workforce plane  
+- Create or update identities in target systems
+- Assign application roles or entitlements
+- Run SoD, certification campaigns, or approval workflows
+- Report provisioning success as “access enabled” in the workforce plane
 
-**CMS does:**
+**EWP does:**
 
-- Expose a **secure pull API** over durable `IgaOutboxEvent` rows  
-- Record **ack** (`SENT`) or **fail** (`FAILED` + reason) from the consumer  
-- Audit list / read / ack / fail operations  
+- Expose a **secure pull API** over durable `IgaOutboxEvent` rows
+- Record **ack** (`SENT`) or **fail** (`FAILED` + reason) from the consumer
+- Audit list / read / ack / fail operations
 
-Push webhooks, message buses, and in-CMS delivery adapters are **out of scope** until explicitly scheduled (e.g. `PR-EXTID-EVENT-DELIVERY-1`). **Use this pull feed for v1 integrations.**
+Push webhooks, message buses, and in-platform delivery adapters are **out of scope** until explicitly scheduled (e.g. `PR-EXTID-EVENT-DELIVERY-1`). **Use this pull feed for v1 integrations.**
 
 ---
 
@@ -37,18 +37,18 @@ Push webhooks, message buses, and in-CMS delivery adapters are **out of scope** 
 
 ```text
 ┌─────────────────────┐         pull (HTTPS)          ┌──────────────────────┐
-│  Contractor CMS     │  GET  /extid/events           │  IGA or middleware   │
-│  (publisher)        │  GET  /extid/events/:id       │  (consumer)          │
-│                     │  POST /extid/events/:id/ack   │                      │
+│  External Workforce │  GET  /extid/events           │  IGA or middleware   │
+│  Platform           │  GET  /extid/events/:id       │  (consumer)          │
+│  (publisher)        │  POST /extid/events/:id/ack   │                      │
 │  IgaOutboxEvent     │  POST /extid/events/:id/fail  │  → Soffid / AD / …  │
 └─────────────────────┘                               └──────────────────────┘
 ```
 
 | Plane | Owner | This API |
 |-------|--------|----------|
-| Workforce truth | CMS | Events + payloads |
-| Accountability | CMS + HCM refs | `sponsorEmployeeId` in payload |
-| Access execution | IGA | **Not** CMS — consumer decides |
+| Workforce truth | EWP | Events + payloads |
+| Accountability | EWP + HCM refs | `sponsorEmployeeId` in payload |
+| Access execution | IGA | **Not** EWP — consumer decides |
 
 ---
 
@@ -61,7 +61,7 @@ Push webhooks, message buses, and in-CMS delivery adapters are **out of scope** 
 | Event contract | v1 — [`IgaOutboundExternalWorkforceEventV1`](../../backend/src/core/iga/iga-event.types.ts) |
 | OpenAPI | Swagger UI when enabled — tag **api-key** for `X-API-Key` |
 
-Example host: `https://cms.example.com/api/v1/extid/events`
+Example host: `https://ewp.example.com/api/v1/extid/events`
 
 ---
 
@@ -109,7 +109,7 @@ Keys are stored hashed (`keyHash`); the plaintext value is shown **once** at cre
 | `expiresAt` | Optional expiry |
 | `isActive` | Revoke by setting `false` |
 
-**Environment:** `API_KEY_SALT` must be set consistently across all CMS instances that validate keys.
+**Environment:** `API_KEY_SALT` must be set consistently across all platform instances that validate keys.
 
 ### 5.2 Example — programmatic creation (Nest bootstrap)
 
@@ -146,7 +146,7 @@ Outbox rows carry `organizationId` (set when events are written from contractor/
 
 **Recommendation:**
 
-- **Production Soffid per tenant:** one API key per `organizationId`.  
+- **Production Soffid per tenant:** one API key per `organizationId`.
 - **Central integration hub:** global key only with network controls and strict ops approval.
 
 ---
@@ -228,7 +228,7 @@ X-API-Key: cms_...
 | `eventType` | e.g. `EXTERNAL_PERSON_CREATED` |
 | `eventVersion` | Contract version (currently `1`) |
 | `source` | `contractor-cms` |
-| `externalPersonId` | CMS correlation id |
+| `externalPersonId` | Platform correlation id |
 | `payload` | **Immutable** v1 envelope (see §8) |
 | `deliveryStatus` | `PENDING` \| `SENT` \| `FAILED` |
 | `failureReason` | Set when failed |
@@ -274,7 +274,7 @@ Other names in the catalog (`SUSPENDED`, `TERMINATED`, etc.) are reserved for fu
 }
 ```
 
-**Consumer mapping:** translate this envelope into your IGA’s identity model, correlation keys, and workflows. CMS does not dictate Soffid object types or attribute names.
+**Consumer mapping:** translate this envelope into your IGA’s identity model, correlation keys, and workflows. EWP does not dictate Soffid object types or attribute names.
 
 ---
 
@@ -293,8 +293,8 @@ loop (scheduled poller):
 
 **Idempotency:**
 
-- Use `payload.eventId` + `contractorId` in your consumer as a dedupe key.  
-- Safe to **re-read** the same outbox `id`; ack is idempotent when already `SENT`.  
+- Use `payload.eventId` + `contractorId` in your consumer as a dedupe key.
+- Safe to **re-read** the same outbox `id`; ack is idempotent when already `SENT`.
 - Do **not** ack until IGA has accepted the message (or you have persisted it in your middleware dead-letter store).
 
 **At-least-once:** assume duplicates if your poller crashes after IGA write but before ack. IGA side must tolerate replays.
@@ -311,9 +311,9 @@ loop (scheduled poller):
 | Entitlements, roles, SoD, certification | Consumer (IGA) |
 | Physical / logical access execution | Consumer (IGA) |
 | Retry and dead-letter policy | Consumer |
-| Ack / fail callbacks to CMS | Consumer |
+| Ack / fail callbacks to EWP | Consumer |
 
-CMS **`SENT`** = “consumer took the event.” CMS **`FAILED`** = “consumer could not process; ops may investigate.” Neither status implies provisioning completed in AD or Soffid.
+EWP **`SENT`** = “consumer took the event.” EWP **`FAILED`** = “consumer could not process; ops may investigate.” Neither status implies provisioning completed in AD or Soffid.
 
 ---
 
@@ -321,13 +321,13 @@ CMS **`SENT`** = “consumer took the event.” CMS **`FAILED`** = “consumer c
 
 | Control | Guidance |
 |---------|----------|
-| **Transport** | HTTPS only in production; prefer private network or VPN between CMS and middleware |
+| **Transport** | HTTPS only in production; prefer private network or VPN between platform and middleware |
 | **mTLS** | Recommended where enterprise PKI is available (terminate at gateway) |
-| **IP allowlist** | Enforce at API gateway / WAF — CMS does not replace network zoning |
-| **Secrets** | Store `cms_*` keys in a vault; rotate on compromise; never commit to repos |
+| **IP allowlist** | Enforce at API gateway / WAF — platform does not replace network zoning |
+| **Secrets** | Store `ewp_*` keys in a vault; rotate on compromise; never commit to repos |
 | **Scopes** | Minimum scopes; separate read-only monitors from ack workers if possible |
 | **Tenant keys** | Prefer per-`organizationId` keys over global keys |
-| **Audit** | CMS logs `EXTID_EVENTS_LISTED`, `EXTID_EVENT_READ`, `EXTID_EVENT_ACKED`, `EXTID_EVENT_FAILED` — correlate with your IGA audit trail |
+| **Audit** | The platform logs `EXTID_EVENTS_LISTED`, `EXTID_EVENT_READ`, `EXTID_EVENT_ACKED`, `EXTID_EVENT_FAILED` — correlate with your IGA audit trail |
 | **Human JWT** | Avoid long-lived service accounts sharing user passwords |
 
 ---
@@ -336,29 +336,29 @@ CMS **`SENT`** = “consumer took the event.” CMS **`FAILED`** = “consumer c
 
 ### HTTP 401 Unauthorized
 
-- Missing or invalid `X-API-Key` / JWT  
-- Key revoked (`isActive = false`) or expired (`expiresAt`)  
-- Wrong `API_KEY_SALT` on the CMS instance  
+- Missing or invalid `X-API-Key` / JWT
+- Key revoked (`isActive = false`) or expired (`expiresAt`)
+- Wrong `API_KEY_SALT` on the platform instance
 
 ### HTTP 403 Forbidden
 
-- API key missing required scope (e.g. ack without `extid-events:ack`)  
-- JWT role lacks permission  
+- API key missing required scope (e.g. ack without `extid-events:ack`)
+- JWT role lacks permission
 
 ### HTTP 404 Not found
 
-- Wrong event `id`  
-- Event belongs to another tenant and key is **tenant-scoped**  
+- Wrong event `id`
+- Event belongs to another tenant and key is **tenant-scoped**
 
 ### HTTP 400 Bad request
 
-- Invalid `cursor` (unknown id or wrong tenant visibility)  
-- Invalid `fail` body (empty `reason`, too long)  
+- Invalid `cursor` (unknown id or wrong tenant visibility)
+- Invalid `fail` body (empty `reason`, too long)
 
 ### HTTP 409 Conflict
 
-- Ack on `FAILED` event  
-- Fail on `SENT` event  
+- Ack on `FAILED` event
+- Fail on `SENT` event
 
 ### Events stuck in `PENDING`
 
@@ -367,22 +367,22 @@ CMS **`SENT`** = “consumer took the event.” CMS **`FAILED`** = “consumer c
 | Poller not running | Start middleware schedule; verify connectivity |
 | Ack never called | Fix consumer bug; ack after successful IGA handoff |
 | Wrong tenant scope | Use correct `organizationId` on API key |
-| Internal dispatcher | If `IGA_DISPATCH_ENABLED=true`, CMS stub dispatcher may move rows — **disable** in production when IGA pull is authoritative |
+| Internal dispatcher | If `IGA_DISPATCH_ENABLED=true`, EWP stub dispatcher may move rows — **disable** in production when IGA pull is authoritative |
 
 ### Events in `FAILED`
 
-1. Read `failureReason` via GET by id.  
-2. Fix data in CMS (sponsor, contractor) or mapping in middleware.  
-3. **CMS does not auto-requeue** failed rows in v1 — coordinate with platform ops (new mutation may emit a new event, or manual re-drive policy TBD).  
+1. Read `failureReason` via GET by id.
+2. Fix data in EWP (sponsor, contractor) or mapping in middleware.
+3. **The platform does not auto-requeue** failed rows in v1 — coordinate with platform ops (new mutation may emit a new event, or manual re-drive policy TBD).
 
 ### Duplicate processing in IGA
 
-- Expected under at-least-once delivery; dedupe on `payload.eventId`.  
+- Expected under at-least-once delivery; dedupe on `payload.eventId`.
 
 ### Auditing integration activity
 
-- CMS: Audit logs / settings → audit logs; filter actions `EXTID_*`  
-- Include `metadata.apiKeyId` where applicable  
+- EWP: Audit logs / settings → audit logs; filter actions `EXTID_*`
+- Include `metadata.apiKeyId` where applicable
 
 ---
 
@@ -404,12 +404,12 @@ CMS **`SENT`** = “consumer took the event.” CMS **`FAILED`** = “consumer c
 Replace host, key, and ids.
 
 ```bash
-export CMS_URL="https://cms.example.com/api/v1"
-export API_KEY="cms_..."
+export EWP_URL="https://ewp.example.com/api/v1"
+export API_KEY="ewp_..."
 
 # List pending
 curl -sS -H "X-API-Key: $API_KEY" \
-  "$CMS_URL/extid/events?status=PENDING&limit=50" | jq .
+  "$EWP_URL/extid/events?status=PENDING&limit=50" | jq .
 
 # Read one
 EVENT_ID="<uuid-from-items[0].id>"

@@ -1,9 +1,9 @@
 # CAP-ACCESS-INTEGRATION
 
-**Capability:** Access Integration  
-**Platform:** External Workforce Platform (EWP)  
-**Version:** 1.0  
-**Status:** **RATIFIED** — gateway CAP (May 2026); implementation partial per §11  
+**Capability:** Access Integration
+**Platform:** External Workforce Platform (EWP)
+**Version:** 1.0
+**Status:** **RATIFIED** — gateway CAP (May 2026); implementation partial per §11
 **Normative:** This document uses **SHALL** / **SHALL NOT** as defined in RFC 2119.
 
 > **Gateway capability — not an enduring truth owner.** Access Integration **SHALL NOT** answer *what access does this worker have?* — that is enterprise IGA. It **SHALL** answer *how does EWP communicate workforce and engagement decisions to access governance systems?* Responsibility **ends at publish to IGA** (or equivalent handover). See [`EXTERNAL_WORKFORCE_CAPABILITY_MAP.md`](../EXTERNAL_WORKFORCE_CAPABILITY_MAP.md) — Authoritative / Gateway / Cross-cutting.
@@ -235,8 +235,8 @@ Read models **SHALL NOT** present IGA entitlement truth as if owned by EWP.
 
 On every successful **Publish to IGA**, Access Integration **SHALL** persist:
 
-1. **Publish outcome** — transport truth  
-2. **Audit record** — who triggered publish  
+1. **Publish outcome** — transport truth
+2. **Audit record** — who triggered publish
 3. **Integration event** — downstream notification stub or live bus
 
 ---

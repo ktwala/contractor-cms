@@ -1,6 +1,6 @@
 # PDP Enforcement Readiness Matrix
 
-The transition from "Observe and Audit" (Shadow Mode) to "Active Enforcement" must be rolled out sequentially by domain risk. We cannot flip global enforcement on simultaneously, as it introduces severe false-positive and operational disruption risks. 
+The transition from "Observe and Audit" (Shadow Mode) to "Active Enforcement" must be rolled out sequentially by domain risk. We cannot flip global enforcement on simultaneously, as it introduces severe false-positive and operational disruption risks.
 
 This matrix serves as the operational bridge between Shadow Mode telemetry and active platform governance.
 

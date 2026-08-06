@@ -146,10 +146,10 @@ Approved for PR-EXTID-SCHEMA-1A additive schema execution only; downstream RBAC/
 
 Execute **steps 1–4** in order; then run **step 5** before opening **PR-EXTID-SCHEMA-1A**.
 
-1. **[`CONTRACTOR_OPERATING_MODEL_V1.md`](./CONTRACTOR_OPERATING_MODEL_V1.md)** — **Status:** `v0.5` → **`v1.0 RATIFIED`**; update **Version** / changelog row.  
-2. **[`ADR-EXTID-001`](../security/ADR-EXTID-001-external-workforce-identity-sponsorship-iga-boundary.md)** — **Status:** `DRAFT` → **`PROPOSED`** using **§1** template line above.  
-3. **[`OPERATING_MODEL_DECISION_LOG.md`](./OPERATING_MODEL_DECISION_LOG.md)** — Record **GOV-EXTID-01** (see **Governance authorization** table); append dated row to decision log **Changelog** per table instructions.  
-4. **[`README.md`](../../README.md)** — Doctrine baseline: **production-bound governance active for Schema Stream 1A only** (additive Prisma); downstream streams separately gated; update operating-model table row to **v1.0 RATIFIED** when applicable.  
+1. **[`CONTRACTOR_OPERATING_MODEL_V1.md`](./CONTRACTOR_OPERATING_MODEL_V1.md)** — **Status:** `v0.5` → **`v1.0 RATIFIED`**; update **Version** / changelog row.
+2. **[`ADR-EXTID-001`](../security/ADR-EXTID-001-external-workforce-identity-sponsorship-iga-boundary.md)** — **Status:** `DRAFT` → **`PROPOSED`** using **§1** template line above.
+3. **[`OPERATING_MODEL_DECISION_LOG.md`](./OPERATING_MODEL_DECISION_LOG.md)** — Record **GOV-EXTID-01** (see **Governance authorization** table); append dated row to decision log **Changelog** per table instructions.
+4. **[`README.md`](../../README.md)** — Doctrine baseline: **production-bound governance active for Schema Stream 1A only** (additive Prisma); downstream streams separately gated; update operating-model table row to **v1.0 RATIFIED** when applicable.
 5. **[`RATIFICATION_STATE_CONSISTENCY_CHECK.md`](./RATIFICATION_STATE_CONSISTENCY_CHECK.md)** — Complete checklist + sign-off **before** opening **PR-EXTID-SCHEMA-1A** (final drift checkpoint).
 
 ### 7.5 Explicitly **not** authorized by §7 alone

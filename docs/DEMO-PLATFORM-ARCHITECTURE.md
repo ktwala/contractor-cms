@@ -1,7 +1,7 @@
 # Platform Architecture — executive demo
 
-**Audience:** MTN executives, enterprise architects, programme sponsors.  
-**Login:** none for the first five minutes — then `ops.admin@ewp.demo` / `Admin123!`  
+**Audience:** MTN executives, enterprise architects, programme sponsors.
+**Login:** none for the first five minutes — then `ops.admin@ewp.demo` / `Admin123!`
 **Live aid:** [`DEMO-CHEATSHEET.md`](./DEMO-CHEATSHEET.md) · **Operations walkthrough:** [`DEMO-OPERATIONS.md`](./DEMO-OPERATIONS.md) · **Technical evidence:** [`DEMO-TECHNICAL.md`](./DEMO-TECHNICAL.md)
 
 This is **Demo 3 of 3**. Use it as the **primary MTN pitch** when the room needs to understand *why* EWP exists before they see screens.
@@ -94,7 +94,7 @@ Only now name the design.
 
 3. **Two sentences:**
 
-   > Every piece of business truth has one owner.  
+   > Every piece of business truth has one owner.
    > Everything else introduces, transfers, or consumes.
 
 That is the satisfying arc: they watched behaviour; now they understand the design behind it.

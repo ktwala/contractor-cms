@@ -1,7 +1,7 @@
 # Supplier governance operations (UI, API, evidence authority)
 
-> **Audience:** UAT, demos, solution architecture, engineering.  
-> **Language / lifecycle:** [`SUPPLIER_GOVERNANCE_LANGUAGE_GUIDE.md`](SUPPLIER_GOVERNANCE_LANGUAGE_GUIDE.md) — snapshot-centric UI rules (read before changing labels)  
+> **Audience:** UAT, demos, solution architecture, engineering.
+> **Language / lifecycle:** [`SUPPLIER_GOVERNANCE_LANGUAGE_GUIDE.md`](SUPPLIER_GOVERNANCE_LANGUAGE_GUIDE.md) — snapshot-centric UI rules (read before changing labels)
 > **Demo playbook:** [`CONNECTOR_DEMO_UAT.md`](CONNECTOR_DEMO_UAT.md) · **Personas:** [`GOVERNANCE_TEST_PERSONAS.md`](GOVERNANCE_TEST_PERSONAS.md)
 
 ## Doctrine (one line)
@@ -125,7 +125,7 @@ Requires `suppliers:read`. `pending_evidence` applies in-memory evidence evaluat
 | API | `GET /suppliers/approvals` |
 | Query | `?evidenceIncomplete=true` — only rows blocked on CMS evidence (non–Oracle-trusted) |
 
-**Approve** → `PATCH /suppliers/:id/status` `{ "targetStatus": "ACTIVE" }`  
+**Approve** → `PATCH /suppliers/:id/status` `{ "targetStatus": "ACTIVE" }`
 **Reject** → `{ "targetStatus": "SUSPENDED", "reason": "..." }` (reason required)
 
 Demo operator: `workforce.import@ewp.demo` / `GovOps123!` (`GOVERNANCE_OPERATIONS_ADMIN` includes `suppliers:approve` and `suppliers:suspend`).

@@ -35,7 +35,7 @@ The canonical order of evaluation is:
 ---
 
 ## 2. Enforcement Philosophy
-The platform will operate on a **"Most Restrictive Rule Wins"** philosophy. 
+The platform will operate on a **"Most Restrictive Rule Wins"** philosophy.
 If the Supplier Governance allows a transaction (`VALID`), but PO Governance blocks it (`BLOCKED`), the final system state is `BLOCKED`. A `VALID` state in one domain cannot override a restriction in another domain.
 
 ---
@@ -73,12 +73,12 @@ Not all governance layers can be overridden equally.
 ---
 
 ## 6. PDP Engine Vision
-The ultimate vision is to abstract these rules out of individual microservices and controllers. 
+The ultimate vision is to abstract these rules out of individual microservices and controllers.
 
 When a user clicks "Submit Invoice", the API does not query four different databases. Instead, it queries a centralized **Policy Decision Point (PDP)**:
 `engine.evaluate(action: 'SUBMIT_INVOICE', context: { supplierId, contractorId, poId })`
 
-The PDP returns the canonical `Decision Output` and any required `Exception Workflows`. 
+The PDP returns the canonical `Decision Output` and any required `Exception Workflows`.
 
 ## Consequences
 By defining this Master Policy Decision Hierarchy, we eliminate operational ambiguity. We are no longer building four disparate governance features; we are designing a single, unified, enterprise-grade Policy Decision Platform capable of deterministic spend control.

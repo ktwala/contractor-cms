@@ -4,7 +4,7 @@
 **Immutable Constitutional Layer**
 
 ## Context
-As the Contractor CMS matures into an **Enterprise Policy Decision Platform (PDP)**, governance can no longer be treated as isolated business logic scattered across microservices. Governance is the constitutional law of the platform.
+As the External Workforce Platform matures into an **Enterprise Policy Decision Platform (PDP)**, governance can no longer be treated as isolated business logic scattered across microservices. Governance is the constitutional law of the platform.
 
 To prevent **Governance Doctrine Drift**, all architecture, code, and documentation must rigorously adhere to the invariants defined in this document. Any deviation will trigger immediate CI failures.
 

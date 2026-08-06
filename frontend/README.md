@@ -1,8 +1,8 @@
-# Contractor CMS - Frontend
+# External Workforce Platform - Frontend
 
-**Production-Ready Next.js 15 Frontend with Complete Contractor Management Workflows**
+**Production-Ready Next.js 15 Frontend with Complete External Workforce Platform Workflows**
 
-Modern, full-featured frontend for the Contractor Management System built with Next.js 15, TypeScript, Tailwind CSS, and Recharts. Includes complete CRUD operations, approval workflows, budget tracking, bulk operations, and advanced analytics.
+Modern, full-featured frontend for the External Workforce Platform built with Next.js 15, TypeScript, Tailwind CSS, and Recharts. Includes complete CRUD operations, approval workflows, budget tracking, bulk operations, and advanced analytics.
 
 ---
 

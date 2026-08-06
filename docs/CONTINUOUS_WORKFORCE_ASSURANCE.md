@@ -1,8 +1,8 @@
 # Continuous Workforce Assurance — product boundary (v1)
 
-**Status:** RATIFIED — subordinate to **complete & frozen** lifecycle [`EXTERNAL_WORKFORCE_LIFECYCLE.md`](./EXTERNAL_WORKFORCE_LIFECYCLE.md). **Do not refine architecture** — execute assurance domains.  
-**Audience:** Product, demo authors, engineers  
-**Parent:** [`business/EXTERNAL_WORKFORCE_GOVERNANCE_CONSTITUTION_v1.md`](./business/EXTERNAL_WORKFORCE_GOVERNANCE_CONSTITUTION_v1.md)  
+**Status:** RATIFIED — subordinate to **complete & frozen** lifecycle [`EXTERNAL_WORKFORCE_LIFECYCLE.md`](./EXTERNAL_WORKFORCE_LIFECYCLE.md). **Do not refine architecture** — execute assurance domains.
+**Audience:** Product, demo authors, engineers
+**Parent:** [`business/EXTERNAL_WORKFORCE_GOVERNANCE_CONSTITUTION_v1.md`](./business/EXTERNAL_WORKFORCE_GOVERNANCE_CONSTITUTION_v1.md)
 **Related:** [`WORKFORCE_GOVERNANCE_LANGUAGE_GUIDE.md`](./WORKFORCE_GOVERNANCE_LANGUAGE_GUIDE.md) · [`INTERNAL_ACCOUNTABILITY_MODEL.md`](./INTERNAL_ACCOUNTABILITY_MODEL.md) · [`DEMO-MTN-ASSURANCE-STORIES.md`](./DEMO-MTN-ASSURANCE-STORIES.md)
 
 ---

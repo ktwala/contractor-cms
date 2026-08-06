@@ -1,6 +1,6 @@
 # MTN demo — Continuous Workforce Assurance stories
 
-**Status:** RATIFIED — subordinate to frozen lifecycle [`EXTERNAL_WORKFORCE_LIFECYCLE.md`](./EXTERNAL_WORKFORCE_LIFECYCLE.md)  
+**Status:** RATIFIED — subordinate to frozen lifecycle [`EXTERNAL_WORKFORCE_LIFECYCLE.md`](./EXTERNAL_WORKFORCE_LIFECYCLE.md)
 **Assessment demo (separate):** [`DEMO-MTN-STORY.md`](./DEMO-MTN-STORY.md)
 
 ---

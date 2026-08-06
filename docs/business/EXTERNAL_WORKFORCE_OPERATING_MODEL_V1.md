@@ -46,7 +46,7 @@
 4. **Configurable platform.** Defaults are **product** defaults; loosening or tightening requires explicit configuration and governance review.
 5. **PDP complements, not replaces, operational workflow.** Timesheet and invoice approvals remain domain workflows unless extended by ADR.
 6. **Accountability over anonymity.** No durable **ACTIVE** external worker without accountable sponsor (**intent**; **§25**; enforcement in schema per **ADR-EXTID-001** post–v1.0 bind).
-7. **CMS is not IGA.** Contractor CMS is an **upstream authoritative source for external workforce identity context** and governance triggers; it does **not** provision AD accounts, assign SAP roles, issue badges, run SoD, or run certification campaigns unless explicitly integrated as a **caller** to external systems—not as the execution engine of enterprise IGA.
+7. **EWP is not IGA.** The External Workforce Platform is an **upstream authoritative source for external workforce identity context** and governance triggers; it does **not** provision AD accounts, assign SAP roles, issue badges, run SoD, or run certification campaigns unless explicitly integrated as a **caller** to external systems—not as the execution engine of enterprise IGA.
 8. **Three planes.** **Workforce** (CMS: who exists, supplier context, approval), **Accountability** (**Sponsor** — business justification; §25), **Access** (IGA: what is provisioned; §24). Sponsor is the **constitutional keystone** between workforce legitimacy and access justification once §25 is enforced in data.
 
 ---
@@ -457,14 +457,14 @@ When **APPROVED**: complete [`CURRENT_STATE_VS_TARGET_GAP_MATRIX.md`](./CURRENT_
 
 *Governance milestone alias:* Some prior planning notes referred to **this IGA section as “§25.”** Canonical numbering is **§24** here; **§25** is reserved for **Sponsor Governance (OD-06)** — **do not renumber** historical references; use this alias for continuity.
 
-**Contractor CMS is not IGA.** It is an **upstream authoritative feed** and **governance trigger** for external workforce context. **IGA** is the **provisioning and policy execution engine** for logical accounts, badges, SoD, PAM, certification, and revocation where deployed.
+**The External Workforce Platform is not IGA.** It is an **upstream authoritative feed** and **governance trigger** for external workforce context. **IGA** is the **provisioning and policy execution engine** for logical accounts, badges, SoD, PAM, certification, and revocation where deployed.
 
 ### 24.1 CMS does **not** (by default)
 
-- Provision enterprise directory accounts as the system of record  
-- Assign SAP / ERP security roles directly  
-- Issue badges or operate PACS  
-- Run SoD or certification campaigns  
+- Provision enterprise directory accounts as the system of record
+- Assign SAP / ERP security roles directly
+- Issue badges or operate PACS
+- Run SoD or certification campaigns
 - Replace IGA as the access **executor**
 
 *(Integrated “call IGA API” may exist later; CMS remains **not** the IGA product.)*
@@ -558,10 +558,10 @@ ACCESS ENABLED = sponsor accountability satisfied + IGA path satisfied for acces
 
 OD-07 is **LOCKED** at doctrine level in v0.5. The questions below are **deferred to ADR-EXTID-001** for payload minimums, event matrix, and tenant-specific **access_intent** rules—**not** open constitutional items.
 
-1. Minimum IGA payload per **access intent** class.  
-2. Which CMS transitions emit outbound events.  
-3. IGA-before-`ACTIVE` vs IGA-before-`ACCESS_ENABLED` (default: latter only).  
-4. UI semantics for `FAILED` vs workforce legitimacy.  
+1. Minimum IGA payload per **access intent** class.
+2. Which CMS transitions emit outbound events.
+3. IGA-before-`ACTIVE` vs IGA-before-`ACCESS_ENABLED` (default: latter only).
+4. UI semantics for `FAILED` vs workforce legitimacy.
 5. IGA mandatory for all workers vs conditional on `access_intent`.
 
 ---
@@ -574,15 +574,15 @@ OD-07 is **LOCKED** at doctrine level in v0.5. The questions below are **deferre
 
 ### 25.1 CMS does **not**
 
-- Replace **HCM** as the system of record for the sponsor’s **employee** master data.  
-- Perform **certification campaigns** or **SoD** on behalf of enterprise IGA (sponsor may *trigger* reviews; execution is IGA/HR).  
+- Replace **HCM** as the system of record for the sponsor’s **employee** master data.
+- Perform **certification campaigns** or **SoD** on behalf of enterprise IGA (sponsor may *trigger* reviews; execution is IGA/HR).
 - Invent sponsor identity without a resolvable **HCM employee** reference (default).
 
 ### 25.2 CMS **does**
 
-- Bind **exactly one primary sponsor** (HCM employee id) to each placement requiring accountability.  
-- Record **optional delegated approver** for operational workflow; **primary sponsor retains accountability** unless explicitly transferred per policy (future ADR).  
-- Drive **sponsor lifecycle** alongside workforce lifecycle (§7.1).  
+- Bind **exactly one primary sponsor** (HCM employee id) to each placement requiring accountability.
+- Record **optional delegated approver** for operational workflow; **primary sponsor retains accountability** unless explicitly transferred per policy (future ADR).
+- Drive **sponsor lifecycle** alongside workforce lifecycle (§7.1).
 - Emit **SPONSOR_CHANGED** (and related) events per §24.2.
 
 ### 25.3 Sponsor identity source (default)

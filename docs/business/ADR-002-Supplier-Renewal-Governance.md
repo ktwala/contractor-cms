@@ -4,7 +4,7 @@
 **Proposed / Under Review**
 
 ## Context & Problem Statement
-We have successfully implemented operational visibility for supplier contract renewals (dynamic badges, dashboard widgets, backend query filters). However, before automating any enforcement logic (e.g., auto-suspending suppliers whose contracts have expired via NATS), we must strictly define the business rules governing what expiry *means* to the platform. 
+We have successfully implemented operational visibility for supplier contract renewals (dynamic badges, dashboard widgets, backend query filters). However, before automating any enforcement logic (e.g., auto-suspending suppliers whose contracts have expired via NATS), we must strictly define the business rules governing what expiry *means* to the platform.
 
 If we automate before defining policy, we risk suspending valid suppliers incorrectly, causing operational disruption, and generating false positives in our Audit Intelligence layer. Visibility must always precede policy, and policy must always precede automation.
 

@@ -1,11 +1,11 @@
 # CERT-WORKFORCE-ADMINISTRATION
 
-**Capability:** Workforce Administration  
-**Certifies conformance to:** [`CAP-WORKFORCE-ADMINISTRATION.md`](./CAP-WORKFORCE-ADMINISTRATION.md) **v1.0**  
-**Status:** **EXECUTED** — v1.0 certification gate (May 2026)  
+**Capability:** Workforce Administration
+**Certifies conformance to:** [`CAP-WORKFORCE-ADMINISTRATION.md`](./CAP-WORKFORCE-ADMINISTRATION.md) **v1.0**
+**Status:** **EXECUTED** — v1.0 certification gate (May 2026)
 **Purpose:** Prove implementation **upholds the CAP** — not that a specific stack (NestJS, Prisma, etc.) was used.
 
-> CERT answers: *Does the implementation satisfy the capability contract?*  
+> CERT answers: *Does the implementation satisfy the capability contract?*
 > PR answers: *What changed in this increment?*
 
 Failed sections **SHALL** block "certified" status for that CAP version. Known **Planned** gaps are **PARTIAL**, not FAIL.

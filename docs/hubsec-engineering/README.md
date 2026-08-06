@@ -1,6 +1,6 @@
 # Hubsec Engineering Method (HEM)
 
-**Status:** PLANNED — **do not author HEM-1.0 from the EWP repo**  
+**Status:** PLANNED — **do not author HEM-1.0 from the EWP repo**
 **First validated reference implementation:** [External Workforce Platform](../business/EXTERNAL_WORKFORCE_CAPABILITY_MAP.md) — Era 5 complete (May 2026)
 
 Organisation-level standards (`HEM-1.0.md`, HEM Laws, Engineering Constitution) **SHALL** wait until a **second product** (e.g. GovOps) applies the same sequence. Extract what is universal then; until then, [`EXTERNAL_WORKFORCE_CAPABILITY_ENGINEERING_MODEL.md`](../business/EXTERNAL_WORKFORCE_CAPABILITY_ENGINEERING_MODEL.md) is the working reference.

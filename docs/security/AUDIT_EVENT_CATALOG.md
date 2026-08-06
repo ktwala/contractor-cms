@@ -33,7 +33,7 @@ When instrumenting a domain controller or service, the `AuditService.logAction` 
 
 ## Canonical Event Catalog
 
-The following is the exhaustive list of governed audit events. 
+The following is the exhaustive list of governed audit events.
 
 ### Authentication & Sessions
 | Action | Default Severity | Emitting Component | Description |

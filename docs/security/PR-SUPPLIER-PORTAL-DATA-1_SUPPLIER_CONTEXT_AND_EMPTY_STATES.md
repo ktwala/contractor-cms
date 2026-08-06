@@ -1,6 +1,6 @@
 # PR-SUPPLIER-PORTAL-DATA-1 — Supplier context and empty states
 
-**Status:** `COMPLETE`  
+**Status:** `COMPLETE`
 **Type:** Governance / data truthfulness (not cosmetic UI)
 
 ## Objective

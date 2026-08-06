@@ -4,8 +4,8 @@
 
 **APPROVED** — May 2026
 
-**Supersedes naming only** — not capability boundaries, schemas, or APIs.  
-**Companion:** [`EXTERNAL_WORKFORCE_CAPABILITY_MAP.md`](./EXTERNAL_WORKFORCE_CAPABILITY_MAP.md)  
+**Supersedes naming only** — not capability boundaries, schemas, or APIs.
+**Companion:** [`EXTERNAL_WORKFORCE_CAPABILITY_MAP.md`](./EXTERNAL_WORKFORCE_CAPABILITY_MAP.md)
 **Vocabulary (frozen):** [`EXTERNAL_WORKFORCE_VOCABULARY.md`](./EXTERNAL_WORKFORCE_VOCABULARY.md)
 
 > **Business terminology evolves independently of implementation terminology. Business concepts are renamed when the architecture changes; implementation artifacts are renamed only when there is clear technical value.**

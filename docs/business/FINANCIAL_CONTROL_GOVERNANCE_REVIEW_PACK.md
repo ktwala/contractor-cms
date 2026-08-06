@@ -1,7 +1,7 @@
 # Financial Control Governance Review Pack
 
 ## 1. Executive Summary
-Financial Control Governance is the enforcement layer of our operational ecosystem. While Supplier Governance dictates *which entities can exist* and Contractor Governance dictates *who can access systems*, Financial Governance determines **what money is allowed to move**. 
+Financial Control Governance is the enforcement layer of our operational ecosystem. While Supplier Governance dictates *which entities can exist* and Contractor Governance dictates *who can access systems*, Financial Governance determines **what money is allowed to move**.
 
 Without strict financial controls, compliance gaps result in direct financial leakage. This document unifies entity compliance with spend authorization, transforming our system into an ERP-adjacent governance engine.
 
@@ -64,7 +64,7 @@ To prevent unauthorized labor while supporting legitimate late submissions, we e
 *   **Final Reconciliation Grace:** The 7-day grace period for expired engagements applies **only** to consolidating and reconciling already-completed work into a final invoice. It does not permit logging net-new activity.
 
 ## 7. Dual Approval Governance
-Operational necessity cannot override financial compliance in a silo. 
+Operational necessity cannot override financial compliance in a silo.
 When an exception is requested (e.g., bypassing a block):
 1.  **Operations** must approve to verify *why* the work happened.
 2.  **Finance** must approve to accept the *financial/compliance risk* of paying it.

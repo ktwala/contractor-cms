@@ -213,8 +213,8 @@ Canonical sponsor data lives on **engagement**, not contractor root (aligned wit
 
 ### IGA publish
 
-- **Off** during Wave 1 dry-run  
-- **On** after Wave 2 cutover for promoted rows and net-new CMS creates  
+- **Off** during Wave 1 dry-run
+- **On** after Wave 2 cutover for promoted rows and net-new CMS creates
 
 ---
 
@@ -231,14 +231,14 @@ Canonical sponsor data lives on **engagement**, not contractor root (aligned wit
 
 ## 9. Cutover runbook checklist
 
-- [ ] Wave 1 reconciliation signed (counts, quarantine %, sponsor gaps)  
-- [ ] Supplier crosswalk complete  
-- [ ] CTR sequence generator tested (no collisions)  
-- [ ] HCM freeze communicated and enforced  
-- [ ] Final delta batch id recorded  
-- [ ] `authoritative_until` set on all promoted rows  
-- [ ] IGA outbox smoke on `contractor.created` / `sponsor_changed`  
-- [ ] Rollback plan: staging replay only; **never** reuse CTR numbers  
+- [ ] Wave 1 reconciliation signed (counts, quarantine %, sponsor gaps)
+- [ ] Supplier crosswalk complete
+- [ ] CTR sequence generator tested (no collisions)
+- [ ] HCM freeze communicated and enforced
+- [ ] Final delta batch id recorded
+- [ ] `authoritative_until` set on all promoted rows
+- [ ] IGA outbox smoke on `contractor.created` / `sponsor_changed`
+- [ ] Rollback plan: staging replay only; **never** reuse CTR numbers
 
 ---
 
@@ -263,6 +263,6 @@ Canonical sponsor data lives on **engagement**, not contractor root (aligned wit
 
 After review of this model + PR-CTR-1:
 
-1. Update [`SCHEMA_IMPACT_REGISTER_V1.md`](./SCHEMA_IMPACT_REGISTER_V1.md) with CTR + staging candidates.  
-2. Open **PR-CTR-2** design PR (staging + identity map tables only — additive).  
+1. Update [`SCHEMA_IMPACT_REGISTER_V1.md`](./SCHEMA_IMPACT_REGISTER_V1.md) with CTR + staging candidates.
+2. Open **PR-CTR-2** design PR (staging + identity map tables only — additive).
 3. Do **not** build ETL until promote rules in §7 are signed.

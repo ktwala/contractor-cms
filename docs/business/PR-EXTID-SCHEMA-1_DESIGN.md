@@ -129,13 +129,13 @@ Conflate supplier with sponsor (distinct FKs and semantics)
 
 ## 8. References
 
-- [`SCHEMA_DIFF_REVIEW.md`](./SCHEMA_DIFF_REVIEW.md) — **required before merge** of **1A**  
-- [`RATIFICATION_STATE_CONSISTENCY_CHECK.md`](./RATIFICATION_STATE_CONSISTENCY_CHECK.md) — post–§7.4, pre–**1A**  
-- [`V1_0_RATIFICATION_RECORD.md`](./V1_0_RATIFICATION_RECORD.md) — handoff gate  
-- [`EXTID_MIGRATION_SAFETY_CHECKLIST.md`](./EXTID_MIGRATION_SAFETY_CHECKLIST.md) — per-PR safety  
-- [`EXTID_IMPLEMENTATION_ALIGNMENT_PLAN_V1.md`](./EXTID_IMPLEMENTATION_ALIGNMENT_PLAN_V1.md) — streams + ladder  
-- [`IMPLEMENTATION_DRIFT_GATES.md`](./IMPLEMENTATION_DRIFT_GATES.md) — CI / review gates  
-- [`ROLE_TRANSITION_MATRIX_V1.md`](./ROLE_TRANSITION_MATRIX_V1.md) — **STREAM B** / **PR-RBAC-REALIGN-1** after schema columns land  
+- [`SCHEMA_DIFF_REVIEW.md`](./SCHEMA_DIFF_REVIEW.md) — **required before merge** of **1A**
+- [`RATIFICATION_STATE_CONSISTENCY_CHECK.md`](./RATIFICATION_STATE_CONSISTENCY_CHECK.md) — post–§7.4, pre–**1A**
+- [`V1_0_RATIFICATION_RECORD.md`](./V1_0_RATIFICATION_RECORD.md) — handoff gate
+- [`EXTID_MIGRATION_SAFETY_CHECKLIST.md`](./EXTID_MIGRATION_SAFETY_CHECKLIST.md) — per-PR safety
+- [`EXTID_IMPLEMENTATION_ALIGNMENT_PLAN_V1.md`](./EXTID_IMPLEMENTATION_ALIGNMENT_PLAN_V1.md) — streams + ladder
+- [`IMPLEMENTATION_DRIFT_GATES.md`](./IMPLEMENTATION_DRIFT_GATES.md) — CI / review gates
+- [`ROLE_TRANSITION_MATRIX_V1.md`](./ROLE_TRANSITION_MATRIX_V1.md) — **STREAM B** / **PR-RBAC-REALIGN-1** after schema columns land
 - [`ADR-EXTID-001`](../security/ADR-EXTID-001-external-workforce-identity-sponsorship-iga-boundary.md)
 
 ---

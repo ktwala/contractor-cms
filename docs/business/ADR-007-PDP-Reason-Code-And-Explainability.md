@@ -4,9 +4,9 @@
 **Proposed / Under Discovery**
 
 ## Context & Problem Statement
-With the Master Policy Decision Hierarchy established (`ADR-006`), the platform can now make deterministic governance decisions (`ALLOW`, `WARN`, `APPROVAL_REQUIRED`, `HOLD`, `BLOCK`) across the Supplier, Contractor, PO, and Financial domains. 
+With the Master Policy Decision Hierarchy established (`ADR-006`), the platform can now make deterministic governance decisions (`ALLOW`, `WARN`, `APPROVAL_REQUIRED`, `HOLD`, `BLOCK`) across the Supplier, Contractor, PO, and Financial domains.
 
-However, a deterministic "black box" is operationally hostile. If a user submits an invoice and the system returns `HOLD` or `BLOCK` without context, operations teams will be paralyzed, unable to determine *why* the transaction failed or *how* to fix it. 
+However, a deterministic "black box" is operationally hostile. If a user submits an invoice and the system returns `HOLD` or `BLOCK` without context, operations teams will be paralyzed, unable to determine *why* the transaction failed or *how* to fix it.
 
 To transform governance into **operationally actionable governance**, the Policy Decision Platform (PDP) must possess an **Explainability Layer**. It must clearly communicate the exact reason for a block, whether the block is reversible, and the precise remediation path required.
 

@@ -1,9 +1,9 @@
 # CAP-REPORTING-PROJECTIONS
 
-**Capability:** Reporting & Projections  
-**Platform:** External Workforce Platform (EWP)  
-**Version:** 1.0  
-**Status:** **RATIFIED** — gateway CAP (May 2026); authority-creep protections in §7 P-09, §12  
+**Capability:** Reporting & Projections
+**Platform:** External Workforce Platform (EWP)
+**Version:** 1.0
+**Status:** **RATIFIED** — gateway CAP (May 2026); authority-creep protections in §7 P-09, §12
 **Normative:** This document uses **SHALL** / **SHALL NOT** as defined in RFC 2119.
 
 > **Gateway capability — not an enduring truth owner.** Reporting & Projections **SHALL NOT** answer *what is the worker's workforce state?* or *is this supplier trusted?* — those are authoritative capabilities. It **SHALL** answer *how does EWP project authoritative business truth into operational views without becoming the owner of that truth?* **Its responsibility ends when a projection has been made available for consumption. It SHALL NOT interpret or resolve disagreements between authoritative capabilities.** See [`EXTERNAL_WORKFORCE_CAPABILITY_MAP.md`](../EXTERNAL_WORKFORCE_CAPABILITY_MAP.md) — Authoritative / Gateway / Cross-cutting.
@@ -322,8 +322,8 @@ Consumption **SHALL** be read-only against authoritative stores.
 
 On every **Projection Materialized**, Reporting & Projections **SHALL** record:
 
-1. **Projection freshness** — Fresh / Delayed / Stale with source coverage and timestamp  
-2. **Scope applied** — sponsor / supplier / finance context  
+1. **Projection freshness** — Fresh / Delayed / Stale with source coverage and timestamp
+2. **Scope applied** — sponsor / supplier / finance context
 3. **Projection event** — downstream notification stub or live bus *(when built)*
 
 ---

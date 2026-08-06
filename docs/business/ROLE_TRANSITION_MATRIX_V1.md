@@ -81,7 +81,7 @@ Exact strings: [`seed-system-role-bundles.ts`](../../backend/src/core/auth/seed-
 
 ## 7. EXTID outbound lane (publisher doctrine)
 
-**CMS is not IGA.** Contractor CMS **publishes** external workforce events; enterprise IGA (e.g. Soffid) **consumes** them and **executes** identity governance. Code under [`backend/src/core/iga/`](../../backend/src/core/iga/) is **publisher + transport** only — not provisioning, entitlements, or certification.
+**EWP is not IGA.** The External Workforce Platform **publishes** external workforce events; enterprise IGA (e.g. Soffid) **consumes** them and **executes** identity governance. Code under [`backend/src/core/iga/`](../../backend/src/core/iga/) is **publisher + transport** only — not provisioning, entitlements, or certification.
 
 | Stage | PR | Status |
 |-------|-----|--------|

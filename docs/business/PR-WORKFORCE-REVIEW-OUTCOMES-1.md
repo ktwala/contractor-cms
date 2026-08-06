@@ -1,6 +1,6 @@
 # PR-WORKFORCE-REVIEW-OUTCOMES-1 — Reject, send-back, reopen
 
-**Status:** COMPLETE  
+**Status:** COMPLETE
 **Builds on:** [`PR-WORKFORCE-E2E-UAT-1.md`](./PR-WORKFORCE-E2E-UAT-1.md) baseline
 
 ## Guardrail

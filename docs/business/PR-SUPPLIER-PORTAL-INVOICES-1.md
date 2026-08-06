@@ -1,6 +1,6 @@
 # PR-SUPPLIER-PORTAL-INVOICES-1 — Supplier-scoped invoice visibility
 
-**Status:** **COMPLETE**  
+**Status:** **COMPLETE**
 **Depends on:** **PR-RBAC-REALIGN-3B** (COMPLETE) — `supplier-invoices:read` in catalog and seed bundles
 
 **RBAC baseline:** [`PLATFORM_GOVERNANCE_ROLES.md`](./PLATFORM_GOVERNANCE_ROLES.md)

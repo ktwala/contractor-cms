@@ -1,6 +1,6 @@
 # Technical demo — evidence & edge paths
 
-**Audience:** Engineering, integration, governance operators.  
+**Audience:** Engineering, integration, governance operators.
 **Logins:** `ops.admin@ewp.demo` (workforce storyline) · `workforce.import@ewp.demo` (Workforce Import) · see [`DEMO_LOGIN_CREDENTIALS.md`](./DEMO_LOGIN_CREDENTIALS.md)
 
 Run **[`DEMO-OPERATIONS.md`](./DEMO-OPERATIONS.md)** (*Managing an External Workforce*) as the narrative spine (~45–60 min with this appendix). For executive audiences, open with [`DEMO-PLATFORM-ARCHITECTURE.md`](./DEMO-PLATFORM-ARCHITECTURE.md) Phase 1 before Acts 1–6.

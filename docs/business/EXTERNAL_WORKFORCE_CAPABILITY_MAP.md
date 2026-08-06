@@ -1,10 +1,10 @@
 # External Workforce Platform — Capability Map
 
-**Role:** **Source of truth** for EWP — start here for every engineering question  
-**Status:** **OPERATIONAL MODE** (May 2026) — discovery complete; apply the architecture  
+**Role:** **Source of truth** for EWP — start here for every engineering question
+**Status:** **OPERATIONAL MODE** (May 2026) — discovery complete; apply the architecture
 **Product:** External Workforce Platform (EWP) · **Method applied:** [`EXTERNAL_WORKFORCE_CAPABILITY_ENGINEERING_MODEL.md`](./EXTERNAL_WORKFORCE_CAPABILITY_ENGINEERING_MODEL.md)
 
-> **Where does this belong?** → Find the capability below. Do not search the docs tree first.  
+> **Where does this belong?** → Find the capability below. Do not search the docs tree first.
 > **No new governance document** unless an existing artifact in this map cannot answer the question.
 
 ---

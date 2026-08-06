@@ -1,6 +1,6 @@
 # PR-CMS-FORMS-1 — Real supplier forms and display defaults
 
-**Status:** `COMPLETE`  
+**Status:** `COMPLETE`
 **Follow-up:** `PR-CMS-FORMS-1A` — docs, contract CSV parity, drift guards (this file + `scripts/cms-forms-drift-check.ts`)
 
 ## Goal

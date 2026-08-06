@@ -1,6 +1,6 @@
 # Governance signal lifecycle management
 
-> **Status:** PR-GOV-SIGNAL-LIFECYCLE-1 foundation shipped (contractor drifts)  
+> **Status:** PR-GOV-SIGNAL-LIFECYCLE-1 foundation shipped (contractor drifts)
 > **Prerequisite doctrine:** [`CONTRACTOR_BOOTSTRAP_AUTHORITY.md`](CONTRACTOR_BOOTSTRAP_AUTHORITY.md) · [`CONNECTOR_GOVERNANCE_PLATFORM.md`](CONNECTOR_GOVERNANCE_PLATFORM.md)
 
 ## Platform identity

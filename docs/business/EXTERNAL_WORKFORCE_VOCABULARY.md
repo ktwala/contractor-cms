@@ -1,9 +1,9 @@
 # External Workforce Platform — Vocabulary
 
-**Status:** **FROZEN** — architectural rule (May 2026). Changes require ADR.  
-**Master freeze:** [`EWP-V1-ARCHITECTURE-FREEZE.md`](./EWP-V1-ARCHITECTURE-FREEZE.md)  
-**Source of truth:** [`EXTERNAL_WORKFORCE_CAPABILITY_MAP.md`](./EXTERNAL_WORKFORCE_CAPABILITY_MAP.md) — start here, not this file  
-**Authority:** [`ADR-012-External-Workforce-Platform-Naming.md`](./ADR-012-External-Workforce-Platform-Naming.md)  
+**Status:** **FROZEN** — architectural rule (May 2026). Changes require ADR.
+**Master freeze:** [`EWP-V1-ARCHITECTURE-FREEZE.md`](./EWP-V1-ARCHITECTURE-FREEZE.md)
+**Source of truth:** [`EXTERNAL_WORKFORCE_CAPABILITY_MAP.md`](./EXTERNAL_WORKFORCE_CAPABILITY_MAP.md) — start here, not this file
+**Authority:** [`ADR-012-External-Workforce-Platform-Naming.md`](./ADR-012-External-Workforce-Platform-Naming.md)
 **UI constants:** [`frontend/lib/external-workforce-labels.ts`](../../frontend/lib/external-workforce-labels.ts)
 
 > **Business terminology evolves independently of implementation terminology. Business concepts are renamed when the architecture changes; implementation artifacts are renamed only when there is clear technical value.**

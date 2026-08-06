@@ -4,7 +4,7 @@
 **Canonical Source of Truth**
 
 ## Context
-To prevent the Policy Decision Platform (PDP) from emitting ambiguous or unmapped error states ("black-box compliance"), this catalog serves as the absolute authority on PDP Reason Codes. 
+To prevent the Policy Decision Platform (PDP) from emitting ambiguous or unmapped error states ("black-box compliance"), this catalog serves as the absolute authority on PDP Reason Codes.
 
 It maps every permissible reason code to its governance domain, reversibility status, severity, UI rendering rules, and associated Audit Intelligence event.
 

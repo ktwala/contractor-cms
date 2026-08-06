@@ -4,16 +4,16 @@
 
 **APPROVED** — May 2026 (Workforce State Model PR authorized)
 
-**Depends on:** [`DOMAIN_MODEL_RECOVERY_V1.md`](./DOMAIN_MODEL_RECOVERY_V1.md) (frozen baseline)  
-**Platform:** External Workforce Platform (EWP) — [`ADR-012`](./ADR-012-External-Workforce-Platform-Naming.md)  
-**Capability contract:** [`capabilities/CAP-WORKFORCE-ADMINISTRATION.md`](./capabilities/CAP-WORKFORCE-ADMINISTRATION.md) (normative; this ADR is rationale)  
+**Depends on:** [`DOMAIN_MODEL_RECOVERY_V1.md`](./DOMAIN_MODEL_RECOVERY_V1.md) (frozen baseline)
+**Platform:** External Workforce Platform (EWP) — [`ADR-012`](./ADR-012-External-Workforce-Platform-Naming.md)
+**Capability contract:** [`capabilities/CAP-WORKFORCE-ADMINISTRATION.md`](./capabilities/CAP-WORKFORCE-ADMINISTRATION.md) (normative; this ADR is rationale)
 **Supersedes scope confusion with:** [`ADR-003`](./ADR-003-Contractor-Lifecycle-Governance.md) (PDP maturation remains valid; this ADR names the **workforce state machine** ADR-003 assumed but did not define)
 
 ---
 
 ## Context
 
-Contractor CMS already runs **multiple lifecycles** around the `Contractor` aggregate:
+The External Workforce Platform already runs **multiple lifecycles** around the `Contractor` aggregate:
 
 - Supplier trust lifecycle
 - Identity acquisition (HCM sync → staging → promote)
@@ -21,7 +21,7 @@ Contractor CMS already runs **multiple lifecycles** around the `Contractor` aggr
 - Governance / drift lifecycle
 - Access / IGA lifecycle (substrate)
 
-What is **missing** is an explicit **Contractor Workforce Administration** plane: the CMS answer to *“What is this person’s workforce status with the client?”*
+What is **missing** is an explicit **Contractor Workforce Administration** plane: the platform's answer to *“What is this person’s workforce status with the client?”*
 
 Today that is **proxied** by `Contractor.isActive` and engagement dates. That was sufficient for bootstrap and governance demos; it is **insufficient** for:
 
@@ -32,7 +32,7 @@ Today that is **proxied** by `Contractor.isActive` and engagement dates. That wa
 
 External specs (e.g. contingent-worker RDS) often label all of this “contractor lifecycle.” This ADR **decomposes** that label into a workforce plane that **emits domain events**; other planes **react**.
 
-**Constitutional alignment:** [`CONTRACTOR_OPERATING_MODEL_V1.md`](./CONTRACTOR_OPERATING_MODEL_V1.md) §7.1 workforce states; [`ADR-EXTID-001`](../security/ADR-EXTID-001-external-workforce-identity-sponsorship-iga-boundary.md) — CMS `ACTIVE` ≠ IGA `ENABLED`.
+**Constitutional alignment:** [`CONTRACTOR_OPERATING_MODEL_V1.md`](./CONTRACTOR_OPERATING_MODEL_V1.md) §7.1 workforce states; [`ADR-EXTID-001`](../security/ADR-EXTID-001-external-workforce-identity-sponsorship-iga-boundary.md) — EWP `ACTIVE` ≠ IGA `ENABLED`.
 
 ---
 

@@ -1,6 +1,6 @@
 # PR-WORKFORCE-NOMINATE-1 — Supplier-backed workforce nomination intake
 
-**Status:** COMPLETE  
+**Status:** COMPLETE
 **Builds on:** [`PR-WORKFORCE-STATE-MODEL-1.md`](./PR-WORKFORCE-STATE-MODEL-1.md), [`PR-WORKFORCE-TRANSITIONS-1.md`](./PR-WORKFORCE-TRANSITIONS-1.md), [`ADR-011`](./ADR-011-Contractor-Workforce-Administration-Plane.md)
 
 ## Guardrail

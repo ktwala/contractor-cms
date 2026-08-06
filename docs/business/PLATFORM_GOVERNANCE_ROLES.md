@@ -1,6 +1,6 @@
 # Platform governance roles — PR-RBAC-REALIGN-3 baseline
 
-**Status:** **PR-RBAC-REALIGN-3 / 3A / 3B / 3D — COMPLETE** (production RBAC baseline locked).  
+**Status:** **PR-RBAC-REALIGN-3 / 3A / 3B / 3D — COMPLETE** (production RBAC baseline locked).
 **Supplier portal invoices:** [`PR-SUPPLIER-PORTAL-INVOICES-1.md`](./PR-SUPPLIER-PORTAL-INVOICES-1.md) — **COMPLETE**.
 
 **Related:** [`SEED_ROLE_BUNDLES_PR_RBAC_REALIGN.md`](./SEED_ROLE_BUNDLES_PR_RBAC_REALIGN.md) · [`ROLE_TRANSITION_MATRIX_V1.md`](./ROLE_TRANSITION_MATRIX_V1.md) · [`../GOVERNANCE_TEST_PERSONAS.md`](../GOVERNANCE_TEST_PERSONAS.md) · [`../DEMO_LOGIN_CREDENTIALS.md`](../DEMO_LOGIN_CREDENTIALS.md) · [`../CONTRACTOR_BOOTSTRAP_AUTHORITY.md`](../CONTRACTOR_BOOTSTRAP_AUTHORITY.md) · [`../SUPPLIER_GOVERNANCE_OPERATIONS.md`](../SUPPLIER_GOVERNANCE_OPERATIONS.md)
@@ -420,9 +420,9 @@ HCM bootstrap (HCM-WORKER-DEMO-008)
 
 Role boundaries under test:
 
-- **Integration Operator** — bootstrap + scan only  
-- **Contractor Manager** — sponsor assignment + remediation + PDP  
-- **Supplier Reviewer** — not on critical path for this scenario  
+- **Integration Operator** — bootstrap + scan only
+- **Contractor Manager** — sponsor assignment + remediation + PDP
+- **Supplier Reviewer** — not on critical path for this scenario
 
 ---
 

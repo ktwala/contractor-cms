@@ -1,7 +1,7 @@
 # Workforce Governance Language Guide
 
-**Status:** Draft — process-first vocabulary for HCM connector UI and ops narrative  
-**Audience:** Product, demo authors, engineers changing labels  
+**Status:** Draft — process-first vocabulary for HCM connector UI and ops narrative
+**Audience:** Product, demo authors, engineers changing labels
 **Rule:** Language emerges from the **business process**, not from UI polish. Do not rename labels in code until a control on this page passes.
 
 **Parent pattern (read first):**

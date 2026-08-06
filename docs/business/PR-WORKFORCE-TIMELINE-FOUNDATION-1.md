@@ -1,6 +1,6 @@
 # PR-WORKFORCE-TIMELINE-FOUNDATION-1 — Workforce business timeline
 
-**Status:** COMPLETE  
+**Status:** COMPLETE
 **Builds on:** [`PR-WORKFORCE-OPS-REVIEW-1.md`](./PR-WORKFORCE-OPS-REVIEW-1.md), [`ADR-011`](./ADR-011-Contractor-Workforce-Administration-Plane.md)
 
 ## Guardrail

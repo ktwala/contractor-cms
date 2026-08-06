@@ -1,6 +1,6 @@
 # PR-UI-TOKENS-1 — Hubsec Workforce theme tokens (CMS)
 
-**Status:** Applied  
+**Status:** Applied
 **Scope:** Colours + app shell (dark sidebar). Spacing and layout structure unchanged.
 
 ## Source

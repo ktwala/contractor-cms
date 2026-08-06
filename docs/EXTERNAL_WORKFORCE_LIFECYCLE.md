@@ -1,8 +1,8 @@
 # External Workforce Lifecycle — architecture v1 (complete & frozen)
 
-**Status:** COMPLETE & FROZEN — **stop refining architecture**; execute via build → prove → inspect  
-**Audience:** Product, architects, demo authors, engineers  
-**Parent:** [`business/EXTERNAL_WORKFORCE_GOVERNANCE_CONSTITUTION_v1.md`](./business/EXTERNAL_WORKFORCE_GOVERNANCE_CONSTITUTION_v1.md)  
+**Status:** COMPLETE & FROZEN — **stop refining architecture**; execute via build → prove → inspect
+**Audience:** Product, architects, demo authors, engineers
+**Parent:** [`business/EXTERNAL_WORKFORCE_GOVERNANCE_CONSTITUTION_v1.md`](./business/EXTERNAL_WORKFORCE_GOVERNANCE_CONSTITUTION_v1.md)
 **Assurance detail:** [`CONTINUOUS_WORKFORCE_ASSURANCE.md`](./CONTINUOUS_WORKFORCE_ASSURANCE.md) · [`DEMO-MTN-ASSURANCE-STORIES.md`](./DEMO-MTN-ASSURANCE-STORIES.md)
 
 ---

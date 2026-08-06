@@ -63,8 +63,8 @@ Migration / conflict lineage demo (hidden comparison anchors): `SEED_HCM_COMPARI
 
 ### Step 1 — Supplier ingestion + operational trust (UI)
 
-`/supplier-sources/oracle/operations` → **Sync demo Oracle suppliers** → **Create governance record** → `PENDING_APPROVAL`  
-→ `/suppliers/approvals` (or **Pending governance** tile on `/suppliers`) → **Approve** → `ACTIVE`  
+`/supplier-sources/oracle/operations` → **Sync demo Oracle suppliers** → **Create governance record** → `PENDING_APPROVAL`
+→ `/suppliers/approvals` (or **Pending governance** tile on `/suppliers`) → **Approve** → `ACTIVE`
 (`ORACLE_ONLY`: no CMS evidence re-upload when Oracle-linked + synced — see [`../SUPPLIER_GOVERNANCE_OPERATIONS.md`](../SUPPLIER_GOVERNANCE_OPERATIONS.md))
 
 ### Step 2 — HCM bootstrap (UI)

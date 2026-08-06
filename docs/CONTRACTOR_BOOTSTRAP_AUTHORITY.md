@@ -1,6 +1,6 @@
 # Contractor bootstrap authority (HCM → CMS)
 
-> **Audience:** Solution architecture, UAT, engineering.  
+> **Audience:** Solution architecture, UAT, engineering.
 > **Platform:** [`CONNECTOR_GOVERNANCE_PLATFORM.md`](CONNECTOR_GOVERNANCE_PLATFORM.md) · **Demo:** [`CONNECTOR_DEMO_UAT.md`](CONNECTOR_DEMO_UAT.md)
 
 ## Product identity

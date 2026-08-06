@@ -1,6 +1,6 @@
 # PR-CMS-OPERATIONS-1D1 — Oracle Supplier SaaS staging import
 
-**Status:** COMPLETE  
+**Status:** COMPLETE
 **Prerequisite:** [PR-CMS-OPERATIONS-1D0](./PR-CMS-OPERATIONS-1D0_JURISDICTION_AND_SOURCE_SYSTEM.md)
 
 ## Doctrine

@@ -4,10 +4,10 @@
 **Proposed / Under Discovery**
 
 ## Context & Problem Statement
-Our Operational Governance Platform currently manages the compliance of the legal entity (`ADR-002: Supplier Governance`), the individual executing the work (`ADR-003: Contractor Governance`), and the operational rules for moving money (`ADR-004: Financial Control Governance`). 
+Our Operational Governance Platform currently manages the compliance of the legal entity (`ADR-002: Supplier Governance`), the individual executing the work (`ADR-003: Contractor Governance`), and the operational rules for moving money (`ADR-004: Financial Control Governance`).
 
-However, a major control gap remains: **Pre-Spend Authorization**. 
-A supplier can be legally valid, the contractor fully compliant, and the financial state machines perfectly respected—but the invoice could still represent unauthorized spend if the work itself was never budgeted or formally approved prior to execution. 
+However, a major control gap remains: **Pre-Spend Authorization**.
+A supplier can be legally valid, the contractor fully compliant, and the financial state machines perfectly respected—but the invoice could still represent unauthorized spend if the work itself was never budgeted or formally approved prior to execution.
 
 A "valid invoice" is not enough. We require **"Authorized Spend + Valid Invoice."**
 

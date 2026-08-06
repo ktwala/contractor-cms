@@ -1,7 +1,7 @@
 # External Workforce Platform — Capability Engineering Model
 
-**Status:** **STABLE BASELINE** — Era 5 complete (May 2026). **Operational mode:** apply via [`EXTERNAL_WORKFORCE_CAPABILITY_MAP.md`](./EXTERNAL_WORKFORCE_CAPABILITY_MAP.md) — do not extend methodology docs in this repo.  
-**Applies:** Hubsec Engineering Method (HEM) — [`../hubsec-engineering/README.md`](../hubsec-engineering/README.md)  
+**Status:** **STABLE BASELINE** — Era 5 complete (May 2026). **Operational mode:** apply via [`EXTERNAL_WORKFORCE_CAPABILITY_MAP.md`](./EXTERNAL_WORKFORCE_CAPABILITY_MAP.md) — do not extend methodology docs in this repo.
+**Applies:** Hubsec Engineering Method (HEM) — [`../hubsec-engineering/README.md`](../hubsec-engineering/README.md)
 **Methodology (frozen):** [`EXTERNAL_WORKFORCE_CAPABILITY_ENGINEERING_MODEL.md`](./EXTERNAL_WORKFORCE_CAPABILITY_ENGINEERING_MODEL.md)
 
 > **EWP is the first validated reference implementation of HEM.** HEM is the engineering discipline; EWP is a product outcome. Do not conflate them.

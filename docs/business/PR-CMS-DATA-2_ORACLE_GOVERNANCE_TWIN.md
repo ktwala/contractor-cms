@@ -32,7 +32,7 @@ CMS Supplier (governance twin)
 | POST | `/supplier-sources/oracle/staging/:stagingId/promote` | Promote one row |
 | POST | `/supplier-sources/oracle/staging/promote` | Promote all `MATCHED` / `NEW` (optional `stagingIds`) |
 
-Promotable: `MATCHED`, `NEW`, `UNMATCHED`  
+Promotable: `MATCHED`, `NEW`, `UNMATCHED`
 Blocked: `CONFLICT`, `POSSIBLE_MATCH` (manual resolution first)
 
 ## Rules

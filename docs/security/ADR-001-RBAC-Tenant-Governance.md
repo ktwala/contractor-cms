@@ -1,10 +1,10 @@
 # Architecture Decision Record (ADR): RBAC & Tenant Isolation Governance
 
-**Date**: April 2026  
-**Status**: Accepted & Enforced via CI  
+**Date**: April 2026
+**Status**: Accepted & Enforced via CI
 
 ## 1. Context & Problem Statement
-In a multi-tenant application (Contractor CMS), strict data isolation and Role-Based Access Control (RBAC) are critical to security. Historically, tenant isolation relied on the frontend actively passing `organizationId` query parameters or `X-Organization-Id` headers to the backend to determine data scope. 
+In a multi-tenant application (External Workforce Platform), strict data isolation and Role-Based Access Control (RBAC) are critical to security. Historically, tenant isolation relied on the frontend actively passing `organizationId` query parameters or `X-Organization-Id` headers to the backend to determine data scope.
 
 This model introduced significant security vulnerabilities:
 - **Client-Side Spoofing**: Malicious actors could easily modify query parameters to bypass isolation and view data from other organizations.
@@ -17,13 +17,13 @@ We required a mathematically enforceable, platform-level governance architecture
 We decided to shift all trust away from the client and strictly enforce backend-sovereign session derivation, supported by continuous automated governance.
 
 ### 2.1 Backend-Sovereign Tenant Context
-The frontend is now strictly prohibited from communicating organization context. 
+The frontend is now strictly prohibited from communicating organization context.
 - All scoped endpoints must use `@RequiresOrgContext({ type: 'currentUser' })`.
 - The backend derives the isolation boundary solely by inspecting the validated JWT session payload (`req.user.organizationId`).
 - The `ValidationPipe` strictly blocks non-whitelisted parameters (like `organizationId` from the frontend), instantly throwing a `400 Bad Request` if parameter spoofing is attempted.
 
 ### 2.2 Strict Permission Catalog Governance
-We implemented a canonical Permission Catalog (`permissions.constants.ts`). 
+We implemented a canonical Permission Catalog (`permissions.constants.ts`).
 - **No Phantom Permissions**: Every string passed into `@Permissions(...)` in the backend must exist in the catalog.
 - **No Dead UI Rules**: Every sidebar item restricted by `requiredPermission:` in `protected-routes.ts` must match the catalog.
 - **No Orphan Permissions**: The CI pipeline fails if a permission exists in the catalog but is unused in the application (unless explicitly commented with `// IGNORE_UNUSED`).

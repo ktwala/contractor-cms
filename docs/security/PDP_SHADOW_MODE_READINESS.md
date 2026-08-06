@@ -3,7 +3,7 @@
 This document defines the operational criteria, metrics, and procedures required to transition the Policy Decision Platform (PDP) from **Shadow Mode** (observe and audit) into **Enforcement Mode** (active blocking).
 
 ## The Goal of Shadow Mode
-The PDP currently evaluates live Prisma data against strict governance doctrine but forces the `effectiveDecision` to `ALLOW`. It emits the true result (`evaluatedDecision`) into the `AuditLog` table with the `SHADOW` tag. 
+The PDP currently evaluates live Prisma data against strict governance doctrine but forces the `effectiveDecision` to `ALLOW`. It emits the true result (`evaluatedDecision`) into the `AuditLog` table with the `SHADOW` tag.
 This prevents the sudden introduction of a strict doctrine from causing widespread operational blockages (e.g., hundreds of active invoices suddenly being rejected due to missing POs).
 
 ## Readiness Criteria for Enforcement

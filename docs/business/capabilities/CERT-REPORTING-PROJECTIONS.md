@@ -1,11 +1,11 @@
 # CERT-REPORTING-PROJECTIONS
 
-**Capability:** Reporting & Projections  
-**Certifies conformance to:** [`CAP-REPORTING-PROJECTIONS.md`](./CAP-REPORTING-PROJECTIONS.md) **v1.0**  
-**Status:** **EXECUTED** — v1.0 certification gate (May 2026)  
+**Capability:** Reporting & Projections
+**Certifies conformance to:** [`CAP-REPORTING-PROJECTIONS.md`](./CAP-REPORTING-PROJECTIONS.md) **v1.0**
+**Status:** **EXECUTED** — v1.0 certification gate (May 2026)
 **Purpose:** Prove implementation **survives falsification** of the CAP — projection gateway boundary, no authoritative truth ownership, **no authority creep**.
 
-> CERT answers: *Can we break the architectural responsibility?* (Not: *Does documentation match code?*)  
+> CERT answers: *Can we break the architectural responsibility?* (Not: *Does documentation match code?*)
 > PR answers: *What changed in this increment?*
 
 ---

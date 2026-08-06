@@ -4,7 +4,7 @@
 **Proposed / Under Discovery**
 
 ## Context & Problem Statement
-With the Governance Domains (`ADR-002`-`005`), Hierarchy (`ADR-006`), and Explainability Catalog (`ADR-007`/`PDP_REASON_CODE_CATALOG.md`) formally defined, we must establish how backend services interact with the Policy Decision Platform (PDP) at runtime. 
+With the Governance Domains (`ADR-002`-`005`), Hierarchy (`ADR-006`), and Explainability Catalog (`ADR-007`/`PDP_REASON_CODE_CATALOG.md`) formally defined, we must establish how backend services interact with the Policy Decision Platform (PDP) at runtime.
 
 If microservices evaluate governance rules locally, the platform will immediately fragment into doctrine drift. We require a standardized runtime contract—a single execution interface—that guarantees all transactions pass through the PDP deterministically.
 

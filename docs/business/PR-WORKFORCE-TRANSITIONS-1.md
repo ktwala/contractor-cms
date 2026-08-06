@@ -1,6 +1,6 @@
 # PR-WORKFORCE-TRANSITIONS-1 — Controlled workforce transitions
 
-**Status:** COMPLETE  
+**Status:** COMPLETE
 **Builds on:** [`PR-WORKFORCE-STATE-MODEL-1.md`](./PR-WORKFORCE-STATE-MODEL-1.md), [`ADR-011`](./ADR-011-Contractor-Workforce-Administration-Plane.md)
 
 ## Scope

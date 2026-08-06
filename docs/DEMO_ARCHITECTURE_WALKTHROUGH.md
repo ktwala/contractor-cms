@@ -9,7 +9,7 @@ EWP demonstrates **three product experiences** over the same platform — not th
 | **Platform Architecture** *(primary MTN pitch)* | [`DEMO-PLATFORM-ARCHITECTURE.md`](./DEMO-PLATFORM-ARCHITECTURE.md) | none → then `ops.admin@ewp.demo` | ~25 min |
 | **Technical evidence** | [`DEMO-TECHNICAL.md`](./DEMO-TECHNICAL.md) | ops + `workforce.import@ewp.demo` for connectors | Appendix |
 
-**Live presenter aid:** [`DEMO-CHEATSHEET.md`](./DEMO-CHEATSHEET.md)  
+**Live presenter aid:** [`DEMO-CHEATSHEET.md`](./DEMO-CHEATSHEET.md)
 **Credentials:** [`DEMO_LOGIN_CREDENTIALS.md`](./DEMO_LOGIN_CREDENTIALS.md)
 
 ---

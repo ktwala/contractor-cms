@@ -1,11 +1,11 @@
 # CERT-SUPPLIER-ADMINISTRATION
 
-**Capability:** Supplier Administration  
-**Certifies conformance to:** [`CAP-SUPPLIER-ADMINISTRATION.md`](./CAP-SUPPLIER-ADMINISTRATION.md) **v1.0**  
-**Status:** TEMPLATE — formal certification gate not yet executed (May 2026)  
+**Capability:** Supplier Administration
+**Certifies conformance to:** [`CAP-SUPPLIER-ADMINISTRATION.md`](./CAP-SUPPLIER-ADMINISTRATION.md) **v1.0**
+**Status:** TEMPLATE — formal certification gate not yet executed (May 2026)
 **Purpose:** Prove implementation **upholds the CAP** — not that a specific stack was used.
 
-> CERT answers: *Does the implementation satisfy the capability contract?*  
+> CERT answers: *Does the implementation satisfy the capability contract?*
 > PR answers: *What changed in this increment?*
 
 ---

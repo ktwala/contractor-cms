@@ -1,6 +1,6 @@
 # Named governance demo fixtures
 
-> **Preferred demo path:** [`CONNECTOR_DEMO_UAT.md`](CONNECTOR_DEMO_UAT.md) — fixtures served by `npm run mock:oracle`, ingested via UI **Sync demo** buttons.  
+> **Preferred demo path:** [`CONNECTOR_DEMO_UAT.md`](CONNECTOR_DEMO_UAT.md) — fixtures served by `npm run mock:oracle`, ingested via UI **Sync demo** buttons.
 > This document describes **additional** named fixtures from base seed (`GOV-ORACLE-*`, `GOV-HCM-*`).
 
 Deterministic IDs for demos and UAT. Reseed: `cd backend && npm run db:seed`.

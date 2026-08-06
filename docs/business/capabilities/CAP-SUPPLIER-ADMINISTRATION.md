@@ -1,9 +1,9 @@
 # CAP-SUPPLIER-ADMINISTRATION
 
-**Capability:** Supplier Administration  
-**Platform:** External Workforce Platform (EWP)  
-**Version:** 1.0  
-**Status:** RATIFIED — authoritative contract (May 2026)  
+**Capability:** Supplier Administration
+**Platform:** External Workforce Platform (EWP)
+**Version:** 1.0
+**Status:** RATIFIED — authoritative contract (May 2026)
 **Normative:** This document uses **SHALL** / **SHALL NOT** as defined in RFC 2119.
 
 > **Second operational CAP.** Codifies delivered supplier lifecycle, evidence, portal, and connector behaviour. See [`CAP-WORKFORCE-ADMINISTRATION.md`](./CAP-WORKFORCE-ADMINISTRATION.md) for template discipline.
