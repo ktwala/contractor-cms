@@ -34,7 +34,7 @@ export class OrgContextResolverService {
       return row?.contractor?.supplier?.organizationId ?? null;
     }
 
-    const modelName = lookup.toLowerCase();
+    const modelName = lookup.charAt(0).toLowerCase() + lookup.slice(1);
     if (!(this.prisma as any)[modelName]) {
       this.logger.error(`Lookup model ${lookup} not found on PrismaService`);
       return null;
