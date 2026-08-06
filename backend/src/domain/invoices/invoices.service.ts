@@ -17,11 +17,18 @@ import {
   MarkInvoicePaidDto,
 } from './dto/generate-invoice.dto';
 import { Prisma } from '@prisma/client';
+import { randomUUID } from 'crypto';
 
 import { AccessContext } from '../../core/auth/interfaces/access-context.interface';
 
 import { AuditService } from '../../core/audit/audit.service';
 import { redactInvoiceRecord } from '../../core/auth/utils/finance-visibility.helper';
+
+interface LockedTimesheet {
+  id: string;
+  invoiceId: string | null;
+  status: string;
+}
 
 @Injectable()
 export class InvoicesService {
@@ -112,6 +119,7 @@ export class InvoicesService {
     // Create invoice with line items
     const invoice = await prisma.invoice.create({
       data: {
+        id: createInvoiceDto.id || undefined,
         organizationId: targetOrgId as string,
         supplierId: createInvoiceDto.supplierId,
         invoiceNumber: createInvoiceDto.invoiceNumber,
@@ -167,7 +175,28 @@ export class InvoicesService {
     if (!targetOrgId) throw new BadRequestException('Organization context is required');
 
     return this.prisma.$transaction(async (tx) => {
-      // Fetch all timesheets
+      // 1. Lock the timesheets under FOR UPDATE to prevent race conditions
+      const lockedTimesheets = await tx.$queryRaw<LockedTimesheet[]>(
+        Prisma.sql`SELECT id, "invoiceId", status FROM "Timesheet" WHERE id IN (${Prisma.join(dto.timesheetIds)}) ORDER BY id FOR UPDATE`
+      );
+
+      if (lockedTimesheets.length !== dto.timesheetIds.length) {
+        throw new NotFoundException('Some timesheets were not found');
+      }
+
+      // Check if any timesheet is already invoiced
+      const alreadyInvoiced = lockedTimesheets.filter((ts) => ts.invoiceId !== null);
+      if (alreadyInvoiced.length > 0) {
+        throw new ConflictException('One or more timesheets are already invoiced');
+      }
+
+      // Check if any timesheet is not approved
+      const unapprovedTimesheets = lockedTimesheets.filter((ts) => ts.status !== 'APPROVED');
+      if (unapprovedTimesheets.length > 0) {
+        throw new BadRequestException('All timesheets must be approved before generating an invoice');
+      }
+
+      // 2. Fetch the locked timesheets to compute values and validate
       const timesheets = await tx.timesheet.findMany({
         where: {
           id: { in: dto.timesheetIds },
@@ -195,32 +224,6 @@ export class InvoicesService {
           entries: true,
         },
       });
-
-      if (timesheets.length === 0) {
-        throw new NotFoundException('No timesheets found');
-      }
-
-      if (timesheets.length !== dto.timesheetIds.length) {
-        throw new NotFoundException('Some timesheets were not found');
-      }
-
-      // Validate all timesheets are approved
-      const unapprovedTimesheets = timesheets.filter(
-        (ts) => ts.status !== 'APPROVED',
-      );
-      if (unapprovedTimesheets.length > 0) {
-        throw new BadRequestException(
-          'All timesheets must be approved before generating an invoice',
-        );
-      }
-
-      // Validate no timesheets are already invoiced
-      const alreadyInvoiced = timesheets.filter((ts) => ts.invoiceId !== null);
-      if (alreadyInvoiced.length > 0) {
-        throw new BadRequestException(
-          'One or more timesheets are already invoiced',
-        );
-      }
 
       // Validate all timesheets belong to the same contractor/supplier
       const supplierIds = [...new Set(timesheets.map((ts) => ts.contractor.supplierId))];

@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { InvoicesService } from './invoices.service';
 import { PrismaService } from '../../core/database/prisma.service';
 import { AuditService } from '../../core/audit/audit.service';
-import { BadRequestException } from '@nestjs/common';
+import { ConflictException } from '@nestjs/common';
 import { AccessContext } from '../../core/auth/interfaces/access-context.interface';
 
 describe('InvoicesService.generateFromTimesheets', () => {
@@ -27,7 +27,12 @@ describe('InvoicesService.generateFromTimesheets', () => {
       },
       invoice: {
         create: jest.fn(),
+        findFirst: jest.fn(),
       },
+      supplier: {
+        findFirst: jest.fn(),
+      },
+      $queryRaw: jest.fn(),
       $transaction: jest.fn((cb) => cb(prismaMock)),
     };
 
@@ -46,28 +51,9 @@ describe('InvoicesService.generateFromTimesheets', () => {
     service = module.get<InvoicesService>(InvoicesService);
   });
 
-  it('should throw BadRequestException if one or more timesheets are already invoiced', async () => {
-    prismaMock.timesheet.findMany.mockResolvedValue([
-      {
-        id: 'ts-1',
-        status: 'APPROVED',
-        invoiceId: 'inv-123', // already invoiced!
-        contractor: {
-          supplierId: 'supplier-1',
-          supplier: {
-            organizationId: 'org-1',
-          },
-          engagements: [
-            {
-              id: 'eng-1',
-              rateAmount: 100,
-              rateType: 'HOURLY',
-              currency: 'ZAR',
-            },
-          ],
-        },
-        entries: [],
-      },
+  it('should throw ConflictException if one or more timesheets are already invoiced', async () => {
+    prismaMock.$queryRaw.mockResolvedValue([
+      { id: 'ts-1', invoiceId: 'inv-123', status: 'APPROVED' },
     ]);
 
     await expect(
@@ -75,21 +61,30 @@ describe('InvoicesService.generateFromTimesheets', () => {
         timesheetIds: ['ts-1'],
         invoiceNumber: 'INV-123',
         invoiceDate: new Date().toISOString(),
-        dueDate: new Date().toISOString(),
+        dueDate: new Date(Date.now() + 86400000).toISOString(),
       }),
     ).rejects.toThrow(
-      new BadRequestException('One or more timesheets are already invoiced'),
+      new ConflictException('One or more timesheets are already invoiced'),
     );
   });
 
-  it('should not throw already invoiced exception if no timesheets are already invoiced', async () => {
+  it('should claim timesheets and create invoice if available', async () => {
+    prismaMock.$queryRaw.mockResolvedValue([
+      { id: 'ts-1', invoiceId: null, status: 'APPROVED' },
+    ]);
+
     prismaMock.timesheet.findMany.mockResolvedValue([
       {
         id: 'ts-1',
         status: 'APPROVED',
-        invoiceId: null, // not invoiced!
+        invoiceId: null,
+        totalHours: 8,
+        periodStart: new Date(Date.now() - 86400000),
+        periodEnd: new Date(),
         contractor: {
           supplierId: 'supplier-1',
+          firstName: 'John',
+          lastName: 'Doe',
           supplier: {
             organizationId: 'org-1',
           },
@@ -99,6 +94,8 @@ describe('InvoicesService.generateFromTimesheets', () => {
               rateAmount: 100,
               rateType: 'HOURLY',
               currency: 'ZAR',
+              role: 'Dev',
+              isActive: true,
             },
           ],
         },
@@ -106,15 +103,27 @@ describe('InvoicesService.generateFromTimesheets', () => {
       },
     ]);
 
-    try {
-      await service.generateFromTimesheets(accessContext, {
-        timesheetIds: ['ts-1'],
-        invoiceNumber: 'INV-123',
-        invoiceDate: new Date().toISOString(),
-        dueDate: new Date().toISOString(),
-      });
-    } catch (err) {
-      expect(err.message).not.toBe('One or more timesheets are already invoiced');
-    }
+    prismaMock.supplier.findFirst.mockResolvedValue({
+      id: 'supplier-1',
+      organizationId: 'org-1',
+    });
+
+    prismaMock.invoice.create.mockResolvedValue({
+      id: 'invoice-123',
+      invoiceNumber: 'INV-123',
+      lineItems: [],
+      timesheets: [],
+    });
+
+    const result = await service.generateFromTimesheets(accessContext, {
+      timesheetIds: ['ts-1'],
+      invoiceNumber: 'INV-123',
+      invoiceDate: new Date().toISOString(),
+      dueDate: new Date(Date.now() + 86400000).toISOString(),
+    });
+
+    expect(prismaMock.$queryRaw).toHaveBeenCalled();
+    expect(prismaMock.timesheet.findMany).toHaveBeenCalled();
+    expect(result).toBeDefined();
   });
 });

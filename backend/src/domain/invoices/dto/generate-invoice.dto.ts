@@ -1,9 +1,11 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsUUID, IsArray, IsString, IsOptional, IsDateString } from 'class-validator';
+import { IsUUID, IsArray, IsString, IsOptional, IsDateString, ArrayNotEmpty, ArrayUnique } from 'class-validator';
 
 export class GenerateInvoiceFromTimesheetsDto {
   @ApiProperty({ type: [String], description: 'Approved timesheet IDs to include' })
   @IsArray()
+  @ArrayNotEmpty()
+  @ArrayUnique()
   @IsUUID(undefined, { each: true })
   timesheetIds: string[];
 
