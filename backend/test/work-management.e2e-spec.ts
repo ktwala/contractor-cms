@@ -333,6 +333,59 @@ describe('Work Management (Phase 3) E2E Tests', () => {
         expect(response.body.submittedAt).toBeDefined();
       });
 
+      it('should block timesheet submission when governance evidence is untrusted and missing', async () => {
+        // Create an untrusted supplier with no documents
+        const untrustedSupplier = await DataFactory.createSupplier(TestHelper.getPrisma(), {
+          organizationId: organization.id,
+          sourceSystem: 'CMS_NATIVE',
+          sourceSyncStatus: 'NOT_SYNCED',
+        });
+
+        const untrustedContractor = await DataFactory.createContractor(TestHelper.getPrisma(), {
+          organizationId: organization.id,
+          supplierId: untrustedSupplier.id,
+        });
+
+        // Create engagement for untrusted contractor
+        await TestHelper.getPrisma().contractorEngagement.create({
+          data: {
+            contractorId: untrustedContractor.id,
+            role: 'Dev',
+            startDate: new Date(),
+            rateAmount: 100,
+            rateType: 'HOURLY',
+            currency: 'ZAR',
+            isActive: true,
+          },
+        });
+
+        const untrustedTimesheet = await TestHelper.getPrisma().timesheet.create({
+          data: {
+            contractorId: untrustedContractor.id,
+            projectId: project.id,
+            periodStart: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+            periodEnd: new Date(),
+            entries: {
+              create: [
+                {
+                  date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+                  hours: 8,
+                  description: 'Work',
+                },
+              ],
+            },
+            totalHours: 8,
+            status: 'DRAFT',
+          },
+        });
+
+        // Submitting this timesheet should fail with 403 because supplier has no documents and is untrusted
+        await request(app.getHttpServer())
+          .patch(`/timesheets/${untrustedTimesheet.id}/submit`)
+          .set('Authorization', `Bearer ${token}`)
+          .expect(403);
+      });
+
       it('should approve timesheet', async () => {
         // Submit first
         await request(app.getHttpServer())
