@@ -301,6 +301,10 @@ describe('Financial Management (Phase 4) E2E Tests', () => {
           .expect(400);
       });
     });
+
+    describe('GET /invoices/:id/pdf', () => {
+      it.skip('should generate invoice PDF [BACKLOG-INV-PDF-1]', async () => {});
+    });
   });
 
   describe('Tax Classification Module', () => {
@@ -414,6 +418,10 @@ describe('Financial Management (Phase 4) E2E Tests', () => {
         expect(response.body.notes).toBe('Updated notes field');
         expect(response.body.riskScore).toBe(50);
       });
+    });
+
+    describe('GET /tax-classifications/:id/assessment', () => {
+      it.skip('should get tax assessment recommendation [BACKLOG-TAX-REC-1]', async () => {});
     });
   });
 });
